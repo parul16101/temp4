@@ -1,0 +1,164 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+<div class="row">
+	<div class="ibox-title">
+		<h3><strong>Question Details</strong></h3>
+	</div>
+	{% if question %}
+	<form action="" method="post">
+		{% csrf_token %}
+		<div class="ibox-content m-b-sm border-bottom">
+			<div class="row">
+				<div class="col-sm-6">
+					<div class="form-group">
+						<label class="control-label" for="unit">Unit</label>
+						<input type="text" id="unit" name="unit" value="{{question.unit}}" class="form-control" readonly>
+						<input type="hidden" id="question_id" name="question_id" value="{{question.id}}">
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="true_value">True Value</label>
+						<input type="text" id="true_value" name="true_value" value="{{question.true_value}}" class="form-control" readonly>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="owner">Owner</label>
+						<input type="text" id="owner" name="owner" class="form-control" value="{{question.uploader_id}}" readonly>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="category">Category</label>
+						<input type="text" id="category" name="category" class="form-control" value="{{question.category}}" readonly>
+					</div>
+					<div class="row">
+						<div class="col-sm-6">
+							<div class="form-group">
+								<label class="control-label" for="no_of_choices">Number of Choices</label>
+									{% if question.num_of_choices > 2 %}
+									<input type="text" class="form-control" value="2+" readonly>
+									{% else %}
+									<input type="text" class="form-control" value="2" readonly>
+									{% endif %}
+							</div>
+						</div>
+						<div class="col-sm-6">
+							<div class="form-group" id="date1">
+								<label class="control-label" for="date_true_value_known">Date of True Value</label>
+								<div class="input-group date">
+									<span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+									<input type="text" id="date_true_value_known" name="date_true_value_known" class="form-control" value="{{question.close_date}}" readonly>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div  class="form-group">
+						<label class="control-label" for="question_text">Question Text</label>
+						<textarea id="question_text" name="question_text" class="form-control" placeholder="Write something for your question" readonly>{{question.question_text}}</textarea>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<input type="hidden" id="operation">
+				<div class="col-sm-4">
+					<button class="btn btn-white" type="button" onclick="gotoSearch()"><i class="fa fa-arrow-left"></i>&nbsp;&nbsp;Go back to question list</button>
+				</div>
+				<div class="col-sm-8">
+					<button id="editOrSaveButton" class="btn btn-white pull-right buttonWidth" onclick="editOrSave()" type="button">Edit</button>
+				</div>
+			</div>
+		</div>
+	</form>
+	{% endif %}
+</div>
+{% endblock %}
+{% block jsPart %}
+<!-- Mainly scripts -->
+<script src="{% static 'ucs/js/jquery-2.1.1.js'%}"></script>
+<script src="{% static 'ucs/js/bootstrap.min.js'%}"></script>
+<script src="{% static 'ucs/js/plugins/metisMenu/jquery.metisMenu.js'%}"></script>
+<script src="{% static 'ucs/js/plugins/slimscroll/jquery.slimscroll.min.js'%}"></script>
+
+<!-- Custom and plugin javascript -->
+<script src="{% static 'ucs/js/inspinia.js' %}"></script>
+<script src="{% static 'ucs/js/plugins/pace/pace.min.js' %}"></script>
+
+<!-- iCheck -->
+<script src="{% static 'ucs/js/plugins/iCheck/icheck.min.js' %}"></script>
+
+<!-- Data picker -->
+<script src="{% static 'ucs/js/plugins/datapicker/bootstrap-datepicker.js' %}"></script>
+
+<!-- Sweet alert -->
+<script src="{% static 'ucs/js/plugins/sweetalert/sweetalert2.min.js'%}"></script>
+<script src="{% static 'ucs/js/js.cookie.js'%}"></script>
+<script>
+	function editOrSave(){
+		var editOrSave = $("#operation").val();
+		if(editOrSave === "" || editOrSave === "edit"){
+			$("#operation").val("save");
+			$("#editOrSaveButton").text("Save");
+			$("#unit").prop("readonly", false);
+			$("#owner").prop("readonly", false);
+			$("#true_value").prop("readonly", false);
+			$("#category").prop("readonly", false);
+			$("#date_true_value_known").prop("readonly", false);
+			var date_true_value_known = $('#date1 .input-group.date');
+			date_true_value_known.datepicker("enable");
+			$("#question_text").prop("readonly", false);
+		}else{
+			var question_id = $("#question_id").val();
+			var unit = $("#unit").val();
+			var owner = $("#owner").val();
+			var true_value = $("#true_value").val();
+			var category = $("#category").val();
+			var date_true_value_known = $("#date_true_value_known").val();
+			var question_text = $("#question_text").val();
+			var csrftoken = Cookies.get("csrftoken");
+			function csrfSafeMethod(method) {
+				// these HTTP methods do not require CSRF protection
+				return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+			}
+			$.ajaxSetup({
+				beforeSend: function(xhr, settings) {
+					if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+						xhr.setRequestHeader("X-CSRFToken", csrftoken);
+					}
+				}
+			});
+			var posting = $.post("{%url 'save_question'%}", {
+				question_id: question_id,
+				unit: unit,
+				owner: owner,
+				true_value: true_value,
+				category: category,
+				date_true_value_known: date_true_value_known,
+				question_text: question_text
+			});
+			posting.done(function(data){
+				$("#operation").val("edit");
+				$("#unit").prop("readonly", true);
+				$("#owner").prop("readonly", true);
+				$("#true_value").prop("readonly", true);
+				$("#category").prop("readonly", true);
+				$("#date_true_value_known").prop("readonly", true);
+				var date_true_value_known = $('#date1 .input-group.date');
+				date_true_value_known.datepicker("disabled");
+				$("#question_text").prop("readonly", true);
+				$("#editOrSaveButton").text("Edit");
+				swal({
+					title:"Success",
+					text: "Question was edited successfully!",
+					type: "success",
+					confirmButtonClass: 'btn btn-primary m-b buttonWidth',
+					buttonsStyling: false
+				});
+			});
+		}
+	}
+</script>
+<script>
+	function gotoSearch(){
+		$(location).prop("href", "{%url 'search_question'%}")
+	}
+</script>
+{% endblock %}

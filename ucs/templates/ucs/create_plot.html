@@ -1,0 +1,107 @@
+{%extends "./base.html"%}
+{% load static %}
+
+{%block content%}
+  <div class="row">
+    <div class="ibox-title">
+      <h3><strong>Keyword Weight Demonstration</strong></h3>
+    </div>
+    <div class="ibox-content  m-b-sm border-bottom">
+      <div class="row">
+        <div class="col-sm-4">
+          <table class="table table-bordered __web-inspector-hide-shortcut__">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Keyword</th>
+                <th>Weight</th>
+              </tr>
+            </thead>
+            <tbody>
+              {%for keyword, weight in keyword_weightList%}
+              <tr>
+                <td>{{forloop.counter}}</td>
+                <td>{{keyword}}</td>
+                <td>{{weight}}</td>
+              </tr>
+              {%endfor%}
+            </tbody>
+          </table>
+        </div>
+        <div class="col-sm-7">
+          <canvas id="barChart" height="200"></canvas>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-4">
+          <button class="btn btn-white" onclick="javascript:window.history.back();"><i class="fa fa-arrow-left"></i>&nbsp;&nbsp;Go back to question list</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{%endblock%}
+
+{%block jsPart%}
+
+    <!-- Mainly scripts -->
+    <script src="{% static 'ucs/js/jquery-2.1.1.js'%}"></script>
+    <script src="{% static 'ucs/js/bootstrap.min.js'%}"></script>
+    <script src="{% static 'ucs/js/plugins/metisMenu/jquery.metisMenu.js'%}"></script>
+    <script src="{% static 'ucs/js/plugins/slimscroll/jquery.slimscroll.min.js'%}"></script>
+
+    <!-- Custom and plugin javascript -->
+    <script src="{% static 'ucs/js/inspinia.js' %}"></script>
+    <script src="{% static 'ucs/js/plugins/pace/pace.min.js' %}"></script>
+
+    <!-- iCheck -->
+    <script src="{% static 'ucs/js/plugins/iCheck/icheck.min.js' %}"></script>
+  <script>
+    $(document).ready(function () {
+      $('.i-checks').iCheck({
+        checkboxClass: 'icheckbox_square-green',
+        radioClass: 'iradio_square-green',
+      });
+    });
+  </script>
+  <!-- Sweet alert -->
+    <script src="{% static 'ucs/js/plugins/sweetalert/sweetalert2.min.js'%}"></script>
+  <!-- Data picker -->
+  <script src="{% static 'ucs/js/plugins/validate/jquery.validate.min.js'%}"></script>
+  <script src="{% static 'ucs/js/js.cookie.js'%}"></script>
+  <!-- ChartJS-->
+  <script src="{% static 'ucs/js/plugins/chartJs/Chart.min.js'%}"></script>
+  <script>
+    $(function () {
+      var keywordList = {{keywordList|safe}},
+        weightList = {{weightList|safe}};
+
+      var barData = {
+        labels: keywordList,
+        datasets: [
+          {
+            label: "My dataset",
+            fillColor: "rgba(26,179,148,0.5)",
+            strokeColor: "rgba(26,179,148,0.8)",
+            highlightFill: "rgba(26,179,148,0.75)",
+            highlightStroke: "rgba(26,179,148,1)",
+            data: weightList
+          }
+        ]
+      };
+      var barOptions = {
+
+        scaleBeginAtZero: true,
+        scaleShowGridLines: true,
+        scaleGridLineColor: "rgba(0,0,0,.05)",
+        scaleGridLineWidth: 1,
+        barShowStroke: true,
+        barStrokeWidth: 2,
+        barValueSpacing: 5,
+        barDatasetSpacing: 1,
+        responsive: true,
+      }
+      var ctx = document.getElementById("barChart").getContext("2d");
+      var myNewChart = new Chart(ctx).Bar(barData, barOptions);
+    });
+  </script>
+{%endblock%}

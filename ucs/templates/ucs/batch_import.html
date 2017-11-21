@@ -1,0 +1,208 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+<head>
+	<link href="{% static 'ucs/css/plugins/toastr/toastr.min.css'%}" rel="stylesheet">
+	<link href="{% static 'ucs/css/bootstrap.min.css'%}" rel="stylesheet">
+	<link href="{% static 'ucs/css/font-awesome/css/font-awesome.css'%}" rel="stylesheet">
+	<link href="{% static 'ucs/css/plugins/datapicker/datepicker3.css'%}" rel="stylesheet">
+	<link href="{% static 'ucs/css/plugins/iCheck/custom.css'%}" rel="stylesheet">
+	<link href="{% static 'ucs/css/animate.css'%}" rel="stylesheet">
+	<link href="{% static 'ucs/css/style.css'%}" rel="stylesheet">
+	<link href="{% static 'ucs/css/plugins/dropzone/dropzone.css'%}" rel="stylesheet">
+	<link href="{% static 'ucs/css/plugins/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css'%}" rel="stylesheet">
+	<link href="{% static 'ucs/css/plugins/sweetalert/sweetalert2.min.css'%}" rel="stylesheet">
+	<style>
+		.divBackground{
+			border: 1px solid rgba(0,0,0,0.02);
+			background: rgba(0,0,0,0.04);
+			padding: 10px;
+			padding-top: 6px;
+			padding-left: 0px;
+			padding-right: 0px;
+			padding-bottom: 1px;
+		}
+		.buttonWidth {
+			width: 100px;
+		}
+		.dropzoneCSS{
+			height: 432px;
+		}
+	</style>
+</head>
+<div class="row">
+	<div class="ibox-title">
+		<h3><strong>Upload Dataset (Support CSV file only)</strong></h3>
+	</div>
+	<div class="ibox-content">
+		<div class="row divBackground">
+			<form action="" method="post" enctype="multipart/form-data" id="dropzoneForm" >
+				<div class="col-sm-8">
+					{% csrf_token %}
+					<div id="dropzoneDiv" class="form-group dropzone dropzoneCSS">
+						<label class="control-label">DropZone Area</label>
+						<div class="dropzone-previews" ></div>
+					</div>
+					<div>
+						<button type="button" class="ladda-button ladda-button-demo btn btn-primary full-width m-b " id="upload_all" name="Upload" data-style="zoom-in">
+							<span class="ladda-label"><strong>Upload</strong></span>
+							<span class="ladda-spinner"></span>
+						</button>
+					</div>
+				</div>
+				<div class="col-sm-4">
+					<div  class="form-group">
+						<label class="control-label" for="description">Message Box</label>
+						<textarea id="debug_text" name="debug_text" class="form-control" rows="20" readonly>{{ message }}</textarea>
+					</div>
+					<div class="form-group" style="width:100%">
+						<button id = "b1" class="btn-success" value="Clear" onclick="ClearText();return false;" style = "width:40%;margin-left:0.8%"/></span>Clear</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block jsPart %}
+<!-- Mainly scripts -->
+<script src="{% static 'ucs/js/jquery-2.1.1.js'%}"></script>
+<script src="{% static 'ucs/js/bootstrap.min.js'%}"></script>
+<script src="{% static 'ucs/js/plugins/metisMenu/jquery.metisMenu.js'%}"></script>
+<script src="{% static 'ucs/js/plugins/slimscroll/jquery.slimscroll.min.js'%}"></script>
+
+<!-- Custom and plugin javascript -->
+<script src="{% static 'ucs/js/inspinia.js' %}"></script>
+<script src="{% static 'ucs/js/plugins/pace/pace.min.js' %}"></script>
+
+<!-- iCheck -->
+<script src="{% static 'ucs/js/plugins/iCheck/icheck.min.js' %}"></script>
+<script>
+	$(document).ready(function () {
+		$('.i-checks').iCheck({
+			checkboxClass: 'icheckbox_square-green',
+			radioClass: 'iradio_square-green',
+		});
+	});
+</script>
+
+<!-- Toastr -->
+<script src="{% static 'ucs/js/plugins/toastr/toastr.min.js' %}"></script>
+<!-- Sweet alert -->
+<script src="{% static 'ucs/js/plugins/sweetalert/sweetalert2.min.js'%}"></script>
+<script src="{% static 'ucs/js/plugins/dropzone/dropzone.js' %}"></script>
+<!-- Data picker -->
+<script src="{% static 'ucs/js/plugins/datapicker/bootstrap-datepicker.js' %}"></script>
+<script>
+	$(document).ready(function() {
+		function getCookie(name) {
+			var cookieValue = null;
+			if (document.cookie && document.cookie != '') {
+				var cookies = document.cookie.split(';');
+				for (var i = 0; i < cookies.length; i++) {
+					var cookie = jQuery.trim(cookies[i]);
+					// Does this cookie string begin with the name we want?
+					if (cookie.substring(0, name.length + 1) == (name + '=')) {
+						cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+						break;
+					}
+				}
+			}
+			return cookieValue;
+		}
+		Dropzone.autoDiscover = false;
+		new Dropzone("#dropzoneDiv", {
+			url: "{%url 'batch_import'%}",
+			acceptedFiles: ".csv",
+			autoProcessQueue: false,
+			paramName: "file_data",
+			uploadMultiple: false,
+			parallelUploads: 1,
+			maxFiles: 1,
+			addRemoveLinks: true,
+			params: {'csrfmiddlewaretoken': getCookie('csrftoken')},
+			
+			// Dropzone settings
+			init: function() {
+				var uploadButton = document.querySelector("#upload_all")
+				var myDropzone = this;
+				uploadButton.addEventListener("click", function(e) {
+					if(myDropzone.getQueuedFiles().length == 0){
+						swal({
+							title:"",
+							text: "Drop a file before uploading!",
+							type: "warning",
+							confirmButtonClass: 'btn btn-primary m-b buttonWidth',
+							buttonsStyling: false
+						});
+					} else {
+						e.preventDefault();
+						e.stopPropagation();
+						myDropzone.processQueue();
+					}
+				});
+				this.on("addedfile", function(file){
+					if(this.files.length > 1){
+						this.removeFile(this.files[0]);
+					}
+				});
+				this.on("sending", function(data, xhr, formData) {
+					$("textarea#debug_text").val("Uploading data...");
+				});
+				this.on("success", function(file, response){
+					if (response[0] == 'e')
+					{
+						swal({
+							title:"Error",
+							text: "File Could not be uploaded.",
+							type: "error",
+							confirmButtonClass: 'btn btn-primary m-b buttonWidth',
+							buttonsStyling: false
+						}).then(function(){
+							//$(location).prop("href", "{%url 'batch_import'%}")
+						});;
+						$("textarea#debug_text").val(response);
+					}
+					else
+					{
+						swal({
+							title:"Success",
+							text: "Publication got uploaded successfully!",
+							type: "success",
+							confirmButtonClass: 'btn btn-primary m-b buttonWidth',
+							buttonsStyling: false
+						}).then(function(){
+							//$(location).prop("href", "{%url 'batch_import'%}")
+						});;
+						$("textarea#debug_text").val(response);
+					}
+				});
+				this.on("error", function(file, response){
+					swal({
+						title:"",
+						text: "File Could not be uploaded. Please try again with appropriate file format.",
+						type: "warning",
+						confirmButtonClass: 'btn btn-primary m-b buttonWidth',
+						buttonsStyling: false
+					}).then(function(){
+						//$(location).prop("href", "{%url 'batch_import'%}")
+					});;
+					$("textarea#debug_text").val(response);
+				});
+			}
+		});
+	});
+	function eraseText() {
+    document.getElementById("b1").value = "";
+	}
+</script>
+<script type="text/javascript">
+	function ClearText() {
+		document.getElementById('debug_text').placeholder = "";
+		document.getElementById('debug_text').value = null;
+		window.location.replace("/batch_import/");
+	}
+</script>
+<script src="{% static 'ucs/js/plugins/validate/jquery.validate.min.js'%}"></script>
+{% endblock %}

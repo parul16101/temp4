@@ -1,0 +1,338 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+<head>
+	<style type="text/css">
+		.qn {
+			display: none;
+		}
+		.qn:first-child {
+			display: block;
+		}
+		input[id="submit"] {
+			display:none;
+		}
+	</style>
+</head>
+<div class="row">
+	<div class="ibox-title">
+		<h3><strong>Scoring Options</strong></h3>
+	</div>
+	<div class="ibox-content">
+	<form method="post" action="/result/">
+		{% csrf_token %}
+		<div class="row divBackground">
+			<div class="qn 1st">
+				<div class="form-group">
+					<label class="control-label" for="question_type">Question Type</label>
+					<fieldset>
+						<label class="">
+							<input type="radio" value="1" name="question_type" id="rad" >
+							Discrete &nbsp;&nbsp;&nbsp;&nbsp;
+						</label>
+						<label class="">
+							<input type="radio" value="0" name="question_type" id="rad" >
+							Continuous
+						</label>
+					</fieldset>
+				</div>
+				<div class="form-group">
+					<label class="control-label" for="forecast">Forecast?</label>
+					<fieldset>
+						<label class="">
+							<input type="radio" value="1" name="forecast" id="rad" >
+							Yes &nbsp;&nbsp;&nbsp;&nbsp;
+						</label>
+						<label class="">
+							<input type="radio" value="0" name="forecast" id="rad" >
+							No
+						</label>
+					</fieldset>
+				</div>
+				<div class="form-group">
+					<label class="control-label" for="corporate_training">Question Use</label>
+					<fieldset>
+						<label class="">
+							<input type="radio" value="1" name="corporate_training" id="rad" >
+							Training &nbsp;&nbsp;&nbsp;&nbsp;
+						</label>
+						<label class="">
+							<input type="radio" value="0" name="corporate_training" id="rad" >
+							Corporate
+						</label>
+					</fieldset>
+				</div>
+				<div  class="form-group">
+					<label class="control-label" for="description">Question Text</label> <br>
+					<!-- <select id="question_text" name="question_text" class="form-control" style ="Width:100%"> -->
+					<select id="question_text" name="question_text" class="js-example-basic-single" style ="Width:100%">
+						<option selected="selected"></option>
+					</select>
+				</div>
+				<div class="col-sm-4">
+					<label class="control-label" for="T_or_F">Number of Choices</label> <br>
+					<input type="number" id= "numberofchoice" name="numberofchoice" min="2" style ="Width:20%"></input>
+				</div>
+				<div class="col-sm-8">
+					<label class="control-label" for="category">Category</label> <br>
+					<select id="category" name="category" class="form-control" style ="Width:50%">
+						<option selected="selected"></option>
+					</select>
+				</div>
+				<div class="col-sm-4">
+					<label class="control-label" for="description" id="label_user">User</label>
+					<select id="user_name" name="user_name" class="form-control" style ="Width:50%">
+						<option selected="selected"></option>
+					</select>
+				</div>
+				<div class="col-sm-8">
+					<label class="control-label" for="T_or_F" id="label_group">Group</label>
+					<select id="group_name" name="group_name" class="form-control" style ="Width:20%">
+						<option selected="selected"></option>
+					</select>
+				</div>
+				<div class="col-sm-4">
+					<label class="control-label" for="description">Assignment Name</label>
+					<select style ="width:50%; margin-left:1%;" id="assignment_name" name="assignment_name" class="form-control">
+						<option selected="selected"></option>
+					</select>
+				</div>
+				<div class="col-sm-8" id="date1">
+					<label class="control-label" for="submitted_date">Date Submitted</label>
+					<div class="input-group date" style = "margin-bottom:1%;">
+						<span class="input-group-addon"><i class="fa fa-calendar"></i></span><input style="width:40%;" type="text" id="date_submitted" name="date_submitted" placeholder="When is the data uploaded?" class="form-control">
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="btn-toolbar">
+			<input style="width:10%; float:left; margin-top:1%; margin-left:1%;" type="submit" class="btn btn-success" value="Submit"  />
+		</div>
+	</form>
+	</div>
+</div>
+{% endblock %}
+
+{% block jsPart %}
+<!-- Mainly scripts -->
+<script src="{% static 'ucs/js/jquery-2.1.1.js'%}"></script>
+<script src="{% static 'ucs/js/select2.min.js' %}"></script>
+<script src="{% static 'ucs/js/bootstrap.min.js'%}"></script>
+<script src="{% static 'ucs/js/plugins/metisMenu/jquery.metisMenu.js'%}"></script>
+<script src="{% static 'ucs/js/plugins/slimscroll/jquery.slimscroll.min.js'%}"></script>
+
+<!-- Custom and plugin javascript -->
+<script src="{% static 'ucs/js/inspinia.js' %}"></script>
+<script src="{% static 'ucs/js/plugins/pace/pace.min.js' %}"></script>
+
+<!-- iCheck -->
+<script src="{% static 'ucs/js/plugins/iCheck/icheck.min.js' %}"></script>
+<script>
+	$(document).ready(function () {
+		$('.i-checks').iCheck({
+			checkboxClass: 'icheckbox_square-green',
+			radioClass: 'iradio_square-green',
+		});
+	});
+</script>
+
+<!-- Toastr -->
+<script src="{% static 'ucs/js/plugins/toastr/toastr.min.js' %}"></script>
+
+<!-- Sweet alert -->
+<script src="{% static 'ucs/js/plugins/sweetalert/sweetalert2.min.js'%}"></script>
+<script src="{% static 'ucs/js/plugins/dropzone/dropzone.js' %}"></script>
+
+<!-- Data picker -->
+<script src="{% static 'ucs/js/plugins/datapicker/bootstrap-datepicker.js' %}"></script>
+
+<script>
+	var uploader = "{{request.session.username}}";
+	var question_type = 0;
+	var forecast = 0;
+	var question_text = "";
+	var true_or_false = 0;
+	var category = "Default";
+	var question_purpose = 0;
+	var user = "";
+	var group = "";
+	var assignment = "";
+	var date_submitted = "";
+	
+	var questions = {{questionList | safe}};
+	var select_question = document.getElementById("question_text");
+	//aler(questions);
+	questions.forEach(function(name, index) {
+		select_question.options[select_question.options.length] = new Option(name.question);
+	});
+	
+	var catas = {{cataList | safe}};
+	var select_cata = document.getElementById("category");
+	catas.forEach(function(name, index) {
+		select_cata.options[select_cata.options.length] = new Option(name.category);
+	});
+	
+	var users = {{userList | safe}};
+	var select_user = document.getElementById("user_name");
+	if(users.length == 0)
+	{
+		document.getElementById("user_name").style.visibility = "hidden";
+		document.getElementById("group_name").style.visibility = "hidden";
+		document.getElementById("label_user").style.visibility = "hidden";
+		document.getElementById("label_group").style.visibility = "hidden";
+	}
+
+	users.forEach(function(name, index) {
+		select_user.options[select_user.options.length] = new Option(name.user);
+	});
+
+
+	var groups = {{groupList | safe}};
+	var select_group = document.getElementById("group_name");
+	groups.forEach(function(name, index) {
+		select_group.options[select_group.options.length] = new Option(name.group);
+	});
+	
+	var assignments = {{assignmentList | safe}};
+	var select_assignment = document.getElementById("assignment_name");
+	assignments.forEach(function(name, index) {
+		select_assignment.options[select_assignment.options.length] = new Option(name.assignment);
+	});
+	
+	// function submit(){
+	// 	get_value();
+	// 	//pass_value();
+	// 	//window.location.replace("/result/");
+	// 	/*things to do on click*/
+	// }
+	
+	// function get_value(){
+	// 	var selected_question = document.querySelector('input[name = "question_type"]:checked');
+	// 	if (selected_question === null) {
+	// 		question_type = "";
+	// 	}
+	// 	else {
+	// 		question_type = selected_question.value;
+	// 	}
+		
+	// 	var selected_forcast = document.querySelector('input[name = "forecast"]:checked');
+	// 	if (selected_forcast === null) {
+	// 		forecast = "";
+	// 	}
+	// 	else {
+	// 		forecast = selected_forcast.value;
+	// 	}
+		
+	// 	var selected_purpose = document.querySelector('input[name = "corporate_training"]:checked');
+	// 	if (selected_purpose === null) {
+	// 		question_purpose = "";
+	// 	}
+	// 	else {
+	// 		question_purpose = selected_purpose.value;
+	// 	}
+		
+	// 	question_text = document.getElementById("question_text").value;
+	// 	true_or_false = document.getElementById("numberofchoice").value;
+	// 	category = document.getElementById("category").value;
+	// 	user_name = document.getElementById("user_name").value;
+	// 	group_name = document.getElementById("group_name").value;
+	// 	assignment_name = document.getElementById("assignment_name").value;
+	// 	date_submitted = document.getElementById("date_submitted").value;
+		
+	// 	var answer = [question_type, forecast, question_purpose, question_text, true_or_false, category, user_name, group_name, assignment_name, date_submitted];
+	// 	//console.log(answer);
+
+	// 	var url = "/result/";
+	// 	var params = {
+	// 			csrfmiddlewaretoken: "{{ csrf_token }}",
+	// 			'question_type':question_type,
+	// 			'forecast':forecast,
+	// 			'question_purpose':question_purpose,
+	// 			'question_text':question_text, // from form
+	// 			'true_or_false':true_or_false,
+	// 			'category':category,
+	// 			'user_name':user_name,
+	// 			'group_name':group_name,
+	// 			'assignment_name':assignment_name,
+	// 			'date_submitted':date_submitted
+	// 		};
+	// 	var xhr = new XMLHttpRequest();
+	// 	xhr.open("POST", url, true);
+	// 	xhr.send(params);
+
+	// }
+	// $.extend({
+	// 	    redirectPost: function(location, args)
+	// 	    {
+	// 	        var form = '';
+	// 	        $.each( args, function( key, value ) {
+	// 	            form += '<input type="hidden" name="'+key+'" value="'+value+'">';
+	// 	        });
+	// 	        $('<form action="'+location+'" method="POST">'+form+'</form>').appendTo('body').submit();
+	// 	    }
+	// 	});
+	// //TODO
+	// function pass_value(){
+	// 	$.ajax({
+	// 		type:"POST",
+	// 		url:"/result/",
+	// 		data: {
+	// 			csrfmiddlewaretoken: "{{ csrf_token }}",
+	// 			'question_type':question_type,
+	// 			'forecast':forecast,
+	// 			'question_purpose':question_purpose,
+	// 			'question_text':question_text, // from form
+	// 			'true_or_false':true_or_false,
+	// 			'category':category,
+	// 			'user_name':user_name,
+	// 			'group_name':group_name,
+	// 			'assignment_name':assignment_name,
+	// 			'date_submitted':date_submitted
+	// 		},
+	// 		success: function(data) {
+	// 			// if (data.status){
+	// 			// 	//alert(data.rep_message);
+	// 			// 	window.location.replace("/result/");
+	// 			// }
+	// 			// else if (!data.status){
+	// 			// 	alert(data.rep_message);
+	// 			// 	location.reload();
+	// 			// }
+	// 			$.redirectPost("/result/",{csrfmiddlewaretoken: "{{ csrf_token }}",summary:data});
+	// 		},
+	// 	});
+	// 	return false;
+	// }
+	$(document).ready(function() {
+		//Selector
+		$('.js-example-basic-single').select2();
+		//Date picker
+		$('#date1 .input-group.date').datepicker({
+			todayBtn: "linked",
+			keyboardNavigation: false,
+			forceParse: false,
+			calendarWeeks: true,
+			autoclose: true
+		});
+	});
+</script>
+<script>
+
+
+	$(function(){
+		$('input[id="rad"]').click(function(){
+			var $radio = $(this);
+			// if this was previously checked
+			if ($radio.data('waschecked') == true){
+				$radio.prop('checked', false);
+				$radio.data('waschecked', false);
+			}
+			else {
+				$radio.data('waschecked', true);
+			}
+			// remove was checked from other radios
+			$radio.siblings('input[name="rad"]').data('waschecked', false);
+		});
+	});
+</script>
+{% endblock %}
