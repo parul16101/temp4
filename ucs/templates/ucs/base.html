@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>PATC</title>
+		
+		<link href="{% static 'ucs/css/plugins/toastr/toastr.min.css'%}" rel="stylesheet">
+		<link href="{% static 'ucs/css/bootstrap.min.css'%}" rel="stylesheet">
+		<link href="{% static 'ucs/css/font-awesome/css/font-awesome.css'%}" rel="stylesheet">
+		<link href="{% static 'ucs/css/plugins/datapicker/datepicker3.css'%}" rel="stylesheet">
+		<link href="{% static 'ucs/css/plugins/iCheck/custom.css'%}" rel="stylesheet">
+		<link href="{% static 'ucs/css/animate.css'%}" rel="stylesheet">
+		<link href="{% static 'ucs/css/style.css'%}" rel="stylesheet">
+		<link href="{% static 'ucs/css/plugins/dropzone/dropzone.css'%}" rel="stylesheet">
+		<link href="{% static 'ucs/css/plugins/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css'%}" rel="stylesheet">
+		<link href="{% static 'ucs/css/plugins/sweetalert/sweetalert2.min.css'%}" rel="stylesheet">
+		<link href="{% static 'ucs/css/select2.min.css' %}" rel="stylesheet">
+		
+		<style>
+			.divBackground{
+				border: 1px solid rgba(0,0,0,0.02);
+				background: rgba(0,0,0,0.04);
+				padding: 10px;
+				padding-top: 6px;
+				padding-left: 0px;
+				padding-right: 0px;
+				padding-bottom: 1px;
+			}
+			.buttonWidth {
+				width: 100px;
+			}
+			.dropzoneCSS{
+				height: 432px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="wrapper">
+			<!--left nav part, including the login user info and the function tree-->
+			<nav class="navbar-default navbar-static-side" role="navigation">
+				<div class="sidebar-collapse">
+					<ul class="nav metismenu" id="side-menu">
+						<li class="nav-header">
+							<div>
+								<span>
+									{% if request.session.admin_user %}
+									<a href="{%url 'home_page'%}">
+										<img alt="image" class="img-thumbnail" src="{% static 'ucs/img/apa.jpg'%}">
+									</a>
+									{% else %}
+									<a href="{%url 'home_page'%}">
+										<img alt="image" class="img-thumbnail" src="{% static 'ucs/img/atm.jpg'%}">
+									</a>
+									{% endif %}
+								</span>
+								<span class="clear">
+									<span class="block m-t-xs" style="color:#DFE4ED">
+										<strong class="font-bold">{{request.session.username}}</strong>
+									</span>
+									{% if request.session.admin_user %}
+									<span class="text-muted text-xs block">Admin</span>
+									{% else %}
+									<span class="text-muted text-xs block">User</span>
+									{% endif %}
+								</span>
+							</div>
+						</li>
+						{% if request.session.admin_user %}
+						<li>
+							<a href="#">
+								<i class="fa fa-file-o"></i>
+								<span class="nav-label">Assignments</span>
+							</a>
+							<ul class="nav nav-second-level collapse">
+								<li>
+									<a href="{%url 'search_assignment'%}">
+										<i class="fa fa-edit"></i>
+										<span class="nav-label">Manage</span>
+									</a>
+								</li>
+								<li>
+									<a href="{%url 'create_assignment'%}">
+										<i class="fa fa-plus"></i>
+										<span class="nav-label">Create</span>
+									</a>
+								</li>
+							</ul>
+						</li>
+						<li>
+							<a href="#">
+								<i class="fa fa-question-circle"></i>
+								<span class="nav-label">Questions</span>
+							</a>
+							<ul class="nav nav-second-level collapse">
+								<li>
+									<a href="{%url 'search_question'%}">
+										<i class="fa fa-edit"></i>
+										<span class="nav-label">Manage</span>
+									</a>
+								</li>
+								<li>
+									<a href="{%url 'create_question'%}">
+										<i class="fa fa-plus"></i>
+										<span class="nav-label">Create</span>
+									</a>
+								</li>
+								<li>
+									<a href="{%url 'batch_import'%}">
+										<i class="fa fa-upload"></i>
+										<span class="nav-label">Batch Import</span>
+									</a>
+								</li>
+							</ul>
+						</li>
+						<li>
+							<a href="#">
+								<i class="fa fa-users"></i>
+								<span class="nav-label">Groups</span>
+							</a>
+							<ul class="nav nav-second-level collapse">
+								<li>
+									<a href="{%url 'search_group'%}">
+										<i class="fa fa-edit"></i>
+										<span class="nav-label">Manage</span>
+									</a>
+								</li>
+								<li>
+									<a href="{%url 'create_group'%}">
+										<i class="fa fa-plus"></i>
+										<span class="nav-label">Create</span>
+									</a>
+								</li>
+							</ul>
+						</li>
+						<li>
+							<a href="#">
+								<i class="fa fa-cubes"></i>
+								<span class="nav-label">Categories</span>
+							</a>
+							<ul class="nav nav-second-level collapse">
+								<li>
+									<a href="{%url 'manage_category'%}">
+										<i class="fa fa-edit"></i>
+										<span class="nav-label">Manage</span>
+									</a>
+								</li>
+							</ul>
+						</li>
+						<li>
+							<a href="#">
+								<i class="fa fa-bar-chart"></i>
+								<span class="nav-label">Evaluation</span>
+							</a>
+							<ul class="nav nav-second-level collapse">
+								<li>
+									<a href="{%url 'scoring'%}">
+										<i class="fa fa-line-chart" aria-hidden="true"></i>
+										<span class="nav-label">Scoring Report</span>
+									</a>
+								</li>
+								<li>
+									<a href="{%url 'batch_import'%}">
+										<i class="fa fa-adjust" aria-hidden="true"></i>
+										<span class="nav-label">External Calibration</span>
+									</a>
+								</li>
+							</ul>
+						</li>
+						{% else %}
+						<li>
+							<a href="#">
+								<i class="fa fa-file-o"></i>
+								<span class="nav-label">Assignments</span>
+							</a>
+							<ul class="nav nav-second-level collapse">
+								<li>
+									<a href="{%url 'show_assignment'%}">
+										<i class="fa fa-eye"></i>
+										<span class="nav-label">Show</span>
+									</a>
+								</li>
+							</ul>
+						</li>
+						<li>
+							<a href="#">
+								<i class="fa fa-bar-chart"></i>
+								<span class="nav-label">Evaluation</span>
+							</a>
+							<ul class="nav nav-second-level collapse">
+								<li>
+									<a href="{%url 'scoring'%}">
+										<i class="fa fa-line-chart" aria-hidden="true"></i>
+										<span class="nav-label">Scoring Report</span>
+									</a>
+								</li>
+								<li>
+									<a href="{%url 'batch_import'%}">
+										<i class="fa fa-adjust" aria-hidden="true"></i>
+										<span class="nav-label">External Calibration</span>
+									</a>
+								</li>
+							</ul>
+						</li>
+						{% endif %}
+					</ul>
+				</div>
+			</nav>
+			<!--right part-->
+			<div id="page-wrapper" class="gray-bg" style="min-height: 778px;">
+				<div class="row border-bottom">
+					<!--header-->
+					<nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0">
+						<ul class="nav navbar-top-links navbar-right">
+							<li>
+								<span class="m-r-sm text-muted welcome-message">Welcome to Apache PATC System!
+								</span>
+							</li>
+							<li>
+								<a href="{%url 'info_page'%}"> <i class="fa fa-info-circle"></i> Info </a>
+							</li>
+							<li>
+								<a href="{%url 'logout'%}"> <i class="fa fa-sign-out"></i> Log out </a>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				{% block content %}{% endblock %}
+			</div>
+		</div>
+	</body>
+{%block jsPart%}{%endblock%}
+</html>

@@ -1,0 +1,11 @@
+QUESTIONID,TRAINING,FORECAST,DISCRETE,NO OF CHOICES,CATEGORY,QUESTION TEXT,DATE TRUE VALUE KNOWN,TRUE VALUE,UNITS,ANSWER SOURCE,ALLOW ASSESSMENT,DATE OF ASSESSMENT,OPERATOR,ASSESSMENT DETAILS,NUMBER OF PAIRS,PROB,VALUE,PROB,VALUE,PROB ,VALUE
+,True,False,False,0,Capen's Quiz ,In what year was St. Augustine (now in Florida) established as a European settlement?,,1565,Date,Capen 1976,TRUE,8/7/2016,LE,Training Raul Gonzalez,3,0.1,1600,0.5,1700,0.9,1800
+,True,False,False,0,Capen's Quiz ,How many autos were registered in California in 1972?,,12800000,Count,Capen 1976,TRUE,8/7/2016,LE,Training Raul Gonzalez,3,0.1,200000,0.5,1000000,0.9,1500000
+,True,False,False,0,Capen's Quiz ,What is the air distance from San Francisco to Hong Kong in miles?,,6904,Miles,Capen 1976,TRUE,8/7/2016,LE,Training Raul Gonzalez,3,0.1,2000,0.5,4000,0.9,6000
+,True,False,False,0,Capen's Quiz ,How far is it from Los Angeles to New Orleans via major highways in miles?,,1901,Miles,Capen 1976,TRUE,8/7/2016,LE,Training Raul Gonzalez,3,0.1,800,0.5,1500,0.9,3000
+,True,False,False,0,Capen's Quiz ,What was the census estimate of U.S. population in 1900?,,76200000,Count,Capen 1976,TRUE,8/7/2016,LE,Training Raul Gonzalez,3,0.1,1000000,0.5,2000000,0.9,3000000
+,True,False,False,0,Capen's Quiz ,What is the span length of the Golden Gate Bridge in feet?,,4200,Feet,Capen 1976,TRUE,8/7/2016,LE,Training Raul Gonzalez,3,0.1,150000,0.5,300000,0.9,600000
+,True,False,False,0,Capen's Quiz ,What is the area of Canada in square miles?,,3850000,Miles^2,Capen 1976,TRUE,8/7/2016,LE,Training Raul Gonzalez,3,0.1,10000000,0.5,200000000,0.9,300000000
+,True,False,False,0,Capen's Quiz ,How long is the Amazon River in miles?,,3900,Miles,Capen 1976,TRUE,8/7/2016,LE,Training Raul Gonzalez,3,0.1,3500,0.5,7000,0.9,15000
+,True,False,False,0,Capen's Quiz ,How many earth years does it take the “dwarf planet” Pluto to revolve around the sun?,,248.4,Years,Capen 1976,TRUE,8/7/2016,LE,Training Raul Gonzalez,3,0.1,100,0.5,300,0.9,500
+,True,False,False,0,Capen's Quiz ,The English epic poem “Beowulf” was composed in what year?,,715,Date,Capen 1976,TRUE,8/7/2016,LE,Training Raul Gonzalez,3,0.1,1600,0.5,1700,0.9,1850

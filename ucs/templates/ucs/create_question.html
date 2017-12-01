@@ -1,0 +1,464 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+
+<head>
+	<style type="text/css">
+		.qn {
+			display: none;
+		}
+		.qn:first-child {
+			display: block;
+		}
+		input[id="submit"] {
+			display:none;
+		}
+	</style>
+</head>
+
+<div class="row">
+	<div class="ibox-title">
+		<h3><strong>Create Question</strong></h3>
+	</div>
+	<div class="ibox-content">
+		<div class="row divBackground">
+			<div class="qn 1st">
+				{% csrf_token %}
+				<div class="form-group">
+					<h1>Question Specification, Page 1/2</h1>
+					<div class="form-group">
+						<label class="control-label" for="forecast">If it is a Forecast Question?</label>
+						<fieldset>
+							<div class="i-checks">
+								<label class="">
+									<div class="iradio_square-green" style="position: relative;">
+										<input type="radio" value="1" name="forecast" style="position: absolute; opacity: 0;" checked>
+										<ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
+									</div>
+									<i></i>
+									Yes &nbsp;&nbsp;&nbsp;&nbsp;
+								</label>
+								<label class="">
+									<div class="iradio_square-green" style="position: relative;">
+										<input type="radio" value="0" name="forecast" style="position: absolute; opacity: 0;">
+										<ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
+									</div>
+									<i></i>
+									No
+								</label>
+							</div>
+						</fieldset>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="corporate_training">Question Purpose</label>
+						<fieldset>
+							<div class="i-checks">
+								<label class="">
+									<div class="iradio_square-green" style="position: relative;">
+										<input type="radio" value="1" name="corporate_training" style="position: absolute; opacity: 0;" checked>
+										<ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
+									</div>
+									<i></i>
+									Training &nbsp;&nbsp;&nbsp;&nbsp;
+								</label>
+								<label class="">
+									<div class="iradio_square-green" style="position: relative;">
+										<input type="radio" value="0" name="corporate_training" style="position: absolute; opacity: 0;">
+										<ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
+									</div>
+									<i></i>
+									Corporate
+								</label>
+							</div>
+						</fieldset>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="question_type">Question Type</label>
+						<fieldset>
+							<div class="i-checks">
+								<label class="">
+									<div class="iradio_square-green" style="position: relative;">
+										<input type="radio" value="1" name="question_type" style="position: absolute; opacity: 0;" checked>
+										<ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
+									</div>
+									<i></i>
+									Discrete &nbsp;&nbsp;&nbsp;&nbsp;
+								</label>
+								<label class="">
+									<div class="iradio_square-green" style="position: relative;">
+										<input type="radio" value="0" name="question_type" style="position: absolute; opacity: 0;">
+										<ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
+									</div>
+									<i></i>
+									Continuous
+								</label>
+							</div>
+						</fieldset>
+					</div>
+                    <div class="form-group">
+                        <label class="control-label" for="T_or_F">Number of Choices?</label>
+                        <fieldset>
+                            <div class="i-checks">
+                                <label class="">
+                                    <div class="iradio_square-green" style="position: relative;">
+                                        <input type="radio"  value="1" name="T_or_F" style="position: absolute; opacity: 0;" checked>
+                                        <ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
+                                    </div>
+                                    <i></i>
+                                    2 &nbsp;&nbsp;&nbsp;&nbsp;
+                                </label>
+                                <label class="">
+                                    <div class="iradio_square-green" style="position: relative;">
+                                        <input type="radio" value="0" name="T_or_F" style="position: absolute; opacity: 0;">
+                                        <ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
+                                    </div>
+                                    <i></i> 
+                                    2+
+                                </label>
+                            </div>
+                        </fieldset>
+                    </div>
+				</div>
+			</div>
+			<div class="qn 2nd">
+				<div id="container">
+					<h1 style = "float:middle;">Question Information, Page 2/2</h1>
+				</div>
+				<div  class="form-group">
+					<label class="control-label" for="description">Question Text</label>
+					<input type = "text" id="question_text" name="question_text" class="form-control"  placeholder="Place your question description here" onfocus="this.placeholder=''" onblur="this.placeholder='Place your question description here'" maxlength="300" required=""></input>
+				</div>
+				<div class="form-group" id="date1">
+					<label class="control-label" for="due_date">Time period for date true value known</label>
+					<div class="input-group date">
+						<span class="input-group-addon"><i class="fa fa-calendar"></i></span><input type="text" id="closing_date" name="closing_date" placeholder="When will the true value be revealed?" class="form-control" style ="Width:40%">
+					</div>
+				</div>
+				<div class="col-sm-4">
+					<div class="form-group">
+						<label class="control-label" for="upload_date">True Value</label>
+						<input type="text" id="true_value" class="form-control" >
+					</div>
+				</div>
+				<div class="col-sm-8">
+					<div class="form-group">
+						<label>Unit</label>
+						<input type="text" id= "unit" name="unit" placeholder="N/A" onfocus="this.placeholder=''" onblur="this.placeholder='N/A'" class="form-control" style ="Width:20%"></input>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label" for="T_or_F">Number of Choices</label>
+					<input type="number" id= "numberofchoice" name="numberofchoice" min="3" style ="Width:7%"></input>
+				</div>
+				<div class="form-group">
+					<label class="control-label" for="category">Category</label>
+					<select id="category" name="category" placeholder="The category of the question" class="form-control" style ="Width:20%"></select>
+				</div>
+				<div  class="form-group">
+					<label class="control-label" for="description">Question Resource</label>
+					<textarea id="question_description" name="question_description" class="form-control" placeholder="Place your question hint here..." onfocus="this.placeholder=''" onblur="this.placeholder='Place your question hint here...'" rows="2"></textarea>
+				</div>
+				<div  class="form-group">
+					<label class="control-label" for="question_resource">Answer Source</label>
+					<textarea id="question_resource" name="question_resource" class="form-control" placeholder="Place your question resource here..." onfocus="this.placeholder=''" onblur="this.placeholder='Place your question resource here...'" rows="2"></textarea>
+				</div>
+				<div class="form-group">
+					<label class="control-label" for="allow_assessment">Allow Assessment?</label>
+					<fieldset>
+						<div class="i-checks">
+							<label class="">
+								<div class="iradio_square-green" style="position: relative;">
+									<input type="radio" value="1" name="allow_assessment" style="position: absolute; opacity: 0;" checked>
+									<ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
+								</div>
+								<i></i>
+								Yes &nbsp;&nbsp;&nbsp;&nbsp;
+							</label>
+							<label class="">
+								<div class="iradio_square-green" style="position: relative;">
+									<input type="radio" value="0" name="allow_assessment" style="position: absolute; opacity: 0;">
+									<ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
+								</div>
+								<i></i>
+								No
+							</label>
+						</div>
+					</fieldset>
+				</div>
+			</div>
+			<button type="button" id="prev" class="btn btn-success" style="width:20%">Previous</button>
+			<button type="button" id="next" class="btn btn-success" style="width:20%">Next</button>
+            
+			<input type = "button" id = "submit" value="Submit" class="btn btn-success" style="width:20%;float:right">
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block jsPart %}
+<!-- Mainly scripts -->
+<script src="{% static 'ucs/js/jquery-2.1.1.js'%}"></script>
+<script src="{% static 'ucs/js/bootstrap.min.js'%}"></script>
+<script src="{% static 'ucs/js/plugins/metisMenu/jquery.metisMenu.js'%}"></script>
+<script src="{% static 'ucs/js/plugins/slimscroll/jquery.slimscroll.min.js'%}"></script>
+
+<!-- Custom and plugin javascript -->
+<script src="{% static 'ucs/js/inspinia.js' %}"></script>
+<script src="{% static 'ucs/js/plugins/pace/pace.min.js' %}"></script>
+
+<!-- iCheck -->
+<script src="{% static 'ucs/js/plugins/iCheck/icheck.min.js' %}"></script>
+<script>
+	$(document).ready(function () {
+		$('.i-checks').iCheck({
+			checkboxClass: 'icheckbox_square-green',
+			radioClass: 'iradio_square-green',
+		});
+	});
+</script>
+
+<!-- Toastr -->
+<script src="{% static 'ucs/js/plugins/toastr/toastr.min.js' %}"></script>
+
+<!-- Sweet alert -->
+<script src="{% static 'ucs/js/plugins/sweetalert/sweetalert2.min.js'%}"></script>
+<script src="{% static 'ucs/js/plugins/dropzone/dropzone.js' %}"></script>
+
+<!-- Data picker -->
+<script src="{% static 'ucs/js/plugins/datapicker/bootstrap-datepicker.js' %}"></script>
+
+<script>
+	var today = new Date();
+	var tomorrow = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
+	var dd = today.getDate();
+	var mm = today.getMonth()+1; //January is 0!
+	var yyyy = today.getFullYear();
+	if(dd<10){dd='0'+dd} if(mm<10){mm='0'+mm} today = mm+'/'+dd+'/'+yyyy;
+	var question_text = "";
+	var uploader = "{{request.session.username}}";
+	var upload_date = today;
+	var closing_date = "";
+	var question_description = "";
+	var question_resource = "";
+	var category = "ALL";
+	var unit = "NA";
+	var true_value = "";
+	var question_type = 0;
+	var forecast = 0;
+	var question_purpose = 0;
+	var true_or_false = 0;
+	var allow_assessment = 1;
+	var datas = {{dataList | safe}};
+	var select = document.getElementById("category");
+	datas.forEach(function(name, index) {
+		select.options[select.options.length] = new Option(name.category_list);
+	});
+	$("#submit").click(function (){
+		get_value();
+
+		var options = question_text.split("***");
+		var x = 0;
+		var y = +true_or_false + 1;
+		x = options.length;
+		console.log(x);
+		console.log(y);
+		if(x==y)
+		{
+			console.log(options);
+			var i=0;
+			for(;i<x;i++)
+			{
+				if(options[i].trim()=="")
+				{
+					break;
+				}
+			}
+			if(i==x)
+			{
+				insert_1();
+			}
+			else
+			{
+				alert("Option value can't be empty.");
+			}
+		}
+		else
+			alert("Enter Valid number of options");
+		//things to do on click
+	});
+	function get_value(){
+		question_text = document.getElementById("question_text").value;
+		unit = document.getElementById("unit").value;
+		closing_date = document.getElementById("closing_date").value;
+		question_description = document.getElementById("question_description").value;
+		question_resource = document.getElementById("question_resource").value;
+		true_value = document.getElementById("true_value").value;
+		e = document.getElementById("category");
+		category = e.options[e.selectedIndex].text;
+		question_type = document.querySelector('input[name = "question_type"]:checked').value;
+		forecast = document.querySelector('input[name = "forecast"]:checked').value;
+		true_or_false = document.querySelector('input[name = "T_or_F"]:checked').value;
+		//alert(true_or_false)
+		question_purpose = document.querySelector('input[name = "corporate_training"]:checked').value;
+		
+		if(question_type == 1 && true_or_false == 1){
+			true_or_false = 2;
+		}
+		else if(question_type == 1 && true_or_false == 0){
+			true_or_false = document.getElementById("numberofchoice").value;
+		}
+		else{
+			true_or_false = 0;
+		}
+		//alert(true_or_false)
+		
+		allow_assessment = document.querySelector('input[name = "allow_assessment"]:checked').value;
+	}
+	function insert_1(){
+		if(question_text == ""){
+			alert("Question title should not be empty!")
+			return false;
+		}
+		else{
+			$.ajax({
+				type:"POST",
+				url:"/create_question/",
+				data: {
+					csrfmiddlewaretoken: "{{ csrf_token }}",
+					'question_text': question_text, // from form
+					'question_description': question_description, // from form
+					'question_resource':question_resource,
+					'uploader':uploader,
+					'closing_date':closing_date,
+					'upload_date':upload_date,
+					'category':category,
+					'true_value':true_value,
+					'question_type':question_type,
+					'forecast':forecast,
+					'question_purpose':question_purpose,
+					'allow_assessment':allow_assessment,
+					'true_or_false':true_or_false,
+					'unit':unit,
+				},
+				success: function(data) {
+					if (data.status){
+						alert(data.rep_message);
+						window.location.replace("/search_question/");
+					}
+					else if (!data.status){
+						alert(data.rep_message);
+						document.getElementById("question_text").value = "";
+						//location.reload();
+						//window.location.replace("/search_question/");
+					}
+				},
+			});
+			return false;
+		}
+	}
+	$(document).ready(function() {
+		$('#date1 .input-group.date').datepicker({
+			todayBtn: "linked",
+			keyboardNavigation: false,
+			forceParse: false,
+			calendarWeeks: true,
+			autoclose: true
+		});
+	});
+</script>
+<script>
+	function delete_group(element){
+		if(true_or_false == true){
+			var cell = element.parentNode.parentNode.rowIndex;
+			if(cell == 2){
+				document.getElementById("optionTable").deleteRow(cell-1)
+			}
+			else{
+				document.getElementById("optionTable").deleteRow(cell+1)
+			}
+			document.getElementById("optionTable").deleteRow(cell)
+		}
+		else{
+			var cell = element.parentNode.parentNode.rowIndex;
+			document.getElementById("optionTable").deleteRow(cell)
+		}
+	}
+	$("#prev").hide();
+	$("#submit").hide();
+	$("#next").show();
+	$("#next").click(function () {
+		var question_type = document.querySelector('input[name = "question_type"]:checked').value;
+		var true_or_false = document.querySelector('input[name = "T_or_F"]:checked').value;
+		if(question_type == 1 && true_or_false == 1){
+			document.getElementById("numberofchoice").placeholder = '2';
+			document.getElementById("numberofchoice").disabled = true;
+		}
+		else if(question_type == 1 && true_or_false == 0){
+			document.getElementById("numberofchoice").value = '3';
+			document.getElementById("numberofchoice").disabled = false;
+		}
+		else {
+			document.getElementById("numberofchoice").placeholder = 'N/A';
+			document.getElementById("numberofchoice").disabled = true;
+		}
+		
+		var current = $(".qn:visible"), 
+			total = $(".qn").length, 
+			last = $(".qn:last");
+		$(current).next().show();
+		$(current).hide();
+		if ($(current).next().is(last)) {
+			$("#next").hide();
+			$("input[id='submit']").show();
+			$("#prev").show();
+		}
+	});
+	
+	$("#prev").click(function () {
+		var current = $(".qn:visible"), 
+			total = $(".qn").length, 
+			first = $(".qn:first");
+		$(current).prev().show();
+		$(current).hide();
+		if ($(current).prev().is(first)) {
+			$("#prev").hide();
+			$("#next").show();
+			$("input[id='submit']").hide();
+		}
+		else{
+			$("#next").show();
+			$("input[id='submit']").hide();
+		}
+	});
+</script>
+<script src="{% static 'ucs/js/plugins/validate/jquery.validate.min.js'%}"></script>
+<script>
+	$("#add").click(function () {
+		var b = document.getElementById("new_prob").value;
+		var c = document.getElementById("new_val").value;
+		var d = document.getElementById("unit").value;
+		var tableRef = document.getElementById("optionTable");
+		var num = tableRef.rows.length;
+		var newRow = tableRef.insertRow(num);
+		var newCell_1 = newRow.insertCell(0);
+		var newText1  = document.createTextNode(b);
+		newCell_1.appendChild(newText1);
+		
+		var newCell_2  = newRow.insertCell(1);
+		var newText2  = document.createTextNode("%");
+		newCell_2.appendChild(newText2);
+		
+		var newCell_3  = newRow.insertCell(2);
+		var newText3 = document.createTextNode(c);
+		newCell_3.appendChild(newText3);
+		
+		var newCell_4  = newRow.insertCell(3);
+		var newText4  = document.createTextNode(d);
+		newCell_4.appendChild(newText4);
+		
+		var newCell_6  = newRow.insertCell(4);
+		newCell_6.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="delete_group(this)" >'
+		+'<span class="fa fa-times"></span>delete</button>';
+	});
+</script>
+{% endblock %}

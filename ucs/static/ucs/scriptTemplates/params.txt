@@ -1,0 +1,11 @@
+$outputRootDir$
+$jobDir$
+$inputFileDir$
+$inputFileName$
+$outputFileName$
+$outputFolderName$
+$rows$
+$cols$
+$resolution$
+$azimuth$
+$radius$

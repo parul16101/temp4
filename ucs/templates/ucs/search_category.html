@@ -1,0 +1,131 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>PATC</title>
+	<link href="{% static 'ucs/css/bootstrap.min.css' %}" rel="stylesheet">
+	<link href="{% static 'ucs/font-awesome/css/font-awesome.css' %}" rel="stylesheet">
+	<link href="{% static 'ucs/css/plugins/iCheck/custom.css'%}" rel="stylesheet">
+	<link href="{% static 'ucs/css/animate.css' %}" rel="stylesheet">
+	<link href="{% static 'ucs/css/style.css' %}" rel="stylesheet">
+	<link href="{% static 'ucs/css/plugins/sweetalert/sweetalert2.min.css'%}" rel="stylesheet">
+	<style>
+		.buttonWidth {
+			width: 100px;
+		}
+	</style>
+</head>
+
+<div class="row">
+	<div class="ibox-title">
+		<h3><strong>Manage Categories</strong></h3>
+	</div>
+	<div class="ibox-content">
+		<div class="row divBackground">
+			<div class="form-group">
+				<table class="table table-striped table-bordered " id="TagTable" >
+					<col width="30%" />
+					<col width="5%" />
+					<col width="10%" />
+					<col width="10%" />
+					<thead>
+						<tr>
+							<th>Categories</th>
+							<th>Number of Questions</th>
+							<th></th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+			<div class="form-group">
+				<input type = "text" style="width: 200px; display: inline;" id="new_cate"  class="form-control" placeholder="New category name?" onfocus="this.placeholder=''" onblur="this.placeholder='New category name?'" maxlength="40" required=""></input>
+				<button type="button" id="add">+ Add</button>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{%block jsPart%}
+<!-- Mainly scripts -->
+<script src="{% static 'ucs/js/jquery-2.1.1.js'%}"></script>
+<script src="{% static 'ucs/js/bootstrap.min.js'%}"></script>
+<script src="{% static 'ucs/js/plugins/metisMenu/jquery.metisMenu.js'%}"></script>
+<script src="{% static 'ucs/js/plugins/slimscroll/jquery.slimscroll.min.js'%}"></script>
+
+<!-- Custom and plugin javascript -->
+<script src="{% static 'ucs/js/inspinia.js' %}"></script>
+<script src="{% static 'ucs/js/plugins/pace/pace.min.js' %}"></script>
+
+<!-- iCheck -->
+<script src="{% static 'ucs/js/plugins/iCheck/icheck.min.js' %}"></script>
+<script type="text/javascript">
+	$("#add").click(function () {
+		category_new = document.getElementById("new_cate").value
+		var action = "add"
+		$.ajax({
+			type:"POST",
+			url:"/manage_category/",
+			data: {
+				csrfmiddlewaretoken: "{{ csrf_token }}",
+				'action': action,
+				'category_text': category_new, // from form
+			},
+			success: function(data) {
+				if (data.status){
+					location.reload();
+				}
+				else if (!data.status){
+					alert(data.rep_message);
+					location.reload();
+				}
+			},
+		});
+	});
+</script>
+<script type="text/javascript">
+	var datas = {{dataList | safe}};
+	var tableRef = document.getElementById("TagTable");
+	datas.forEach(function(name, index) {
+		var num = tableRef.rows.length;
+		var newRow = tableRef.insertRow(num);
+		var newCell_1 = newRow.insertCell(0);
+		var newText1 = document.createTextNode(name.category);
+		newCell_1.appendChild(newText1);
+		
+		var newCell_2 = newRow.insertCell(1);
+		var newText2 = document.createTextNode(name.number);
+		newCell_2.appendChild(newText2);
+		
+		var newCell_3 = newRow.insertCell(2);
+		if(name.category != "Default"){
+			newCell_3.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="delete_category(this)" >'
+			+'<span class="glyphicon glyphicon-pencil"></span> Delete </button>';
+		}
+	});
+</script>
+<script type="text/javascript" >
+	function delete_category(element){
+		var cell = element.parentNode.parentNode.rowIndex;
+		var names = document.getElementById("TagTable").rows[cell].cells[0].innerHTML
+		var result = confirm("Are you really sure to delete this category?");
+		if(result){
+			var action = "delete";
+			$.ajax({
+				type:"POST",
+				url:"/manage_category/",
+				data: {
+					csrfmiddlewaretoken: "{{ csrf_token }}",
+					'action': action,
+					'category_text': names, // from form
+				},
+				success: function(data) {
+					document.getElementById("TagTable").deleteRow(cell)
+				},
+			});
+			return false;
+		}
+	}
+</script>
+{% endblock %}

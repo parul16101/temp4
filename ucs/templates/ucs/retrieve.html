@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>PATC</title>
+		<link href="{% static 'ucs/css/bootstrap.min.css' %}" rel="stylesheet">
+		<link href="{% static 'ucs/font-awesome/css/font-awesome.css' %}" rel="stylesheet">
+		<link href="{% static 'ucs/css/animate.css' %}" rel="stylesheet">
+		<link href="{% static 'ucs/css/style.css' %}" rel="stylesheet">
+		<link href="{% static 'ucs/css/plugins/sweetalert/sweetalert2.min.css'%}" rel="stylesheet">
+		<style>
+			.buttonWidth {
+				width: 100px;
+			}
+		</style>
+	</head>
+	<body class="gray-bg">
+		<div class="passwordBox animated fadeInDown">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="ibox-content">
+						<h2 class="font-bold">Password assistance</h2>
+						<p>Please enter your email used to registered for your account. We will send you your password via email.</p>
+						<div class="row">
+							<div class="col-lg-12">
+								<form class="m-t" role="form" action="{%url 'retrieve'%}" method="post">
+									{% csrf_token %}
+									<div class="form-group">
+										<input type="email" class="form-control" placeholder="Email address" name="email" required="">
+									</div>
+									<button type="submit" class="btn btn-primary block full-width m-b">Continue</button>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script src="{% static 'ucs/js/jquery-2.1.1.js' %}"></script>
+		<script src="{% static 'ucs/js/plugins/sweetalert/sweetalert2.min.js'%}"></script>
+		{%if message%}
+		<script>
+			swal({
+				title:"",
+				text: "{{message}}",
+				type: "{{status}}",
+				confirmButtonClass: 'btn btn-primary m-b buttonWidth',
+				buttonsStyling: false
+			}).then(function(){
+				$(location).prop("href", "{%url 'login'%}")
+			});
+		</script>
+		{%endif%}
+	</body>
+</html>

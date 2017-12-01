@@ -1,0 +1,26 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block content %}
+<div class="row">
+	<div class="ibox-title">
+		<h3><strong>This is an information page</strong></h3>
+	</div>
+	<div class="ibox-content">
+	</div>
+</div>
+{% endblock %}
+
+{% block jsPart %}
+<!-- Mainly scripts -->
+<script src="{% static 'ucs/js/jquery-2.1.1.js'%}"></script>
+<script src="{% static 'ucs/js/bootstrap.min.js'%}"></script>
+<script src="{% static 'ucs/js/plugins/metisMenu/jquery.metisMenu.js'%}"></script>
+<script src="{% static 'ucs/js/plugins/slimscroll/jquery.slimscroll.min.js'%}"></script>
+
+<!-- Custom and plugin javascript -->
+<script src="{% static 'ucs/js/inspinia.js' %}"></script>
+<script src="{% static 'ucs/js/plugins/pace/pace.min.js' %}"></script>
+
+<!-- iCheck -->
+<script src="{% static 'ucs/js/plugins/iCheck/icheck.min.js' %}"></script>
+{% endblock %}
