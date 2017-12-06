@@ -27,7 +27,7 @@
 				<div class="form-group">
 					<h1>Question Specification, Page 1/2</h1>
 					<div class="form-group">
-						<label class="control-label" for="forecast">If it is a Forecast Question?</label>
+						<label class="control-label" for="forecast">Forecast Question?</label>
 						<fieldset>
 							<div class="i-checks">
 								<label class="">
@@ -122,14 +122,14 @@
 			</div>
 			<div class="qn 2nd">
 				<div id="container">
-					<h1 style = "float:middle;">Question Information, Page 2/2</h1>
+					<h1 style = "float:middle;">Question Specification, Page 2/2</h1>
 				</div>
 				<div  class="form-group">
-					<label class="control-label" for="description">Question Text (For adding options, use ***)</label>
-					<input type = "text" id="question_text" name="question_text" class="form-control"  placeholder="Place your question description here" onfocus="this.placeholder=''" onblur="this.placeholder='Place your question description here'" maxlength="300" required=""></input>
+					<label class="control-label" for="description">Question Text (for adding choices to discrete questions, use *** as the delimiter)</label>
+					<input type = "text" id="question_text" name="question_text" class="form-control"  placeholder="Place your question text here" onfocus="this.placeholder=''" onblur="this.placeholder='Place your question description here'" maxlength="300" required=""></input>
 				</div>
 				<div class="form-group" id="date1">
-					<label class="control-label" for="due_date">Time period for date true value known</label>
+					<label class="control-label" for="due_date">Date the True Value Will Be Known</label>
 					<div class="input-group date">
 						<span class="input-group-addon"><i class="fa fa-calendar"></i></span><input type="text" id="closing_date" name="closing_date" placeholder="When will the true value be revealed?" class="form-control" style ="Width:40%">
 					</div>
@@ -155,12 +155,12 @@
 					<select id="category" name="category" placeholder="The category of the question" class="form-control" style ="Width:20%"></select>
 				</div>
 				<div  class="form-group">
-					<label class="control-label" for="description">Question Resource</label>
-					<textarea id="question_description" name="question_description" class="form-control" placeholder="Place your question hint here..." onfocus="this.placeholder=''" onblur="this.placeholder='Place your question hint here...'" rows="2"></textarea>
+					<label class="control-label" for="description">Question Source</label>
+					<textarea id="question_description" name="question_description" class="form-control" placeholder="Place the question source here..." onfocus="this.placeholder=''" onblur="this.placeholder='Place your question hint here...'" rows="2"></textarea>
 				</div>
 				<div  class="form-group">
 					<label class="control-label" for="question_resource">Answer Source</label>
-					<textarea id="question_resource" name="question_resource" class="form-control" placeholder="Place your question resource here..." onfocus="this.placeholder=''" onblur="this.placeholder='Place your question resource here...'" rows="2"></textarea>
+					<textarea id="question_resource" name="question_resource" class="form-control" placeholder="Place the answer source here..." onfocus="this.placeholder=''" onblur="this.placeholder='Place your question resource here...'" rows="2"></textarea>
 				</div>
 				<div class="form-group">
 					<label class="control-label" for="allow_assessment">Allow Assessment?</label>

@@ -1,20 +1,8 @@
 {% extends "./base.html" %}
 {% load static %}
 {% block content %}
-
-<head>
-	<style type="text/css">
-        .divBackground{
-            border: 1px solid rgba(0,0,0,0.02);
-            background: rgba(0,0,0,0.05);
-            padding: 1em;
-        }
-        .bodycontainer { max-height: 450px; width: 100%; margin: 0; overflow-y: auto; }
-        .table-scrollable { margin: 0; padding: 0; }
-	</style>
-</head>
-
-<div class="col-sm-4" style="width:100%">
+<!-- <div class="col-sm-4" style="width:100%"> -->
+<div class="row">
 	<div class="ibox-title">
 		<h3><strong>Questions</strong></h3>
 	</div>
@@ -24,13 +12,13 @@
 				<table class="sortable table table-striped table-bordered table-hover dataTables-example table-scrollable" id="QuestionTable">
 					<thead>
 						<tr>
-							<th>Question Title</th>
+							<th>Question Text</th>
 							<th>Category</th>
-							<th>Question type</th>
-							<th>Question use</th>
-							<th>Number of choice</th>
+							<th>Question Type</th>
+							<th>Question Use</th>
+							<th>Number of Choices</th>
 							<th>Forcast</th>
-							<th>Date of the True Value known</th>
+							<th>Date True Value Known</th>
 							<th></th>
 							<th></th>
 						</tr>
@@ -82,7 +70,7 @@
 <script src="{% static 'ucs/js/sorttable.js' %}"></script>
 <script src="{% static 'ucs/js/inspinia.js' %}"></script>
 <script src="{% static 'ucs/js/plugins/pace/pace.min.js' %}"></script>
-<script src="{% static 'ucs/js/plugins/dataTables/datatables.min.js' %}"></script>
+<script src="{% static 'ucs/js/plugins/dataTables/dataTables.min.js' %}"></script>
 <script type="text/javascript">
 	/*
 	$('.fold_search').click(function() {

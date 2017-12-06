@@ -34,7 +34,7 @@
 						<thead>
 							<tr>
 								<th width="20%">Choice</th>
-								<th width="20%">Cumulative Probability (%)</th>
+								<th width="20%">Probability (%)</th>
 								<!-- <th>Operators</th> -->
 								<th width="20%">Action</th>
 							</tr>
@@ -128,6 +128,9 @@
 		if(question_type == "1"){
 			$("th").each(function(){
 				$(this).text($(this).text().replace("Value","Choice"));
+				if($(this).text().includes("Cumulative")){
+					$(this).text($(this).text().replace("Cumulative Probability","Probability"));
+				}
 			});
 			var optionsN = datas[index].num_of_choices
 
@@ -165,12 +168,14 @@
 				});
 			}
 		}
-		
 		else{
 			add_button.disabled = false;
 			add_button.style.visibility = "visible";
 			$("th").each(function(){
 				$(this).text($(this).text().replace("Choice","Value"));
+				if(!$(this).text().includes("Cumulative")){
+					$(this).text($(this).text().replace("Probability","Cumulative Probability"));
+				}
 			});
 			if(saved_answer[index]){
 				var answer = saved_answer[index];
