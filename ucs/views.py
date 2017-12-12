@@ -589,7 +589,7 @@ def do_assignment(request):
             content = q_answer.split(",")
             i = 0
             print "\n\n\n Content ",content
-            if int(content[0]) > int(content[2]):
+            if float(content[0]) > float(content[2]):
                 operator = 'GE'
             print "Operator: ",operator
             while (i < len(content)):
