@@ -593,7 +593,8 @@ def do_assignment(request):
                 operator = 'GE'
             print "Operator: ",operator
             while (i < len(content)):
-                option = content[i]
+                asst = content[i]
+                option = str(float(asst))
                 i = i + 1
                 prob = content[i]
                 answer = str(float(prob)/100.0)
