@@ -26,8 +26,7 @@ from django.http import JsonResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from collections import defaultdict
-from osgeo import gdal
-
+#from osgeo import gdal
 ErrorA = { 0 : "Insuficcient data for the assessment, missing NumOfPairs, Operator, or DateOfAssessment in row ",
 1 : "Number of choices cannot be equal to 1 (allowed options are 0 or greater than 1) for entry located in row ",
 2 : "Number of pairs needs to be same as the number of choices for entry located in row ",
