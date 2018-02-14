@@ -26,7 +26,9 @@
 					</div>
 					<div class="form-group">
 						<label class="control-label" for="category">Category</label>
-						<input type="text" id="category" name="category" class="form-control" value="{{question.category}}" readonly>
+                                                <select id="category" name="category" class="form-control" style="width:50%">
+                                                    <option selected ="selected"></option>
+                                                </select>
 					</div>
 					<div class="row">
 						<div class="col-sm-6">
@@ -92,6 +94,12 @@
 <script src="{% static 'ucs/js/plugins/sweetalert/sweetalert2.min.js'%}"></script>
 <script src="{% static 'ucs/js/js.cookie.js'%}"></script>
 <script>
+        var category = "Default";
+        var catas = {{cataList | safe}};
+        var select_cata = document.getElementById("category");
+        catas.forEach(function(name, index) {
+            select_cata.options[select_cata.options.length] = new Option(name.category);
+        });
 	function editOrSave(){
 		var editOrSave = $("#operation").val();
 		if(editOrSave === "" || editOrSave === "edit"){
