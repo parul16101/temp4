@@ -738,16 +738,16 @@ def batch_import(request):
     #print 'The user id is ', user_id
     if request.method == "POST":
         #Write the uploaded file to the Uploads folder on Terra
-        fileData = request.FILES.get("file_data")
+        #fileData = request.FILES.get("file_data")
         file_name = fileData.name
         file_path = os.path.join(os.getcwd(), "data")
-        if not os.path.exists(file_path):
-            os.makedirs(file_path)
-        file_location = os.path.join(file_path, file_name)
-        msg_location = os.path.join(file_path, os.path.splitext(file_name)[0]+'_log.csv')
-        with open(file_location, 'wb+') as destination:
-            for chunk in fileData.chunks():
-                destination.write(chunk)
+        #if not os.path.exists(file_path):
+        #    os.makedirs(file_path)
+        #file_location = os.path.join(file_path, file_name)
+        #msg_location = os.path.join(file_path, os.path.splitext(file_name)[0]+'_log.csv')
+        #with open(file_location, 'wb+') as destination:
+        #    for chunk in fileData.chunks():
+        #        destination.write(chunk)
         upload_user = User.objects.get(id = user_id)
         upload_date = strftime("%m/%d/%Y")
 
@@ -762,8 +762,10 @@ def batch_import(request):
         WarningLogQ = []
         ErrorLogA = []
         WarningLogA = []
-        reader = csv.reader(open(file_location),delimiter=",")
-        header = next(reader)
+        #reader = csv.reader(open(file_location),delimiter=",")
+        #header = next(reader)
+        reader = []
+        header = []
         #print header, len(header), header.index("NUMBER OF PAIRS")
         data = []
         try:
@@ -989,6 +991,8 @@ def batch_import(request):
             #print "\n\n\n\n\n\n\n\n\n\n\n\nWarningQv"+str(WarningQv)
             #print str(WarningLogQ)+"\n\n\n\n\n\n\n"
         except:
+            print 'Howdy'
+
             with open(msg_location,'w') as myfile:
                 writer = csv.writer(myfile)
                 for i in range(len(data)):
@@ -1016,6 +1020,7 @@ def batch_import(request):
         for warning in WarningLogQ:
             message = message + warning + '\n'
 
+
         with open(msg_location,'w') as myfile:
             writer = csv.writer(myfile)
             for i in range(len(data)):
@@ -1037,6 +1042,7 @@ def batch_import(request):
                 message = message+tmp+'\n'
             myfile.flush()
             print message
+
         ##############################################ENDING CODE###########################################
     return render(request, "ucs/batch_import.html",{"message": message, "username": request.session.get("username")})
 
