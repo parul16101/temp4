@@ -234,13 +234,21 @@ def edit_question(request):
     user_id = request.session.get("userId")
     if not user_id:
         return render(request, "ucs/login.html")
+
+    cata_set = Category.objects.all()
+    cata_list = []
+    for cn in cata_set:
+        cata_list.append(cn.category_text)
+    cata_data = [{"category": c} for c in cata_list] 
+    json_cata = json.dumps(cata_data)
+
     qname = request.GET.get('question_name','')
     question = Question.objects.get(question_text=qname)
     owned = False
     if user_id != question.uploader_id:
         owned = True
 
-    return render(request, "ucs/edit_question.html", {"question":question, "userId": user_id, "uploaderId": question.uploader_id, "owned": owned, "username":request.session.get("username")})
+    return render(request, "ucs/edit_question.html", {"question":question, "userId": user_id, "uploaderId": question.uploader_id, "owned": owned, "username":request.session.get("username"), "cataList": json_cata})
 
 def search_question(request):
     user_id = request.session.get("userId")
@@ -293,11 +301,14 @@ def save_question(request):
         question_id = request.POST.get("question_id")
         unit = request.POST.get("unit")
         true_value = request.POST.get("true_value")
+        category = request.POST.get("category")
+        category_info = Category.objects.get(category_text = category)
         date_true_value_known = request.POST.get("date_true_value_known")
         question_text = request.POST.get("question_text")
         question = Question.objects.get(id = question_id)
         question.unit = unit
         question.true_value = true_value
+        question.category_id = category_info.id 
         question.close_date = date_true_value_known
         question.question_text = question_text
         question.save()
