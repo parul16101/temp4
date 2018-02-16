@@ -239,7 +239,7 @@ def edit_question(request):
     cata_list = []
     for cn in cata_set:
         cata_list.append(cn.category_text)
-    cata_data = [{"category": c} for c in cata_list] 
+    cata_data = [{"category": c} for c in cata_list]
     json_cata = json.dumps(cata_data)
 
     qname = request.GET.get('question_name','')
@@ -308,7 +308,7 @@ def save_question(request):
         question = Question.objects.get(id = question_id)
         question.unit = unit
         question.true_value = true_value
-        question.category_id = category_info.id 
+        question.category_id = category_info.id
         question.close_date = date_true_value_known
         question.question_text = question_text
         question.save()
@@ -586,9 +586,9 @@ def do_assignment(request):
         j = 0
         for item in answered_text:
             q_text = item.encode("utf-8")
-            filtered_question = Question.objects.get(question_text = q_text)   
+            filtered_question = Question.objects.get(question_text = q_text)
             if filtered_question.allow_assessment==False:
-                continue             
+                continue
             if filtered_question.question_type:
                 operator = 'EQ'
             else:
@@ -1026,7 +1026,7 @@ def batch_import(request):
                 myfile.flush()
                 print message
                 return HttpResponse("error \n"+message)
-            
+
 
         for warning in WarningLogQ:
             message = message + warning + '\n'
@@ -1073,7 +1073,7 @@ def scoring(request):
     if current_user.admin_user==True:
         assignment_set = Assignment.objects.all()
     else:
-        try:    
+        try:
             assignment_set = Assignment.objects.raw("select * from ucs_assignment natural join ucs_assigned_group where group_id_id = ANY(select group_id_id from ucs_group_member where user_id_id = "+str(user_id)+");")
         except:
             assignment_set = []
@@ -1142,7 +1142,7 @@ def result(request):
         answer = processRequests(request,current_user)
         print "answer\n\n\n\n",answer
         #answer = [question_type, forecast, question_purpose, question_text, true_or_false, category, user_name, group_name, assignment_name, date_submitted]
-        
+
         #write answer in the file
         #if not os.path.isdir('debug\\'):
             #os.makedirs('debug\\')
@@ -1232,7 +1232,7 @@ def processRequests(req,current_user):
         user_name = req.POST.get("user_name")
     else:
         user_name = current_user.username
-    
+
     group_name = req.POST.get("group_name")
     #print "\n\n\n\n\n\n\nusername = ", user_name
     #print "\n\n\n\n\n\n\n\n groupname = ",group_name
@@ -1240,7 +1240,7 @@ def processRequests(req,current_user):
     date_submitted = req.POST.get("date_submitted")
     answer = [question_type, forecast, question_purpose, question_text, true_or_false, category, user_name, group_name, assignment_name, date_submitted]
     print "answer \n\n",answer
-    return answer    
+    return answer
 
 def returnAssessments(answer):
     QSet = Question.objects.all()
@@ -1380,7 +1380,7 @@ def computeResults(ASet):
             totalcorr = totalcorr + bincorr
             counter.append([bins[j+1],binpercorr,bincount])
             #PLOT DATA BASED ON MIN DATA
-            if binmean > 0 or binpercorr > 0:  
+            if binmean > 0 or binpercorr > 0:
                 plot.append([round(binmean,3),round(binpercorr,3),round(bincount,3)])
             bin_data.append([bins[j+1], bincount, bincorr, binprob, binmean, binpercorr]) #For DEBUG
         ######################Dump the bins#########################
@@ -1399,7 +1399,7 @@ def computeResults(ASet):
             r = counter[j]
             print totalcount
             resolution = resolution + r[2]*(totalcorr/totalcount-r[1])**2
-        
+
         # SUMMARY OF RESULTS
         confidence = confidence / totalcount
         values['Confidence'] = confidence
@@ -1413,19 +1413,19 @@ def computeResults(ASet):
         values['Brierscore'] = brierscore
         #print "\n\n\n\n\n\n Inside post \n\n\n\n"
         #print values
-        
+
         for a in plot:
             temp = {}
             temp['x'] = round(a[0],3)
             temp['y'] = round(a[1],3)
             datapoints.append(temp)
 
-        
+
         ###############################################################
         data1 = {}
         data1['rep_message'] = 'Success'
         data1['status'] = True
-        
+
         summary_results['confidence'] = round(confidence, 3)
         summary_results['calibration'] = round(calibration, 3)
         summary_results['knowledge'] = round(knowledge, 3)
@@ -1467,5 +1467,5 @@ def processAssessments(ASet):
             if trueValue <= vAssigned:
                 data.append([trueValue,operator,vAssigned,pAssigned,1])
             else:
-                data.append([trueValue,operator,vAssigned,pAssigned,0])    
+                data.append([trueValue,operator,vAssigned,pAssigned,0])
     return data
