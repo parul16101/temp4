@@ -26,8 +26,7 @@
 					</div>
 					<div class="form-group">
 						<label class="control-label" for="category">Category</label>
-                                                <select id="category" name="category" class="form-control" style="width:50%">
-                                                    <option selected ="selected"></option>
+                                                <select id="category" name="category" class="form-control" style="width:50%" disabled> 
                                                 </select>
 					</div>
 					<div class="row">
@@ -97,8 +96,13 @@
         var category = "Default";
         var catas = {{cataList | safe}};
         var select_cata = document.getElementById("category");
+        var cata_val = "{{question.category | safe }}";
         catas.forEach(function(name, index) {
-            select_cata.options[select_cata.options.length] = new Option(name.category);
+            if( name.category == cata_val ) {
+                select_cata.options[select_cata.options.length] = new Option(name.category, name.category, false, true);
+            } else {
+                select_cata.options[select_cata.options.length] = new Option(name.category, name.category, false, false);
+            }
         });
 	function editOrSave(){
 		var editOrSave = $("#operation").val();
@@ -108,7 +112,7 @@
 			$("#unit").prop("readonly", false);
 			$("#owner").prop("readonly", false);
 			$("#true_value").prop("readonly", false);
-			$("#category").prop("readonly", false);
+                        $("#category").prop('disabled', false);
 			$("#date_true_value_known").prop("readonly", false);
 			var date_true_value_known = $('#date1 .input-group.date');
 			date_true_value_known.datepicker("enable");
@@ -118,7 +122,7 @@
 			var unit = $("#unit").val();
 			var owner = $("#owner").val();
 			var true_value = $("#true_value").val();
-			var category = $("#category").val();
+			var category = $("#category").find(":selected").text();
 			var date_true_value_known = $("#date_true_value_known").val();
 			var question_text = $("#question_text").val();
 			var csrftoken = Cookies.get("csrftoken");
@@ -147,7 +151,7 @@
 				$("#unit").prop("readonly", true);
 				$("#owner").prop("readonly", true);
 				$("#true_value").prop("readonly", true);
-				$("#category").prop("readonly", true);
+				$("#category").prop("disabled", true);
 				$("#date_true_value_known").prop("readonly", true);
 				var date_true_value_known = $('#date1 .input-group.date');
 				date_true_value_known.datepicker("disabled");

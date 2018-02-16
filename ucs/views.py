@@ -235,14 +235,12 @@ def edit_question(request):
     if not user_id:
         return render(request, "ucs/login.html")
 
-    #DJ Added category drop down to edit question Feb 9 2017
     cata_set = Category.objects.all()
     cata_list = []
     for cn in cata_set:
         cata_list.append(cn.category_text)
     cata_data = [{"category": c} for c in cata_list] 
     json_cata = json.dumps(cata_data)
-    #END of category drop down data
 
     qname = request.GET.get('question_name','')
     question = Question.objects.get(question_text=qname)
@@ -303,11 +301,14 @@ def save_question(request):
         question_id = request.POST.get("question_id")
         unit = request.POST.get("unit")
         true_value = request.POST.get("true_value")
+        category = request.POST.get("category")
+        category_info = Category.objects.get(category_text = category)
         date_true_value_known = request.POST.get("date_true_value_known")
         question_text = request.POST.get("question_text")
         question = Question.objects.get(id = question_id)
         question.unit = unit
         question.true_value = true_value
+        question.category_id = category_info.id 
         question.close_date = date_true_value_known
         question.question_text = question_text
         question.save()
