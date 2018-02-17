@@ -749,16 +749,18 @@ def batch_import(request):
     #print 'The user id is ', user_id
     if request.method == "POST":
         #Write the uploaded file to the Uploads folder on Terra
-        #fileData = request.FILES.get("file_data")
+        #os.chdir("/home/shared")
+        fileData = request.FILES.get("file_data")
         file_name = fileData.name
-        file_path = os.path.join(os.getcwd(), "data")
-        #if not os.path.exists(file_path):
-        #    os.makedirs(file_path)
-        #file_location = os.path.join(file_path, file_name)
-        #msg_location = os.path.join(file_path, os.path.splitext(file_name)[0]+'_log.csv')
-        #with open(file_location, 'wb+') as destination:
-        #    for chunk in fileData.chunks():
-        #        destination.write(chunk)
+        #file_path = os.path.join(os.getcwd(), "data")
+        file_path = os.path.join("", "tmp")
+        if not os.path.exists(file_path):
+            os.makedirs(file_path)
+        file_location = os.path.join(file_path, file_name)
+        msg_location = os.path.join(file_path, os.path.splitext(file_name)[0]+'_log.csv')
+        with open(file_location, 'wb+') as destination:
+            for chunk in fileData.chunks():
+                destination.write(chunk)
         upload_user = User.objects.get(id = user_id)
         upload_date = strftime("%m/%d/%Y")
 
