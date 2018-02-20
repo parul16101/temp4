@@ -775,10 +775,10 @@ def batch_import(request):
         WarningLogQ = []
         ErrorLogA = []
         WarningLogA = []
-        #reader = csv.reader(open(file_location),delimiter=",")
-        #header = next(reader)
-        reader = []
-        header = []
+        reader = csv.reader(open(file_location),delimiter=",")
+        header = next(reader)
+        #reader = []
+        #header = []
         #print header, len(header), header.index("NUMBER OF PAIRS")
         data = []
         try:
