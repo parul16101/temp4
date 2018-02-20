@@ -78,7 +78,7 @@
 							<div class="i-checks">
 								<label class="">
 									<div class="iradio_square-green" style="position: relative;">
-										<input type="radio" value="1" name="question_type" style="position: absolute; opacity: 0;" checked>
+										<input type="radio" id='qt1' value="1" name="question_type" style="position: absolute; opacity: 0;" checked>
 										<ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
 									</div>
 									<i></i>
@@ -86,7 +86,7 @@
 								</label>
 								<label class="">
 									<div class="iradio_square-green" style="position: relative;">
-										<input type="radio" value="0" name="question_type" style="position: absolute; opacity: 0;">
+										<input type="radio" id='qt2' value="0" name="question_type" style="position: absolute; opacity: 0;" >
 										<ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
 									</div>
 									<i></i>
@@ -95,7 +95,7 @@
 							</div>
 						</fieldset>
 					</div>
-                    <div class="form-group">
+                    <div class="form-group" id='QTA'>
                         <label class="control-label" for="T_or_F">Number of Choices?</label>
                         <fieldset>
                             <div class="i-checks">
@@ -213,6 +213,18 @@
 		$('.i-checks').iCheck({
 			checkboxClass: 'icheckbox_square-green',
 			radioClass: 'iradio_square-green',
+		});
+
+        	$('input').on('ifChanged', function (event) { 
+			$(event.target).trigger('change'); 
+		});
+                $("input[type='radio'][name='question_type']").change( function() {
+			if( $("[name='question_type'][value='0']:radio").is(':checked') ) {
+				$("#QTA").hide();
+                        } else if( !$("[name=question_type][value=1]:radio").is(':checked') ) {
+				$("#QTA").show();
+			}	
+		
 		});
 	});
 </script>
