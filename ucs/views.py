@@ -9,8 +9,8 @@ import sys
 import time
 import zipfile
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
+#reload(sys)
+#sys.setdefaultencoding('utf-8')
 import os, shutil, base64, json, hashlib, csv
 from django.shortcuts import render, redirect
 from django.template import RequestContext
@@ -753,7 +753,7 @@ def batch_import(request):
         fileData = request.FILES.get("file_data")
         file_name = fileData.name
         #file_path = os.path.join(os.getcwd(), "data")
-        file_path = os.path.join("", "tmp")
+        file_path = os.path.join("/tmp", "data")
         if not os.path.exists(file_path):
             os.makedirs(file_path)
         file_location = os.path.join(file_path, file_name)
