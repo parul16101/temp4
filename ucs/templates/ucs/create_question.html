@@ -78,7 +78,7 @@
 							<div class="i-checks">
 								<label class="">
 									<div class="iradio_square-green" style="position: relative;">
-										<input type="radio" id='qt1' value="1" name="question_type" style="position: absolute; opacity: 0;" checked>
+										<input type="radio" id="discrete_type" value="1" name="question_type" style="position: absolute; opacity: 0;" checked>
 										<ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
 									</div>
 									<i></i>
@@ -86,7 +86,7 @@
 								</label>
 								<label class="">
 									<div class="iradio_square-green" style="position: relative;">
-										<input type="radio" id='qt2' value="0" name="question_type" style="position: absolute; opacity: 0;" >
+										<input type="radio" value="0" name="question_type" style="position: absolute; opacity: 0;">
 										<ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
 									</div>
 									<i></i>
@@ -95,28 +95,28 @@
 							</div>
 						</fieldset>
 					</div>
-                    <div class="form-group" id='QTA'>
-                        <label class="control-label" for="T_or_F">Number of Choices?</label>
-                        <fieldset>
-                            <div class="i-checks">
-                                <label class="">
-                                    <div class="iradio_square-green" style="position: relative;">
-                                        <input type="radio"  value="1" name="T_or_F" style="position: absolute; opacity: 0;" checked>
-                                        <ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
-                                    </div>
-                                    <i></i>
-                                    2 &nbsp;&nbsp;&nbsp;&nbsp;
-                                </label>
-                                <label class="">
-                                    <div class="iradio_square-green" style="position: relative;">
-                                        <input type="radio" value="0" name="T_or_F" style="position: absolute; opacity: 0;">
-                                        <ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
-                                    </div>
-                                    <i></i> 
-                                    2+
-                                </label>
-                            </div>
-                        </fieldset>
+                    <div class="form-group" id="QTA">
+	                    <label class="control-label" for="T_or_F">Number of Choices?</label>
+	                    <fieldset>
+	                        <div class="i-checks" id="num_of_choice">
+	                            <label class="">
+	                                <div class="iradio_square-green" style="position: relative;">
+	                                    <input type="radio" value="1" name="T_or_F" style="position: absolute; opacity: 0;" checked>
+	                                    <ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
+	                                </div>
+	                                <i></i>
+	                                2 &nbsp;&nbsp;&nbsp;&nbsp;
+	                            </label>
+	                            <label class="">
+	                                <div class="iradio_square-green" style="position: relative;">
+	                                    <input type="radio" value="0" name="T_or_F" style="position: absolute; opacity: 0;">
+	                                    <ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
+	                                </div>
+	                                <i></i> 
+	                                2+
+	                            </label>
+	                        </div>
+	                    </fieldset>
                     </div>
 				</div>
 			</div>
@@ -125,42 +125,74 @@
 					<h1 style = "float:middle;">Question Specification, Page 2/2</h1>
 				</div>
 				<div  class="form-group">
-					<label class="control-label" for="description">Question Text (for adding choices to discrete questions, use *** as the delimiter)</label>
-					<input type = "text" id="question_text" name="question_text" class="form-control"  placeholder="Place your question text here" onfocus="this.placeholder=''" onblur="this.placeholder='Place your question description here'" maxlength="300" required=""></input>
-				</div>
-				<div class="form-group" id="date1">
-					<label class="control-label" for="due_date">Date the True Value Will Be Known</label>
-					<div class="input-group date">
-						<span class="input-group-addon"><i class="fa fa-calendar"></i></span><input type="text" id="closing_date" name="closing_date" placeholder="When will the true value be revealed?" class="form-control" style ="Width:40%">
-					</div>
-				</div>
-				<div class="col-sm-4">
-					<div class="form-group">
-						<label class="control-label" for="upload_date">True Value</label>
-						<input type="text" id="true_value" class="form-control" >
-					</div>
-				</div>
-				<div class="col-sm-8">
-					<div class="form-group">
-						<label>Unit</label>
-						<input type="text" id= "unit" name="unit" placeholder="N/A" onfocus="this.placeholder=''" onblur="this.placeholder='N/A'" class="form-control" style ="Width:20%"></input>
-					</div>
+					<label class="control-label" for="description">Question Text</label>
+					<!-- <input type = "text" id="question_text" name="question_text" class="form-control"  placeholder="Place your question text here" onfocus="this.placeholder=''" onblur="this.placeholder='Place your question description here'" maxlength="300" required=""></input> -->
+					<textarea id="question_text" name="question_text" class="form-control" placeholder="Place your question text here..." onfocus="this.placeholder=''" onblur="this.placeholder='Place your question text here...'" rows="2"></textarea>
 				</div>
 				<div class="form-group">
+					<label id="questionChoicesLabel" class="control-label" for="T_or_F">Question Choices</label>
+					<div class="table-responsive">
+						<table class="table table-striped table-bordered " id="OptionTable">
+							<thead>
+								<tr>
+									<th style="font-size:12" width="60">#</th>
+									<th style="font-size:12" width="100">Option Text</th>
+								</tr>
+							</thead>
+						</table>
+						<button class="btn btn-primary btn-xs my-xs-btn" type="button" style="margin-top:0.5%" id="add_option" onClick="add_option()"><span class="fa fa-plus"></span> add a new option</button>
+						<button class="btn btn-primary btn-xs my-xs-btn" type="button" style="margin-top:0.5%" id="del_option" onClick="del_option()"><span class="fa fa-minus"></span> delete an option</button>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-sm-6">
+						<div class="form-group">
+							<label id="trueValueLabel" class="control-label" for="upload_date">True Value</label>
+							<input type="text" id="true_value" class="form-control" style ="Width:20%">
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<div class="form-group">
+							<label>Unit</label>
+							<input type="text" id= "unit" name="unit" placeholder="N/A" onfocus="this.placeholder=''" onblur="this.placeholder='N/A'" class="form-control" style ="Width:20%"></input>
+						</div>
+					</div>
+				</div>
+				<!-- <div class="form-group">
 					<label class="control-label" for="T_or_F">Number of Choices</label>
-					<input type="number" id= "numberofchoice" name="numberofchoice" min="3" style ="Width:7%"></input>
+					<input type="number" id="numberofchoice" name="numberofchoice" min="3" style ="Width:7%"></input>
+				</div> -->
+				<div class="row">
+					<div class="col-sm-6">
+						<div class="form-group" id="date1">
+							<label class="control-label" for="due_date">Date the True Value Will Be Known</label>
+							<div class="input-group date">
+								<span class="input-group-addon"><i class="fa fa-calendar"></i></span><input type="text" id="closing_date" name="closing_date" placeholder="When will the true value be revealed?" class="form-control" style ="Width:50%">
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<div class="form-group">
+							<label class="control-label" for="category">Category</label>
+							<select id="category" name="category" placeholder="The category of the question" class="form-control" style ="Width:50%"></select>
+						</div>
+					</div>
 				</div>
-				<div class="form-group">
-					<label class="control-label" for="category">Category</label>
-					<select id="category" name="category" placeholder="The category of the question" class="form-control" style ="Width:20%"></select>
-				</div>
-				<div  class="form-group">
-					<label class="control-label" for="description">Question Source</label>
-					<textarea id="question_description" name="question_description" class="form-control" placeholder="Place the question source here..." onfocus="this.placeholder=''" onblur="this.placeholder='Place your question hint here...'" rows="2"></textarea>
-				</div>
-				<div  class="form-group">
-					<label class="control-label" for="question_resource">Answer Source</label>
-					<textarea id="question_resource" name="question_resource" class="form-control" placeholder="Place the answer source here..." onfocus="this.placeholder=''" onblur="this.placeholder='Place your question resource here...'" rows="2"></textarea>
+				<div class="row">
+					<div class="col-sm-6">
+						<div  class="form-group">
+							<label class="control-label" for="description">Question Source</label>
+							<!-- <textarea id="question_description" name="question_description" class="form-control" placeholder="Place the question source here..." onfocus="this.placeholder=''" onblur="this.placeholder='Place your question hint here...'" rows="2"></textarea> -->
+							<input type = "text" id="question_description" name="question_description" class="form-control"  placeholder="Place the question source here..." onfocus="this.placeholder=''" onblur="this.placeholder='Place the question source here...'" maxlength="50" required=""></input>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<div  class="form-group">
+							<label class="control-label" for="question_resource">Answer Source</label>
+							<!-- <textarea id="question_resource" name="question_resource" class="form-control" placeholder="Place the answer source here..." onfocus="this.placeholder=''" onblur="this.placeholder='Place your question resource here...'" rows="2"></textarea> -->
+							<input type = "text" id="question_resource" name="question_resource" class="form-control"  placeholder="Place the answer source here..." onfocus="this.placeholder=''" onblur="this.placeholder='Place the answer source here...'" maxlength="50" required=""></input>
+						</div>
+					</div>
 				</div>
 				<div class="form-group">
 					<label class="control-label" for="allow_assessment">Allow Assessment?</label>
@@ -188,8 +220,7 @@
 			</div>
 			<button type="button" id="prev" class="btn btn-success" style="width:20%">Previous</button>
 			<button type="button" id="next" class="btn btn-success" style="width:20%">Next</button>
-            
-			<input type = "button" id = "submit" value="Submit" class="btn btn-success" style="width:20%;float:right">
+            <input type = "button" id = "submit" value="Submit" class="btn btn-success" style="width:20%;float:right">
 		</div>
 	</div>
 </div>
@@ -214,18 +245,17 @@
 			checkboxClass: 'icheckbox_square-green',
 			radioClass: 'iradio_square-green',
 		});
-
-        	$('input').on('ifChanged', function (event) { 
-			$(event.target).trigger('change'); 
-		});
-                $("input[type='radio'][name='question_type']").change( function() {
-			if( $("[name='question_type'][value='0']:radio").is(':checked') ) {
-				$("#QTA").hide();
-                        } else if( !$("[name=question_type][value=1]:radio").is(':checked') ) {
-				$("#QTA").show();
-			}	
-		
-		});
+		$('input').on('ifChanged', function (event) { 
+            $(event.target).trigger('change'); 
+        });
+        $("input[type='radio'][name='question_type']").change( function() {
+            if( $("[name='question_type'][value='0']:radio").is(':checked') ) {
+                $("#QTA").hide();
+            }
+            else if( !$("[name=question_type][value=1]:radio").is(':checked') ) {
+                $("#QTA").show();
+            }
+        });
 	});
 </script>
 
@@ -262,41 +292,48 @@
 	var allow_assessment = 1;
 	var datas = {{dataList | safe}};
 	var select = document.getElementById("category");
+	var add_button = document.getElementById("add_option");
+	var del_button = document.getElementById("del_option");
+	var tableRef = document.getElementById("OptionTable");
 	datas.forEach(function(name, index) {
 		select.options[select.options.length] = new Option(name.category_list);
 	});
+	
 	$("#submit").click(function (){
+		//things to do on click
 		get_value();
-
-		var options = question_text.split("***");
-		var x = 0;
-		var y = +true_or_false + 1;
-		x = options.length;
-		console.log(x);
-		console.log(y);
-		if(x==y)
-		{
-			console.log(options);
-			var i=0;
-			for(;i<x;i++)
-			{
-				if(options[i].trim()=="")
-				{
-					break;
+		
+		if(question_text == ""){
+			alert("Question text should not be empty!")
+		}
+		else{
+			var options = question_text.split("***");
+			var x = 0;
+			var y = +true_or_false + 1;
+			x = options.length;
+			console.log(x);
+			console.log(y);
+			if(x==y){
+				console.log(options);
+				var i=0;
+				for(;i<x;i++){
+					if(options[i].trim()==""){
+						break;
+					}
+				}
+				if(i==x){
+					//alert(question_text);
+					//Uncomment the following after DEMO
+					insert_1();
+				}
+				else{
+					alert("Option value can't be empty.");
 				}
 			}
-			if(i==x)
-			{
-				insert_1();
-			}
-			else
-			{
-				alert("Option value can't be empty.");
+			else{
+				alert("Enter Valid number of options");
 			}
 		}
-		else
-			alert("Enter Valid number of options");
-		//things to do on click
 	});
 	function get_value(){
 		question_text = document.getElementById("question_text").value;
@@ -314,10 +351,23 @@
 		question_purpose = document.querySelector('input[name = "corporate_training"]:checked').value;
 		
 		if(question_type == 1 && true_or_false == 1){
+			if(question_text != ""){
+				for(var i = 1;i < 3;i++){
+					var option = tableRef.rows[i].cells[1].children[0].value;
+					question_text = question_text+'***'+option
+				}
+			}
 			true_or_false = 2;
 		}
 		else if(question_type == 1 && true_or_false == 0){
-			true_or_false = document.getElementById("numberofchoice").value;
+			//true_or_false = document.getElementById("numberofchoice").value;
+			if(question_text != ""){
+				for(var i = 1;i < tableRef.rows.length;i++){
+					var option = tableRef.rows[i].cells[1].children[0].value;
+					question_text = question_text+'***'+option
+				}
+			}
+			true_or_false = tableRef.rows.length-1;
 		}
 		else{
 			true_or_false = 0;
@@ -327,46 +377,45 @@
 		allow_assessment = document.querySelector('input[name = "allow_assessment"]:checked').value;
 	}
 	function insert_1(){
-		if(question_text == ""){
-			alert("Question title should not be empty!")
+		/*if(question_text == ""){
+			alert("Question text should not be empty!")
 			return false;
-		}
-		else{
-			$.ajax({
-				type:"POST",
-				url:"/create_question/",
-				data: {
-					csrfmiddlewaretoken: "{{ csrf_token }}",
-					'question_text': question_text, // from form
-					'question_description': question_description, // from form
-					'question_resource':question_resource,
-					'uploader':uploader,
-					'closing_date':closing_date,
-					'upload_date':upload_date,
-					'category':category,
-					'true_value':true_value,
-					'question_type':question_type,
-					'forecast':forecast,
-					'question_purpose':question_purpose,
-					'allow_assessment':allow_assessment,
-					'true_or_false':true_or_false,
-					'unit':unit,
-				},
-				success: function(data) {
-					if (data.status){
-						alert(data.rep_message);
-						window.location.replace("/search_question/");
-					}
-					else if (!data.status){
-						alert(data.rep_message);
-						document.getElementById("question_text").value = "";
-						//location.reload();
-						//window.location.replace("/search_question/");
-					}
-				},
-			});
-			return false;
-		}
+		}*/
+		$.ajax({
+			type:"POST",
+			url:"/create_question/",
+			data: {
+				csrfmiddlewaretoken: "{{ csrf_token }}",
+				'question_text': question_text, // from form
+				'question_description': question_description, // from form
+				'question_resource':question_resource,
+				'uploader':uploader,
+				'closing_date':closing_date,
+				'upload_date':upload_date,
+				'category':category,
+				'true_value':true_value,
+				'question_type':question_type,
+				'forecast':forecast,
+				'question_purpose':question_purpose,
+				'allow_assessment':allow_assessment,
+				'true_or_false':true_or_false,
+				'unit':unit,
+			},
+			success: function(data) {
+				if (data.status){
+					alert(data.rep_message);
+					window.location.replace("/search_question/");
+				}
+				else if (!data.status){
+					alert(data.rep_message);
+					document.getElementById("question_text").value = "";
+					//location.reload();
+					//window.location.replace("/search_question/");
+				}
+			},
+		});
+		
+		return false;
 	}
 	$(document).ready(function() {
 		$('#date1 .input-group.date').datepicker({
@@ -379,21 +428,9 @@
 	});
 </script>
 <script>
-	function delete_group(element){
-		if(true_or_false == true){
-			var cell = element.parentNode.parentNode.rowIndex;
-			if(cell == 2){
-				document.getElementById("optionTable").deleteRow(cell-1)
-			}
-			else{
-				document.getElementById("optionTable").deleteRow(cell+1)
-			}
-			document.getElementById("optionTable").deleteRow(cell)
-		}
-		else{
-			var cell = element.parentNode.parentNode.rowIndex;
-			document.getElementById("optionTable").deleteRow(cell)
-		}
+	function delete_option(element){
+		var cell = element.parentNode.parentNode.rowIndex;
+		document.getElementById("OptionTable").deleteRow(cell);
 	}
 	$("#prev").hide();
 	$("#submit").hide();
@@ -401,19 +438,60 @@
 	$("#next").click(function () {
 		var question_type = document.querySelector('input[name = "question_type"]:checked').value;
 		var true_or_false = document.querySelector('input[name = "T_or_F"]:checked').value;
+		var tableRef = document.getElementById("OptionTable");
+		var tableLab = document.getElementById("questionChoicesLabel");
+		var num = tableRef.rows.length;
+		var true_value_label = document.getElementById("trueValueLabel");
+		
+		//Reset option table
+		for(i = num - 1; i > 0; i--){
+			tableRef.deleteRow(i);
+		}
+		tableLab.style.display = "block";
+		tableRef.style.display = "block";
+		
 		if(question_type == 1 && true_or_false == 1){
-			document.getElementById("numberofchoice").placeholder = '2';
-			document.getElementById("numberofchoice").disabled = true;
+			for (i = 0; i < 2; i++) {
+				var newRow = tableRef.insertRow(1);
+				var newCell_1  = newRow.insertCell(0);
+				var newText1 = document.createTextNode(2-i);
+				newCell_1.appendChild(newText1);
+				
+				var newCell_2  = newRow.insertCell(1);
+				newCell_2.innerHTML = '<input type="text" class="form-control"></input>';
+			}
+			add_button.disabled = true;
+			add_button.style.visibility = "hidden";
+			del_button.disabled = true;
+			del_button.style.visibility = "hidden";
+			true_value_label.innerHTML = 'True Value (enter the choice number, e.g., 2, of the true value)';
 		}
 		else if(question_type == 1 && true_or_false == 0){
-			document.getElementById("numberofchoice").value = '3';
-			document.getElementById("numberofchoice").disabled = false;
+			//Default 3 options for 2+
+			for (i = 0; i < 3; i++) {
+				var newRow = tableRef.insertRow(1);
+				var newCell_1  = newRow.insertCell(0);
+				var newText1 = document.createTextNode(3-i);
+				newCell_1.appendChild(newText1);
+				
+				var newCell_2  = newRow.insertCell(1);
+				newCell_2.innerHTML = '<input type="text" class="form-control"></input>';
+			}
+			add_button.disabled = false;
+			add_button.style.visibility = "visible";
+			del_button.disabled = true;
+			del_button.style.visibility = "hidden";
+			true_value_label.innerHTML = 'True Value (enter the choice number, e.g., 2, of the true value)';
 		}
 		else {
-			document.getElementById("numberofchoice").placeholder = 'N/A';
-			document.getElementById("numberofchoice").disabled = true;
+			tableLab.style.display = "none";
+			tableRef.style.display = "none";
+			add_button.disabled = true;
+			add_button.style.visibility = "hidden";
+			del_button.disabled = true;
+			del_button.style.visibility = "hidden";
+			true_value_label.innerHTML = 'True Value';
 		}
-		
 		var current = $(".qn:visible"), 
 			total = $(".qn").length, 
 			last = $(".qn:last");
@@ -445,32 +523,29 @@
 </script>
 <script src="{% static 'ucs/js/plugins/validate/jquery.validate.min.js'%}"></script>
 <script>
-	$("#add").click(function () {
-		var b = document.getElementById("new_prob").value;
-		var c = document.getElementById("new_val").value;
-		var d = document.getElementById("unit").value;
-		var tableRef = document.getElementById("optionTable");
+	$("#add_option").click(function () {
 		var num = tableRef.rows.length;
 		var newRow = tableRef.insertRow(num);
-		var newCell_1 = newRow.insertCell(0);
-		var newText1  = document.createTextNode(b);
-		newCell_1.appendChild(newText1);
+		
+		var newCell_1  = newRow.insertCell(0);
+        var newText1 = document.createTextNode(num);
+        newCell_1.appendChild(newText1);
 		
 		var newCell_2  = newRow.insertCell(1);
-		var newText2  = document.createTextNode("%");
-		newCell_2.appendChild(newText2);
+		newCell_2.innerHTML = '<input type="text" class="form-control"></input>';
 		
-		var newCell_3  = newRow.insertCell(2);
-		var newText3 = document.createTextNode(c);
-		newCell_3.appendChild(newText3);
-		
-		var newCell_4  = newRow.insertCell(3);
-		var newText4  = document.createTextNode(d);
-		newCell_4.appendChild(newText4);
-		
-		var newCell_6  = newRow.insertCell(4);
-		newCell_6.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="delete_group(this)" >'
-		+'<span class="fa fa-times"></span>delete</button>';
+		if(num+1 > 4) {
+			del_button.disabled = false;
+			del_button.style.visibility = "visible";
+		}
+	});
+	$("#del_option").click(function () {
+		var num = tableRef.rows.length;
+		document.getElementById("OptionTable").deleteRow(num-1);
+		if(num-1 == 4) {
+			del_button.disabled = true;
+			del_button.style.visibility = "hidden";
+		}
 	});
 </script>
 {% endblock %}
