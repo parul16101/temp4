@@ -749,11 +749,9 @@ def batch_import(request):
     #print 'The user id is ', user_id
     if request.method == "POST":
         #Write the uploaded file to the Uploads folder on Terra
-        #os.chdir("/home/shared")
         fileData = request.FILES.get("file_data")
         file_name = fileData.name
-        #file_path = os.path.join(os.getcwd(), "data")
-        file_path = os.path.join("/tmp", "data")
+        file_path = os.path.join(os.getcwd(), "data")
         if not os.path.exists(file_path):
             os.makedirs(file_path)
         file_location = os.path.join(file_path, file_name)
@@ -777,12 +775,11 @@ def batch_import(request):
         WarningLogA = []
         reader = csv.reader(open(file_location),delimiter=",")
         header = next(reader)
-        #reader = []
-        #header = []
         #print header, len(header), header.index("NUMBER OF PAIRS")
         data = []
         try:
-            if header.index("NUMBER OF PAIRS") == 15:
+            print header
+            if "NUMBER OF PAIRS" in header and header.index("NUMBER OF PAIRS") == 15:
                 for row in reader:
                     ErrorQv = 0
                     WarningQv = 0
@@ -798,17 +795,27 @@ def batch_import(request):
                             # ADD A VALIDATION FOR QUESTIONS THAT ARE FORECAST
                             # [TODO] NEED TO CHANGE FINALIZE THE HEADING FORMAT
                             QuestionUse = str(row[1])											## training *
+                            #print 'QuestionUse:', QuestionUse
                             QForecast = str(row[2]).title()										## forecast *
+                            #print 'QForecast: ', QForecast
                             QuestionType = str(row[3]).title()									## question_type *
+                            #print 'QuestionType: ', QuestionType
                             NoOfChoices = int(row[4])											## num_of_choices *
+                            #print 'NoOfChoices: ', NoOfChoices
                             QCategory = unicode(str(row[5]).strip(), errors='replace')			## category *
+                            #print 'QCategory: ', QCategory
                             QuestionText = unicode(str(row[6]).strip(), errors='replace')		## question_text *
+                            #print 'QuestionText: ', QuestionText
                             DateTrueValueKnown = str(row[7])									## close_date *
-                            #print "@@@@"+DateTrueValueKnown;
+                            #print "DateTrueValueKnown: ", DateTrueValueKnown;
                             TrueValue = unicode(str(row[8]).strip(), errors='replace')			## true_value *
+                            #print 'TrueValue: ', TrueValue
                             Units = unicode(str(row[9]).strip(), errors='replace')				## unit *
+                            #print 'Units: ', Units
                             QuestionSource = unicode(str(row[10]).strip(), errors='replace')	## question_source
+                            #print 'QuestionSource: ', QuestionSource
                             AllowAssessment = str(row[11]).title()								## allow_assessment
+                            #print 'AllowAssessment: ', AllowAssessment
                         else:
                             ErrorQv+=1
                             ErrorLogQ.insert(reader.line_num, ErrorQ[1] + str(reader.line_num))
@@ -820,13 +827,11 @@ def batch_import(request):
                             WarningLogQ.insert(reader.line_num, WarningQ[4] + str(reader.line_num))
                             newCategory = Category(category_text = QCategory, num_of_question = 0)
                             newCategory.save()
-                    #@
                     CategoryObj = Category.objects.get(category_text = QCategory)
                     if ErrorQv == 0:
                         # Check if question exists in database
-                        Q = Question.objects.filter(question_text = QuestionText).filter(close_date = DateTrueValueKnown).filter(num_of_choices = NoOfChoices)
-                        #.filter(category = CategoryObj)  ####ERROR####
-                        if len(Q) == 0:
+                        QSet = Question.objects.filter(question_text = QuestionText)
+                        if len(QSet) == 0:
                             # Question does not exist in the database add question
                             # UPDATE FIELDS
                             newQuestion = Question(question_text = QuestionText, uploader_id = upload_user, upload_date = upload_date,
@@ -835,33 +840,25 @@ def batch_import(request):
                                 question_source = QuestionSource, allow_assessment = AllowAssessment)
                             newQuestion.save()
                         # Question exists then update true value/units
-                        elif TrueValue:
-                            QTrueValue = Q.filter(true_value = TrueValue)
-                            TrueValueSystem = QTrueValue.values('true_value')
-                            if TrueValueSystem == '':
-                                Q.update(true_value = TrueValue)
-                                WarningQv += 1
-                                WarningLogQ.insert(reader.line_num, WarningQ[0] + str(reader.line_num))
-                            elif TrueValueSystem != TrueValue:
-                                WarningQv += 1
-                                WarningLogQ.insert(reader.line_num, WarningQ[1] + str(reader.line_num))
-                        elif Units:
-                            QTrueUnits = Q.filter(unit = Units)
-                            TrueUnitsSystem = QTrueUnits.values(unit)
-                            if TrueUnitsSystem == '':
-                                Q.update(unit = Units)
-                                WarningQv +=1
-                                WarningLogQ.insert(reader.line_num, WarningQ[2] + str(reader.line_num))
-                            elif TrueUnitsSystem != TrueValue:
-                                WarningQv +=1
-                                WarningLogQ.insert(reader.line_num, WarningQ[3] + str(reader.line_num))
-
-                        QSet = Question.objects.filter(question_text=QuestionText).filter(close_date=DateTrueValueKnown).filter(
-                            category=CategoryObj).filter(num_of_choices=NoOfChoices)
-                        #print QSet
-                        QuestionID = Question.objects.get(id = QSet)
-                        print QuestionID
-                        print QuestionID.category
+                        else:
+                            Q = Question.objects.get(question_text=QuestionText)
+                            if TrueValue:
+                                print 'TrueValueSystem: ', Q.true_value
+                                if Q.true_value != TrueValue:
+                                    Question.objects.filter(id=Q.id).update(true_value = TrueValue)
+                                    WarningQv += 1
+                                    WarningLogQ.insert(reader.line_num, WarningQ[0] + str(reader.line_num))
+                            if Units:
+                                print 'TrueUnitsSystem: ', Q.unit
+                                if Q.unit == '':
+                                    Question.objects.filter(id=Q.id).update(unit = Units)
+                                    WarningQv +=1
+                                    WarningLogQ.insert(reader.line_num, WarningQ[2] + str(reader.line_num))
+                                elif Q.unit != Units:
+                                    WarningQv +=1
+                                    WarningLogQ.insert(reader.line_num, WarningQ[3] + str(reader.line_num))
+                        QuestionID = Question.objects.get(question_text=QuestionText)
+                        print 'QuestionID: ', QuestionID
                     # Does not allow the import of an Assessment unless the question information is available
                     if ErrorQv == 0:
                         ErrorAv = 0
@@ -976,87 +973,47 @@ def batch_import(request):
                                     ).filter(option_text = val[i]).filter(date_of_assessment = DateOfAssessment
                                     ).filter(details_of_assessment = DetailsOfAssessment)
                                 if len(A) == 0:
-                                    pass
-                                    print QuestionID
                                     #Assessment does not exist in the database add question
                                     newAssessment = Assessment(question_id=QuestionID, user_id = upload_user, answer_text = prob[i],
                                         option_text = val[i], operator = Operator, date_of_assessment = DateOfAssessment,
                                         details_of_assessment = DetailsOfAssessment)
                                     newAssessment.save()
-                                # Question exists then update true vlaue/units
-                                elif DetailsOfAssessment:
-                                    AssessmentDetails = A.filter(details_of_assessment = DetailsOfAssessment)
-                                    AssessmentDetailsSystem = AssessmentDetails.values('details_of_assessment')
-                                    if AssessmentDetailsSystem == '':
-                                        A.update(details_of_assessment = DetailsOfAssessment)
-                                        WarningQv += 1
-                                        WarningLogQ.insert(reader.line_num, WarningQ[1] + str(reader.line_num))
-                                    elif TrueValueSystem != TrueValue:
-                                        WarningQv += 1
-                                        WarningLogQ.insert(reader.line_num, WarningQ[2] + str(reader.line_num))
-
                 for warning in WarningLogQ:
                     message = message + warning + '\n'
-                if message!="":
-                    return HttpResponse("success")
+                if message != "":
+                    return HttpResponse(' Warning: \n'+message)
                 else:
-                    return HttpResponse("success \n Warning: " +message)
-            #print "\n\n\n\n\n\n\n\n\n\n\n\nWarningQv"+str(WarningQv)
-            #print str(WarningLogQ)+"\n\n\n\n\n\n\n"
-        except:
-            print 'Howdy'
-
+                    return HttpResponse("success")
+            return HttpResponse("warning")
+        except Exception, e:
             with open(msg_location,'w') as myfile:
                 writer = csv.writer(myfile)
-                for i in range(len(data)):
-                    #print(data[i])
-                    writer.writerow(data[i])
-                    tmp = ' '.join(str(x) for x in data[i])
-                    message = message+tmp+'\n'
-                writer.writerow(["Error Log for Assessments"])
-                message = message+"\n Error Log for Assessments: \n"
-                for i in range(len(ErrorLogA)):
-                    writer.writerow([ErrorLogA[i]])
-                    tmp = ' '.join(str(x) for x in ErrorLogA[i])
-                    message = message+tmp+'\n'
-                writer.writerow(["ErrorLog Log for Questions"])
-                message = message+"\n ErrorLog Log for Questions: \n"
-                for i in range(len(ErrorLogQ)):
-                    writer.writerow([ErrorLogQ[i]])
-                    tmp = ' '.join(str(x) for x in ErrorLogQ[i])
-                    message = message+tmp+'\n'
+                if len(data) > 0:
+                    writer.writerow(["Error Log for Assessments"])
+                    message = message+"\n Error Log for Assessments: \n"
+                    for i in range(len(data)):
+                        #print(data[i])
+                        writer.writerow(data[i])
+                        tmp = ' '.join(str(x) for x in data[i])
+                        message = message+tmp+'\n'
+                if len(ErrorLogA) > 0:
+                    writer.writerow(["Error Log for Assessments"])
+                    message = message+"\n Error Log for Assessments: \n"
+                    for i in range(len(ErrorLogA)):
+                        writer.writerow([ErrorLogA[i]])
+                        tmp = ' '.join(str(x) for x in ErrorLogA[i])
+                        message = message+tmp+'\n'
+                if len(ErrorLogQ) > 0:
+                    writer.writerow(["ErrorLog Log for Questions"])
+                    message = message+"\n Error Log for Questions: \n"
+                    for i in range(len(ErrorLogQ)):
+                        writer.writerow([ErrorLogQ[i]])
+                        tmp = ' '.join(str(x) for x in ErrorLogQ[i])
+                        message = message+tmp+'\n'
                 myfile.flush()
                 print message
-                return HttpResponse("error \n"+message)
-
-
-        for warning in WarningLogQ:
-            message = message + warning + '\n'
-
-
-        with open(msg_location,'w') as myfile:
-            writer = csv.writer(myfile)
-            for i in range(len(data)):
-                #print(data[i])
-                writer.writerow(data[i])
-                tmp = ' '.join(str(x) for x in data[i])
-                message = message+tmp+'\n'
-            writer.writerow(["Error Log for Assessments"])
-            message = message+"\n Error Log for Assessments: \n"
-            for i in range(len(ErrorLogA)):
-                writer.writerow([ErrorLogA[i]])
-                tmp = ' '.join(str(x) for x in ErrorLogA[i])
-                message = message+tmp+'\n'
-            writer.writerow(["ErrorLog Log for Questions"])
-            message = message+"\n ErrorLog Log for Questions: \n"
-            for i in range(len(ErrorLogQ)):
-                writer.writerow([ErrorLogQ[i]])
-                tmp = ' '.join(str(x) for x in ErrorLogQ[i])
-                message = message+tmp+'\n'
-            myfile.flush()
-            print message
-
-        ##############################################ENDING CODE###########################################
+                return HttpResponse("error"+'\n'+message+'\n'+str(e))
+    ##############################################ENDING CODE###########################################
     return render(request, "ucs/batch_import.html",{"message": message, "username": request.session.get("username")})
 
 def scoring(request):

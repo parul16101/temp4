@@ -151,11 +151,24 @@
 					$("textarea#debug_text").val("Uploading data...");
 				});
 				this.on("success", function(file, response){
-					if (response[0] == 'e')
+					if (response[0] == 'w')
+					{
+						swal({
+							title:"Warning",
+							text: "File could not be uploaded. Please check your file format.",
+							type: "warning",
+							confirmButtonClass: 'btn btn-primary m-b buttonWidth',
+							buttonsStyling: false
+						}).then(function(){
+							$(location).prop("href", "{%url 'batch_import'%}")
+						});;
+						//$("textarea#debug_text").val(response);
+					}
+					else if (response[0] == 'e')
 					{
 						swal({
 							title:"Error",
-							text: "File Could not be uploaded.",
+							text: "An error happends while uploading the file!",
 							type: "error",
 							confirmButtonClass: 'btn btn-primary m-b buttonWidth',
 							buttonsStyling: false
@@ -164,11 +177,24 @@
 						});;
 						$("textarea#debug_text").val(response);
 					}
+					else if (response[0] == 's')
+					{
+						swal({
+							title:"Success",
+							text: "File uploaded successfully!",
+							type: "success",
+							confirmButtonClass: 'btn btn-primary m-b buttonWidth',
+							buttonsStyling: false
+						}).then(function(){
+							$(location).prop("href", "{%url 'batch_import'%}")
+						});;
+						//$("textarea#debug_text").val(response);
+					}
 					else
 					{
 						swal({
 							title:"Success",
-							text: "Publication got uploaded successfully!",
+							text: "File uploaded successfully!",
 							type: "success",
 							confirmButtonClass: 'btn btn-primary m-b buttonWidth',
 							buttonsStyling: false
@@ -180,9 +206,9 @@
 				});
 				this.on("error", function(file, response){
 					swal({
-						title:"",
-						text: "File Could not be uploaded. Please try again with appropriate file format.",
-						type: "warning",
+						title:"Error",
+						text: "Unknown exception!",
+						type: "error",
 						confirmButtonClass: 'btn btn-primary m-b buttonWidth',
 						buttonsStyling: false
 					}).then(function(){
