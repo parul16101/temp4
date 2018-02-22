@@ -148,7 +148,7 @@
 					<div class="col-sm-6">
 						<div class="form-group">
 							<label id="trueValueLabel" class="control-label" for="upload_date">True Value</label>
-							<input type="text" id="true_value" class="form-control" style ="Width:20%">
+							<input type="text" id="true_value" class="form-control" style ="Width:15%" onkeypress="return isNumberKey(event)"></input>
 						</div>
 					</div>
 					<div class="col-sm-6">
@@ -335,6 +335,13 @@
 			}
 		}
 	});
+	//For keyboard restriction
+	function isNumberKey(evt) {
+		var charCode = (evt.which) ? evt.which : evt.keyCode;
+		if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57))
+			return false;
+		return true;
+	}
 	function get_value(){
 		question_text = document.getElementById("question_text").value;
 		unit = document.getElementById("unit").value;
