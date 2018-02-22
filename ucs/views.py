@@ -751,8 +751,8 @@ def batch_import(request):
         #Write the uploaded file to the Uploads folder on Terra
         fileData = request.FILES.get("file_data")
         file_name = fileData.name
-        file_path = os.path.join(os.getcwd(), "data")
-        #file_path = os.path.join("/tmp", "data") #Uncommnet this when complete fixing
+        #file_path = os.path.join(os.getcwd(), "data")
+        file_path = os.path.join("/tmp", "data") #Uncommnet this when complete fixing
         if not os.path.exists(file_path):
             os.makedirs(file_path)
         file_location = os.path.join(file_path, file_name)
