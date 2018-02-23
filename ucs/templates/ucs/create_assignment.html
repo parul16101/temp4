@@ -50,10 +50,10 @@
 					</div>
 					<div class="table-responsive">
 						<div class="bodycontainer scrollable">
-							<table class="sortable table table-striped table-bordered table-hover table-scrollable" id="QuestionTable">
+							<table class="sortable table table-striped table-bordered table-hover table-scrollable dataTables-example" id="QuestionTable">
 								<thead>
 									<tr>
-										<th><input type="checkbox" name="select-all" id="select-all" /></th>
+										<th><button type="button" name="select-all" id="select-all" value="0" > All</button></th>
 										<th>Question Text</th>
 										<th>Category</th>
 									</tr>
@@ -104,8 +104,8 @@
 <!-- Custom and plugin javascript -->
 <script src="{% static 'ucs/js/inspinia.js' %}"></script>
 <script src="{% static 'ucs/js/plugins/pace/pace.min.js' %}"></script>
-<script src="{% static 'ucs/js/plugins/dataTables/datatables.min.js' %}"></script>
-
+<script src="{% static 'ucs/js/plugins/dataTables/datatables.min.js' %}"></script> 
+<html>
 <!-- iCheck -->
 <script src="{% static 'ucs/js/plugins/iCheck/icheck.min.js' %}"></script>
 
@@ -121,9 +121,30 @@
 <script src="{% static 'ucs/js/plugins/datapicker/jquery.tableCheckbox.js' %}"></script>
 <script src="{% static 'ucs/js/plugins/validate/jquery.validate.min.js'%}"></script>
 
+<!-- Send Email -->
+<script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
+
 <!-- http://www.applicationgroup.com/tutorials/DualListBox/DualListBox_JS_Source.asp -->
 <script>
 	$(document).ready(function() {
+		$('.dataTables-example').DataTable({
+			dom: '<"html5buttons"B>lTfgitp',
+			buttons: [
+				{extend: 'copy'},
+				{extend: 'csv'},
+				{extend: 'excel', title: 'ExampleFile'},
+				{extend: 'pdf', title: 'ExampleFile'},
+				{extend: 'print',
+					customize: function (win){
+						$(win.document.body).addClass('white-bg');
+						$(win.document.body).css('font-size', '10px');
+						$(win.document.body).find('table')
+						.addClass('compact')
+						.css('font-size', 'inherit');
+					}
+				}
+			]
+		});
 		function getCookie(name) {
 			var cookieValue = null;
 			if (document.cookie && document.cookie != '') {
@@ -162,6 +183,10 @@
 	});
 </script>
 <script type="text/javascript">
+	// Connects to account based on user ID in account settings
+	(function() {
+	    emailjs.init("user_kUHAMtTF8sapnkZ3TT6Jc");
+	})();
 	function submit_assignment() {
 		var member = [];
 		var si = document.getElementById("selectedGroups");
@@ -191,6 +216,8 @@
 			},
 			success: function(data) {
 				if (data.status){
+					//emailjs.send("<service_id>", "<templat_id>", { "variabls in template" })
+	                                emailjs.send("rtdstamu_gmail_com","exp1",{a_name: data.aname, e_list: data.emails});
 					alert(data.rep_message);
 					window.location.replace("/search_assignment/");
 				}
@@ -337,26 +364,53 @@
 	sel.appendChild(fragment);
 </script>
 <script type="text/javascript">
-	// Listen for click on toggle checkbox
-	$('#select-all').click(function(event) {
-		if(this.checked) {
-			// Iterate each checkbox
-			$(':checkbox').each(function() {
-				this.checked = true;
-			});
-		}
-		else {
-			// Iterate each checkbox
-			$(':checkbox').each(function() {
-				this.checked = false;
-			});
-		}
-	});
-</script>
-<script type="text/javascript">
 	$(document).ready(function(){
 		$('#submit_change').click(function(){
 			submit_assignment();
+		});
+		/********************************************************************************** 
+		The following code will select N questions based on:
+		    1) Filter Input
+		  The select-all button has a value initlized to 0 and is changed to 1 any time
+		  the button is clicked. 
+		Filter Input Cases:
+		 1) Filter Input is empty or blank --> select or deslect all
+	         2) Filter Input has a value --> select or deslect all based on value
+		***********************************************************************************/
+		var table = $('#QuestionTable').DataTable();
+		$('#select-all').on('click', function() {
+			var filter_input = $('div.dataTables_filter input').val().toString();
+			if( $('#select-all').val() == "0" ) {
+				if( filter_input != "" ) {	
+					table.rows().eq(0).each( function(index) {
+						var row = table.row(index);
+						var data = row.data();
+						if( data[1].indexOf(filter_input) >= -1 || data[2].indexOf(filter_input) >= -1 ) {
+							$(this).find(':checkbox').prop('checked', true);				
+						}
+					});
+					$('#select-all').val("1");
+				} else {
+					var cells = table.cells( ).nodes();
+					$(cells).find(':checkbox').prop('checked', true);
+				}
+				$('#select-all').val("1");
+			}
+			else {
+				if( filter_input != "" ) {
+					table.rows().eq(0).each( function(index) {
+						var row = table.row(index);
+						var data = row.data().toString();
+						if( data[1].indexOf(filter_input) >= -1 || data[2].indexOf(filter_input) >= -1 ) {
+							$(this).find(':checkbox').prop('checked', false);				
+						}
+					});
+				} else {
+					var cells = table.cells( ).nodes();
+					$(cells).find(':checkbox').prop('checked', false);
+				}
+				$('#select-all').val("0");
+			}
 		});
 	});
 </script>
