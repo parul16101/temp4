@@ -321,6 +321,7 @@ def create_assignment(request):
         return redirect(reverse("login"))
     existGroup = Group.objects.all()
     grouplist = []
+    email_list = []
     for group in existGroup:
         grouplist.append(group.group_name)
     json_user = json.dumps(grouplist)
@@ -329,6 +330,14 @@ def create_assignment(request):
         assignment_name = request.POST['atname']
         assigned_date = request.POST['closing_date']
         assigned_group = request.POST.getlist('agroup[]')
+	#Build Email List DJ
+	for ag in assigned_group:
+                group_info = Group.objects.filter(group_name = ag)
+		user_list = Group_member.objects.filter(group_id = group_info)
+                for ul in user_list:
+		    get_email = User.objects.get(username=ul.user_id)
+                    if get_email.email not in email_list:
+		        email_list.append(get_email.email)
         assigned_question = request.POST.getlist('aquestion[]')
         exsitAssignment = Assignment.objects.filter(assignment_name = assignment_name)
         strippedString = assignment_name.strip()
@@ -378,6 +387,8 @@ def create_assignment(request):
             message = "You successfully registered! Now login!"
             data['rep_message'] = 'Successfully Create Assignment. Redirect you to the Assignment List'
             data['status'] = True
+            data['emails'] = email_list
+	    data['aname'] = assignment_name
             return JsonResponse(data)
     ###################################
     questionSet = Question.objects.all()  #complex lookups with Q objects
