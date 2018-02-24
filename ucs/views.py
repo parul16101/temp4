@@ -505,8 +505,27 @@ def edit_assignment(request):
         return redirect(reverse("login"))
     atname = request.GET.get('assignment_name','')
     #print atname
-
+    
     assignment_info = Assignment.objects.filter(assignment_name = atname)
+    question_in_assignment = Assigned_question.objects.filter(assignment_id = assignment_info)
+    text_list = []
+    cata_list = []
+    question_type_list = []
+    
+    for item in question_in_assignment:
+        question_text = item.question_id.question_text
+        text_list.append(question_text)
+        cata_text = item.question_id.category.category_text
+        cata_list.append(cata_text)
+        question_type = item.question_id.question_type
+        if question_type == True:
+            question_type_list.append("1")
+        else:
+            question_type_list.append("2")
+    question_pair = [{"question_text":t, "cata_text":c, "question_type":y} for t, c, y in zip(text_list, cata_list, question_type_list)]
+    print question_pair
+    json_question = json.dumps(question_pair)
+    
     group_in_assignment = Assigned_group.objects.filter(assignment_id = assignment_info)
     AllGroup = Group.objects.all()
     grouplist = []
@@ -515,15 +534,15 @@ def edit_assignment(request):
         if not exsit_in:
             grouplist.append(group.group_name)
     json_group = json.dumps(grouplist)
-
+    
     exgrouplist = []
     for exgroup in group_in_assignment:
         group = exgroup.group_id;
         exgrouplist.append(group.group_name)
-
+    
     at_pair = [{"group_name":g} for g in zip(exgrouplist)]
     group_info = json.dumps(at_pair)
-
+    
     if request.method == 'POST':
         if request.POST['action'] == "delete":
             delete_group = request.POST['gp_name']
@@ -540,7 +559,7 @@ def edit_assignment(request):
                 Group_info3 = Group.objects.get(group_name = item)
                 newAssignedGroup = Assigned_group(assignment_id = assignment_222, group_id = Group_info3)
                 newAssignedGroup.save()
-    return  render(request, "ucs/edit_assignment.html", {"assignment_name": atname,"group_not_in_assignment": json_group, "group_in_assignment": group_info})
+    return  render(request, "ucs/edit_assignment.html", {"assignment_name": atname,"group_not_in_assignment": json_group, "group_in_assignment": group_info, "question_in_assignment": json_question}
 
 def do_assignment(request):
     user_id = request.session.get("userId")
