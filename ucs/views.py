@@ -1441,24 +1441,28 @@ def processAssessments(ASet):
         vAssigned = assessment.option_text
         ##################
         operator = assessment.operator
-        #if trueValue.replace('.','').isdigit() and pAssigned.replace('.','').isdigit() and vAssigned.replace('.','').isdigit():
-        trueValue = float(trueValue)
-        pAssigned = float(pAssigned)
-        vAssigned = float(vAssigned)
-        # POPULATING TABLE OF OBSERVED PROBABILITIES
-        if operator == "EQ":
-            if vAssigned == trueValue:
-                data.append([trueValue,operator,vAssigned,pAssigned,1])
-            else:
-                data.append([trueValue,operator,vAssigned,pAssigned,0])
-        elif operator == "GE":
-            if trueValue >= vAssigned:
-                data.append([trueValue,operator,vAssigned,pAssigned,1])
-            else:
-                data.append([trueValue,operator,vAssigned,pAssigned,0])
-        elif operator == "LE":
-            if trueValue <= vAssigned:
-                data.append([trueValue,operator,vAssigned,pAssigned,1])
-            else:
-                data.append([trueValue,operator,vAssigned,pAssigned,0])
+        #Only one dot allow in the float value
+        dot_num = len(trueValue)-len(trueValue.replace('.',''))
+        if dot_num <= 1 and trueValue.replace('.','').isdigit():
+            trueValue = float(trueValue)
+            pAssigned = float(pAssigned)
+            vAssigned = float(vAssigned)
+            # POPULATING TABLE OF OBSERVED PROBABILITIES
+            if operator == "EQ":
+                if trueValue == vAssigned:
+                    data.append([trueValue,operator,vAssigned,pAssigned,1])
+                else:
+                    data.append([trueValue,operator,vAssigned,pAssigned,0])
+            elif operator == "GE":
+                if trueValue >= vAssigned:
+                    data.append([trueValue,operator,vAssigned,pAssigned,1])
+                else:
+                    data.append([trueValue,operator,vAssigned,pAssigned,0])
+            elif operator == "LE":
+                if trueValue <= vAssigned:
+                    data.append([trueValue,operator,vAssigned,pAssigned,1])
+                else:
+                    data.append([trueValue,operator,vAssigned,pAssigned,0])
+        else:
+            print assessment
     return data
