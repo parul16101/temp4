@@ -614,7 +614,10 @@ def do_assignment(request):
         answered_text = request.POST.getlist('question_text[]')
         answered_question = request.POST.getlist('answer[]')
         j = 0
+        print answered_text
+        print answered_question
         for item in answered_text:
+            #print item
             q_text = item.encode("utf-8")
             filtered_question = Question.objects.get(question_text = q_text)
             if filtered_question.allow_assessment==False:
