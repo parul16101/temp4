@@ -353,6 +353,9 @@
 		var dd = today.getDate();
 		var mm = today.getMonth()+1; //January is 0!
 		var yyyy = today.getFullYear();
+		var url_string = window.location.href;
+                var url = new URL(url_string);
+		var param = url.searchParams.get("assignment_name");
 		if(dd<10){
 			dd='0'+dd
 		} 
@@ -377,6 +380,7 @@
 				'uploader':uploader,
 				'upload_date':upload_date,
 				'answer[]':saved_answer,
+				'aname': param
 			},
 			success: function(data) {
 				if (data.status){

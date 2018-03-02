@@ -11,7 +11,7 @@ import zipfile
 
 #reload(sys)
 #sys.setdefaultencoding('utf-8')
-import os, shutil, base64, json, hashlib, csv
+import os, shutil, base64, json, hashlib, csv, datetime
 from django.shortcuts import render, redirect
 from django.template import RequestContext
 from django.http import HttpResponse
@@ -20,12 +20,13 @@ from django.urls import reverse
 from django.db.models import Q
 from django.db import transaction, IntegrityError
 from time import strftime
-from .models import User, Question, Group_member, Group, Category, Dataset, Assignment, Assigned_group, Assigned_question,  Assessment
+from .models import User, Question, Group_member, Group, Category, Dataset, Assignment, Assigned_group, Assigned_question,  Assessment, assignment_list
 #from .tools import readConfiguration, kwGenerator
 from django.http import JsonResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from collections import defaultdict
+from datetime import date
 #from osgeo import gdal
 ErrorA = { 0 : "Insuficcient data for the assessment, missing NumOfPairs, Operator, or DateOfAssessment in row ",
 1 : "Number of choices cannot be equal to 1 (allowed options are 0 or greater than 1) for entry located in row ",
@@ -58,7 +59,74 @@ WarningQ = {0 : "The true value was updated for record in row ",
 # Function for rendering home page. Home page is rendered when someone login successfully.
 def home_page(request):
     if "userId" in request.session.keys():
-        return render(request, "ucs/home_page.html", {})
+        user_name = request.session.get("userId")
+        QA_type = [] #Question  or Assignment
+        names   = [] #question text or assignment name
+        f_dates = [] #due dates
+        r_days  = [] #days left remaining
+        groups  = [] #Group
+        users   = [] #username
+        now = datetime.datetime.now()
+        #Check if admin
+        current_user = User.objects.get(id= user_name)
+        if current_user.admin_user==True:
+            user_work = assignment_list.objects.all()
+            #Loop through user assignments
+            for uw in user_work:
+                time   = uw.due_date.split("-")
+                s_date = date(int(time[0]), int(time[1]), int(time[2]))
+	        n_date = date(int(now.year), int(now.month), int(now.day))
+                delta  = s_date - n_date
+                days_left = delta.days
+
+                QA_type.append("Assignment")   
+                names.append(uw.assignment_id.assignment_name)
+                f_dates.append(uw.due_date)
+                if uw.finish_date != "0000-00-00":
+                    r_days.append("s")
+                else :
+                    r_days.append(days_left)
+                groups.append(uw.group_id.group_name)
+                users.append(uw.user_id.username)
+            question_work = Question.objects.filter(true_value__isnull = False)
+            for qw in question_work:
+                days_left = "";
+                if qw.close_date:
+                    time   = qw.close.split("-")
+                    s_date = date(int(time[0]), int(time[1]), int(time[2]))
+	            n_date = date(int(now.year), int(now.month), int(now.day))
+                    delta  = s_date - n_date
+                    days_left = delta.days
+                else :
+                    days_left = 90
+                
+                QA_type.append("Question")   
+                names.append(qw.question_text)
+                f_dates.append(qw.close_date)
+                r_days.append(days_left)
+                groups.append("")
+                users.append("Admin")
+        else :
+            #Regular User
+            user_work = assignment_list.objects.filter(user_id = user_name)
+            #Loop through user assignments
+            for uw in user_work:
+                time   = uw.due_date.split("-")
+                s_date = date(int(time[0]), int(time[1]), int(time[2]))
+	        n_date = date(int(now.year), int(now.month), int(now.day))
+                delta  = s_date - n_date
+                days_left = delta.days
+
+                QA_type.append("Assignment")   
+                names.append(uw.assignment_id.assignment_name)
+                f_dates.append(uw.due_date)
+                r_days.append(days_left)
+                groups.append(uw.group_id.group_name)
+                users.append(uw.user_id.username)
+        #Create list of table data
+        dataList = [{"type": t, "name": n, "due_date": dd, "days_left": dl, "group":g, "user":u} for t, n, dd, dl, g, u in zip(QA_type, names, f_dates, r_days, groups, users)]
+	json_data = json.dumps(dataList) 
+        return render(request, "ucs/home_page.html", {"dataList": json_data})
     else:
         return redirect(reverse("login"))
 ## Function to render information page
@@ -322,6 +390,7 @@ def create_assignment(request):
     existGroup = Group.objects.all()
     grouplist = []
     email_list = []
+    all_users = []
     for group in existGroup:
         grouplist.append(group.group_name)
     json_user = json.dumps(grouplist)
@@ -335,6 +404,7 @@ def create_assignment(request):
                 group_info = Group.objects.filter(group_name = ag)
 		user_list = Group_member.objects.filter(group_id = group_info)
                 for ul in user_list:
+                    all_users.append(ul.user_id)
 		    get_email = User.objects.get(username=ul.user_id)
                     if get_email.email not in email_list:
 		        email_list.append(get_email.email)
@@ -389,6 +459,11 @@ def create_assignment(request):
             data['status'] = True
             data['emails'] = email_list
 	    data['aname'] = assignment_name
+            #Insert into assignment list table without the finish_date
+            for uid in all_users:
+                insertIntoAssignmentList = assignment_list(assignment_id = assignment_info, user_id = uid, due_date = assigned_date,
+                    finish_date = "0000-00-00", group_id = group_info)
+                insertIntoAssignmentList.save()
             return JsonResponse(data)
     ###################################
     questionSet = Question.objects.all()  #complex lookups with Q objects
@@ -594,6 +669,7 @@ def do_assignment(request):
         upload_date = request.POST['upload_date']
         answered_text = request.POST.getlist('question_text[]')
         answered_question = request.POST.getlist('answer[]')
+        asname = request.POST['aname']
         j = 0
         for item in answered_text:
             q_text = item.encode("utf-8")
@@ -627,6 +703,14 @@ def do_assignment(request):
                 new_assessment.save()
         data['rep_message'] = 'Successfully Create Assessment. Redirect you to the Assignment List'
         data['status'] = True
+
+        now = datetime.datetime.now()
+        f_date = datetime.date.today().strftime("%Y-%m-%d")
+	#DJ
+        assignment_target = Assignment.objects.filter(assignment_name = asname)
+        print assignment_target
+        print "UPDATE.."
+        assignment_list.objects.filter(assignment_id = assignment_target).filter(user_id = user).update(finish_date = f_date)
         return JsonResponse(data)
     return render(request, "ucs/do_assignment.html", {"assignment_title":asname, "username": request.session.get("username"), "dataList": json_question})
 
