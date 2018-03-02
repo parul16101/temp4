@@ -3,9 +3,28 @@
 {% block content %}
 <div class="row">
 	<div class="ibox-title">
-		<h3><strong>This is a Homepage</strong></h3>
+		<h3><strong>Homepage</strong></h3>
 	</div>
 	<div class="ibox-content">
+		<h3 align="center"><strong>Summary Report</strong></h3>
+		<div class="table-responsive">
+			<div class="bodycontainer scrollable">
+				<table class="sortable table table-striped table-bordered table-hover dataTables-example table-scrollable" id="home-table">
+					<thead>
+						<tr>
+							<th>Type</th>
+							<th>Name</th>
+							<th>Due Date</th>
+							<th>Days Left</th>
+							<th>Group</th>
+                                                        <th>User</th>
+                                                        <th>View</th>
+						</tr>
+					</thead>
+					<tbody></tbody>
+				</table>
+			</div>
+		</div>
 	</div>
 </div>
 {% endblock %}
@@ -19,7 +38,117 @@
 <!-- Custom and plugin javascript -->
 <script src="{% static 'ucs/js/inspinia.js' %}"></script>
 <script src="{% static 'ucs/js/plugins/pace/pace.min.js' %}"></script>
+<script src="{% static 'ucs/js/sorttable.js' %}"></script>
+<script src="{% static 'ucs/js/inspinia.js' %}"></script>
+<script src="{% static 'ucs/js/plugins/dataTables/datatables.min.js' %}"></script>
 
 <!-- iCheck -->
 <script src="{% static 'ucs/js/plugins/iCheck/icheck.min.js' %}"></script>
+<script type="text/javascript">
+	var tableRef = document.getElementById("home-table").getElementsByTagName('tbody')[0];
+	var datas = {{dataList | safe}};
+        // datas contains the list = [ type, name, due date, days left, group ]
+        // type is Question or Assignment
+        // name is question_text or assignment_name
+        // due_date is the expected date
+        // days left is due_date - current date
+        // group is group_name 
+	if(datas){
+		datas.forEach(function(name, index) {
+                        var row_cnt = tableRef.rows.length;
+			var newRow  = tableRef.insertRow(row_cnt);
+                        var bgCol   = "";
+                        var txtCol  = "";
+                        if( name.days_left == "s" ) {
+                        	bgCol  = "green";
+                                txtCol = "white";
+                        } else if( name.days_left < 7 && name.days_left >= 0 ) {
+                        	bgCol  = "#F4FA58";
+                                txtCol = "black";
+                        } else if( name.days_left < 0 ) {
+                        	bgCol  = "#F08080";
+                                txtCol = "#FFFFFF";
+                        }
+                        //Column 1: type                     
+                        var newCell = newRow.insertCell(0);
+                        var newText = document.createTextNode(name.type);
+                        newCell.style.backgroundColor = bgCol;
+                        newCell.style.color = txtCol;
+                        newCell.appendChild(newText);
+                        //Column 2: name
+                        newCell = newRow.insertCell(1); 
+                        newText = document.createTextNode(name.name);
+                        newCell.style.backgroundColor = bgCol;
+                        newCell.style.color = txtCol;
+                        newCell.appendChild(newText);
+                        //Column 3: due_date
+                        newCell = newRow.insertCell(2);
+                        newText = document.createTextNode(name.due_date);
+                        newCell.style.backgroundColor = bgCol;
+                        newCell.style.color = txtCol;
+                        newCell.appendChild(newText);
+                        //Column 4: days_left
+                        newCell = newRow.insertCell(3);
+                        newText = document.createTextNode(name.days_left);
+                        newCell.style.backgroundColor = bgCol;
+                        newCell.style.color = txtCol;
+                        newCell.appendChild(newText);
+                        //Column 5: group
+                        newCell = newRow.insertCell(4);
+                        newText = document.createTextNode(name.group);
+                        newCell.style.backgroundColor = bgCol;
+                        newCell.style.color = txtCol;
+                        newCell.appendChild(newText);
+                        //Column 6: group
+                        newCell = newRow.insertCell(5);
+                        newText = document.createTextNode(name.user);
+                        newCell.style.backgroundColor = bgCol;
+                        newCell.style.color = txtCol;
+                        newCell.appendChild(newText);
+                        //Column 7: View Button (Link to question or assignment)
+			newCell = newRow.insertCell(6);
+			newCell.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="view_type(this)" >'
+			+'<span class="glyphicon glyphicon-pencil"></span> View</button>';
+			
+		});
+	}
+</script>
+<!-- function view_type will send redirect to the edit_question or assignment page --!>
+<script type="text/javascript" >
+	function view_type(element){
+		var cell = element.parentNode.parentNode.rowIndex;
+		var type = document.getElementById("home-table").rows[cell].cells[0].innerHTML
+		var names = document.getElementById("home-table").rows[cell].cells[1].innerHTML
+                if( type == "Question" ) {
+			window.location = '/edit_question?question_name=' + names;
+                } else if( type == "Assignment" ) {
+			window.location = '/do_assignment?assignment_name=' + names;
+                } else {
+                	alert("ERROR: Type is not a Question or Assignment, please contact support");
+                }
+	}
+</script>
+<!-- This block is to integrate the dataTable plugin with table_id = home-table --!>
+<script>
+	$(document).ready(function(){
+		$('.dataTables-example').DataTable({
+			dom: '<"html5buttons"B>lTfgitp',
+			buttons: [
+				{extend: 'copy'},
+				{extend: 'csv'},
+				{extend: 'excel', title: 'ExampleFile'},
+				{extend: 'pdf', title: 'ExampleFile'},
+				{extend: 'print',
+					customize: function (win){
+						$(win.document.body).addClass('white-bg');
+						$(win.document.body).css('font-size', '10px');
+						$(win.document.body).find('table')
+						.addClass('compact')
+						.css('font-size', 'inherit');
+					}
+				}
+			]
+		});
+	});
+</script>
 {% endblock %}

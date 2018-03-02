@@ -155,6 +155,25 @@ class Group_member(models.Model):
     def __unicode__(self):
         return 'Object: '+self.group_id.group_name+'---'+self.user_id.username
 
+class assignment_list(models.Model):
+    ## @var assignment_id
+    # This is Foreign key. It is a reference to an assignment.
+    assignment_id = models.ForeignKey(Assignment, on_delete=models.CASCADE)
+    ## @var user_id
+    # This is Foreign key. It is a reference to a user.
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    ## @var due_date
+    # This is a class variable. Data type of this variable is "string". It is used to store due date for the assignment.
+    due_date = models.CharField(max_length = 200, blank=True, null=True)
+    ## @var finish_date 
+    # This is a class variable. Data type of this variable is "string". It is used to store completion date for the assignment.
+    finish_date = models.CharField(max_length = 200, blank=True, null=True)
+    ## @var group_id
+    # This is Foreign key. It is a reference to a group.
+    group_id = models.ForeignKey(Group, on_delete=models.CASCADE)
+    def __unicode__(self):
+        return 'Object: '+ self.assignment_id.assignment_name+'---'+self.user_id.username+'---'+self.group_id.group_name
+ 
 class Dataset(models.Model):
     ## @file_name
     # This is a class variable. Data type of this variable is "string". It is used to store name of file which contains dataset. Maximum length of string allowed to store in it is 200.
