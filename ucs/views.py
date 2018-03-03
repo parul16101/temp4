@@ -59,74 +59,7 @@ WarningQ = {0 : "The true value was updated for record in row ",
 # Function for rendering home page. Home page is rendered when someone login successfully.
 def home_page(request):
     if "userId" in request.session.keys():
-        user_name = request.session.get("userId")
-        QA_type = [] #Question  or Assignment
-        names   = [] #question text or assignment name
-        f_dates = [] #due dates
-        r_days  = [] #days left remaining
-        groups  = [] #Group
-        users   = [] #username
-        now = datetime.datetime.now()
-        #Check if admin
-        current_user = User.objects.get(id= user_name)
-        if current_user.admin_user==True:
-            user_work = assignment_list.objects.all()
-            #Loop through user assignments
-            for uw in user_work:
-                time = uw.due_date.split("-")
-                s_date = date(int(time[0]), int(time[1]), int(time[2]))
-                n_date = date(int(now.year), int(now.month), int(now.day))
-                delta  = s_date - n_date
-                days_left = delta.days
-
-                QA_type.append("Assignment")
-                names.append(uw.assignment_id.assignment_name)
-                f_dates.append(uw.due_date)
-                if uw.finish_date != "0000-00-00":
-                    r_days.append("s")
-                else :
-                    r_days.append(days_left)
-                groups.append(uw.group_id.group_name)
-                users.append(uw.user_id.username)
-            question_work = Question.objects.filter(true_value__isnull = False)
-            for qw in question_work:
-                days_left = "";
-                if qw.close_date:
-                    time = qw.close_date.split("/")
-                    s_date = date(int(time[0]), int(time[1]), int(time[2]))
-                    n_date = date(int(now.month), int(now.day), int(now.year))
-                    delta  = s_date - n_date
-                    days_left = delta.days
-                else:
-                    days_left = 90
-
-                QA_type.append("Question")
-                names.append(qw.question_text)
-                f_dates.append(qw.close_date)
-                r_days.append(days_left)
-                groups.append("")
-                users.append("Admin")
-        else :
-            #Regular User
-            user_work = assignment_list.objects.filter(user_id = user_name)
-            #Loop through user assignments
-            for uw in user_work:
-                time   = uw.due_date.split("-")
-                s_date = date(int(time[0]), int(time[1]), int(time[2]))
-                n_date = date(int(now.year), int(now.month), int(now.day))
-                delta  = s_date - n_date
-                days_left = delta.days
-
-                QA_type.append("Assignment")
-                names.append(uw.assignment_id.assignment_name)
-                f_dates.append(uw.due_date)
-                r_days.append(days_left)
-                groups.append(uw.group_id.group_name)
-                users.append(uw.user_id.username)
-        #Create list of table data
-        dataList = [{"type": t, "name": n, "due_date": dd, "days_left": dl, "group":g, "user":u} for t, n, dd, dl, g, u in zip(QA_type, names, f_dates, r_days, groups, users)]
-        json_data = json.dumps(dataList)
-        return render(request, "ucs/home_page.html", {"dataList": json_data})
+        return render(request, "ucs/home_page.html", {})
     else:
         return redirect(reverse("login"))
 ## Function to render information page
