@@ -155,7 +155,7 @@ class Group_member(models.Model):
     def __unicode__(self):
         return 'Object: '+self.group_id.group_name+'---'+self.user_id.username
 
-class assignment_list(models.Model):
+class Assignment_log(models.Model):
     ## @var assignment_id
     # This is Foreign key. It is a reference to an assignment.
     assignment_id = models.ForeignKey(Assignment, on_delete=models.CASCADE)

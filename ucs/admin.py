@@ -9,7 +9,7 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import Question, User, Category, Assignment, Assessment, Group,  Assigned_group, Assigned_question, Group_member, Dataset
+from .models import Question, User, Category, Assignment, Assessment, Group,  Assigned_group, Assigned_question, Group_member, Dataset, Assignment_log
 
 
 # Register your models here.
@@ -18,7 +18,7 @@ admin.site.register(User)
 admin.site.register(Category)
 
 admin.site.register(Assignment)
-
+admin.site.register(Assignment_log)
 admin.site.register(Assessment)
 admin.site.register(Group)
 admin.site.register(Assigned_question)

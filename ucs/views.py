@@ -11,7 +11,7 @@ import zipfile
 
 #reload(sys)
 #sys.setdefaultencoding('utf-8')
-import os, shutil, base64, json, hashlib, csv, datetime
+import os, shutil, base64, json, hashlib, csv
 from django.shortcuts import render, redirect
 from django.template import RequestContext
 from django.http import HttpResponse
@@ -20,13 +20,13 @@ from django.urls import reverse
 from django.db.models import Q
 from django.db import transaction, IntegrityError
 from time import strftime
-from .models import User, Question, Group_member, Group, Category, Dataset, Assignment, Assigned_group, Assigned_question,  Assessment, assignment_list
+from .models import User, Question, Group_member, Group, Category, Dataset, Assignment, Assigned_group, Assigned_question, Assessment, Assignment_log
 #from .tools import readConfiguration, kwGenerator
 from django.http import JsonResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from collections import defaultdict
-from datetime import date
+from datetime import datetime, timedelta
 #from osgeo import gdal
 ErrorA = { 0 : "Insuficcient data for the assessment, missing NumOfPairs, Operator, or DateOfAssessment in row ",
 1 : "Number of choices cannot be equal to 1 (allowed options are 0 or greater than 1) for entry located in row ",
@@ -59,7 +59,76 @@ WarningQ = {0 : "The true value was updated for record in row ",
 # Function for rendering home page. Home page is rendered when someone login successfully.
 def home_page(request):
     if "userId" in request.session.keys():
-        return render(request, "ucs/home_page.html", {})
+        user_name = request.session.get("userId")
+        QA_type = [] #Question  or Assignment
+        names   = [] #question text or assignment name
+        f_dates = [] #due dates
+        r_days  = [] #days left remaining
+        groups  = [] #Group
+        users   = [] #username
+        now = datetime.now()
+        #Check if admin
+        current_user = User.objects.get(id= user_name)
+        if current_user.admin_user==True:
+            user_work = Assignment_log.objects.all()
+            #Loop through user assignments
+            for uw in user_work:
+                days_left = 'N/A'
+                if uw.due_date:
+                    time = uw.due_date.split("/")
+                    if len(time) >= 3:
+                        s_date = datetime(int(time[2]), int(time[0]), int(time[1]))
+                        n_date = datetime(int(now.year), int(now.month), int(now.day))
+                        delta  = s_date - n_date
+                        days_left = delta.days
+                QA_type.append("Assignment")
+                names.append(uw.assignment_id.assignment_name)
+                f_dates.append(uw.due_date)
+                if uw.finish_date != "00-00-0000":
+                    r_days.append("s")
+                else:
+                    r_days.append(days_left)
+                groups.append(uw.group_id.group_name)
+                users.append(uw.user_id.username)
+            question_work = Question.objects.filter(true_value__isnull = False)
+            for qw in question_work:
+                days_left = 'N/A'
+                if qw.close_date:
+                    time = qw.close_date.split("/")
+                    if len(time) >= 3:
+                        s_date = datetime(int(time[2]), int(time[0]), int(time[1]))
+                        n_date = datetime(int(now.year), int(now.month), int(now.day))
+                        delta = s_date - n_date
+                        days_left = delta.days
+                QA_type.append("Question")
+                names.append(qw.question_text)
+                f_dates.append(qw.close_date)
+                r_days.append(days_left)
+                groups.append("")
+                users.append("Admin")
+        else :
+            #Regular User
+            user_work = Assignment_log.objects.filter(user_id = user_name)
+            #Loop through user assignments
+            for uw in user_work:
+                days_left = 'N/A'
+                if uw.due_date:
+                    time = uw.due_date.split("/")
+                    if len(time) >= 3:
+                        s_date = datetime(int(time[2]), int(time[0]), int(time[1]))
+                        n_date = datetime(int(now.year), int(now.month), int(now.day))
+                        delta  = s_date - n_date
+                        days_left = delta.days
+                QA_type.append("Assignment")
+                names.append(uw.assignment_id.assignment_name)
+                f_dates.append(uw.due_date)
+                r_days.append(days_left)
+                groups.append(uw.group_id.group_name)
+                users.append(uw.user_id.username)
+        #Create list of table data
+        dataList = [{"type": t, "name": n, "due_date": dd, "days_left": dl, "group":g, "user":u} for t, n, dd, dl, g, u in zip(QA_type, names, f_dates, r_days, groups, users)]
+        json_data = json.dumps(dataList)
+        return render(request, "ucs/home_page.html", {"dataList": json_data})
     else:
         return redirect(reverse("login"))
 ## Function to render information page
@@ -332,72 +401,72 @@ def create_assignment(request):
         assignment_name = request.POST['atname']
         assigned_date = request.POST['closing_date']
         assigned_group = request.POST.getlist('agroup[]')
-	#Build Email List DJ
-	for ag in assigned_group:
-                group_info = Group.objects.filter(group_name = ag)
-		user_list = Group_member.objects.filter(group_id = group_info)
-                for ul in user_list:
-                    all_users.append(ul.user_id)
-		    get_email = User.objects.get(username=ul.user_id)
-                    if get_email.email not in email_list:
-		        email_list.append(get_email.email)
-        assigned_question = request.POST.getlist('aquestion[]')
-        exsitAssignment = Assignment.objects.filter(assignment_name = assignment_name)
-        strippedString = assignment_name.strip()
-        #data = {'rep_message': assigned_group}
-        #return JsonResponse(data)
-        if strippedString == '':
-            data['rep_message'] = 'Creation Failed: Empty Assignment Name.'
-            data['status'] = False
-            return JsonResponse(data)
+        #Build Email List DJ
+        for ag in assigned_group:
+            group_info = Group.objects.filter(group_name = ag)
+            user_list = Group_member.objects.filter(group_id = group_info)
+            for ul in user_list:
+                all_users.append(ul.user_id)
+                get_email = User.objects.get(username=ul.user_id)
+                if get_email.email not in email_list:
+                    email_list.append(get_email.email)
+            assigned_question = request.POST.getlist('aquestion[]')
+            exsitAssignment = Assignment.objects.filter(assignment_name = assignment_name)
+            strippedString = assignment_name.strip()
+            #data = {'rep_message': assigned_group}
+            #return JsonResponse(data)
+            if strippedString == '':
+                data['rep_message'] = 'Creation Failed: Empty Assignment Name.'
+                data['status'] = False
+                return JsonResponse(data)
 
-        if assigned_group == []:
-            data['rep_message'] = 'Creation Failed: No Group Selected.'
-            data['status'] = False
-            return JsonResponse(data)
+            if assigned_group == []:
+                data['rep_message'] = 'Creation Failed: No Group Selected.'
+                data['status'] = False
+                return JsonResponse(data)
 
-        if assigned_question == []:
-            data['rep_message'] = 'Creation Failed: No Question Selected.'
-            data['status'] = False
-            return JsonResponse(data)
+            if assigned_question == []:
+                data['rep_message'] = 'Creation Failed: No Question Selected.'
+                data['status'] = False
+                return JsonResponse(data)
 
-        if exsitAssignment.exists():
-            message = "This Assignment name already exists. Please change it."
-            status = "error"
-            data['rep_message'] = 'Creation Failed: An Assignment with this Name already exists.'
-            data['status'] = False
-            return JsonResponse(data)
-        else:
-            newAssignment = Assignment(assignment_name = assignment_name, due_date = assigned_date)
-            newAssignment.save()
-            assignment_info = Assignment.objects.get(assignment_name = assignment_name)
-            #assignment_id = assignment_info.id;
-            for item in assigned_group:
-                #item = item.encode("ascii")
-                item = item.encode("utf-8")
-                print(item)
-                group_info = Group.objects.get(group_name = item)
-                #group_id = group_info.id;
-                newAssignedGroup = Assigned_group(assignment_id = assignment_info, group_id = group_info)
-                newAssignedGroup.save()
-            for q_text in assigned_question:
-                q_text = q_text.encode("utf-8")
-                print(q_text)
-                question_info = Question.objects.get(question_text = q_text)
-                newAssignedQuestion = Assigned_question(assignment_id = assignment_info, question_id = question_info)
-                newAssignedQuestion.save()
+            if exsitAssignment.exists():
+                message = "This Assignment name already exists. Please change it."
+                status = "error"
+                data['rep_message'] = 'Creation Failed: An Assignment with this Name already exists.'
+                data['status'] = False
+                return JsonResponse(data)
+            else:
+                newAssignment = Assignment(assignment_name = assignment_name, due_date = assigned_date)
+                newAssignment.save()
+                assignment_info = Assignment.objects.get(assignment_name = assignment_name)
+                #assignment_id = assignment_info.id;
+                for item in assigned_group:
+                    #item = item.encode("ascii")
+                    item = item.encode("utf-8")
+                    print(item)
+                    group_info = Group.objects.get(group_name = item)
+                    #group_id = group_info.id;
+                    newAssignedGroup = Assigned_group(assignment_id = assignment_info, group_id = group_info)
+                    newAssignedGroup.save()
+                for q_text in assigned_question:
+                    q_text = q_text.encode("utf-8")
+                    print(q_text)
+                    question_info = Question.objects.get(question_text = q_text)
+                    newAssignedQuestion = Assigned_question(assignment_id = assignment_info, question_id = question_info)
+                    newAssignedQuestion.save()
 
-            message = "You successfully registered! Now login!"
-            data['rep_message'] = 'Successfully Create Assignment. Redirect you to the Assignment List'
-            data['status'] = True
-            data['emails'] = email_list
-	    data['aname'] = assignment_name
-            #Insert into assignment list table without the finish_date
-            for uid in all_users:
-                insertIntoAssignmentList = assignment_list(assignment_id = assignment_info, user_id = uid, due_date = assigned_date,
-                    finish_date = "0000-00-00", group_id = group_info)
-                insertIntoAssignmentList.save()
-            return JsonResponse(data)
+                message = "You successfully registered! Now login!"
+                data['rep_message'] = 'Successfully Create Assignment. Redirect you to the Assignment List'
+                data['status'] = True
+                data['emails'] = email_list
+                data['aname'] = assignment_name
+                #Insert into assignment list table without the finish_date
+                for uid in all_users:
+                    insertIntoAssignmentLog = Assignment_log(assignment_id = assignment_info, user_id = uid, due_date = assigned_date,
+                        finish_date = "00/00/0000", group_id = group_info)
+                    insertIntoAssignmentLog.save()
+        return JsonResponse(data)
     ###################################
     questionSet = Question.objects.all()  #complex lookups with Q objects
     questionList = []
@@ -665,7 +734,7 @@ def do_assignment(request):
         assignment_target = Assignment.objects.filter(assignment_name = asname)
         print assignment_target
         print "UPDATE.."
-        assignment_list.objects.filter(assignment_id = assignment_target).filter(user_id = user).update(finish_date = f_date)
+        Assignment_log.objects.filter(assignment_id = assignment_target).filter(user_id = user).update(finish_date = f_date)
         return JsonResponse(data)
     return render(request, "ucs/do_assignment.html", {"assignment_title":asname, "username": request.session.get("username"), "dataList": json_question})
 
