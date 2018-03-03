@@ -94,7 +94,7 @@ def home_page(request):
                 if qw.close_date:
                     time = qw.close_date.split("/")
                     s_date = date(int(time[0]), int(time[1]), int(time[2]))
-                    n_date = date(int(now.year), int(now.month), int(now.day))
+                    n_date = date(int(now.month), int(now.day), int(now.year))
                     delta  = s_date - n_date
                     days_left = delta.days
                 else:
