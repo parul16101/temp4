@@ -75,10 +75,10 @@ def home_page(request):
             for uw in user_work:
                 time   = uw.due_date.split("-")
                 s_date = date(int(time[0]), int(time[1]), int(time[2]))
-	        n_date = date(int(now.year), int(now.month), int(now.day))
+                n_date = date(int(now.year), int(now.month), int(now.day))
                 delta  = s_date - n_date
                 days_left = delta.days
-
+                
                 QA_type.append("Assignment")   
                 names.append(uw.assignment_id.assignment_name)
                 f_dates.append(uw.due_date)
@@ -92,12 +92,12 @@ def home_page(request):
             for qw in question_work:
                 days_left = "";
                 if qw.close_date:
-                    time   = qw.close.split("-")
+                    time = qw.close_date.split("-")
                     s_date = date(int(time[0]), int(time[1]), int(time[2]))
-	            n_date = date(int(now.year), int(now.month), int(now.day))
+                    n_date = date(int(now.year), int(now.month), int(now.day))
                     delta  = s_date - n_date
                     days_left = delta.days
-                else :
+                else:
                     days_left = 90
                 
                 QA_type.append("Question")   
