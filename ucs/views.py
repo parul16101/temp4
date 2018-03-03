@@ -78,8 +78,8 @@ def home_page(request):
                 n_date = date(int(now.year), int(now.month), int(now.day))
                 delta  = s_date - n_date
                 days_left = delta.days
-                
-                QA_type.append("Assignment")   
+
+                QA_type.append("Assignment")
                 names.append(uw.assignment_id.assignment_name)
                 f_dates.append(uw.due_date)
                 if uw.finish_date != "0000-00-00":
@@ -99,8 +99,8 @@ def home_page(request):
                     days_left = delta.days
                 else:
                     days_left = 90
-                
-                QA_type.append("Question")   
+
+                QA_type.append("Question")
                 names.append(qw.question_text)
                 f_dates.append(qw.close_date)
                 r_days.append(days_left)
@@ -116,8 +116,8 @@ def home_page(request):
                 n_date = date(int(now.year), int(now.month), int(now.day))
                 delta  = s_date - n_date
                 days_left = delta.days
-                
-                QA_type.append("Assignment")   
+
+                QA_type.append("Assignment")
                 names.append(uw.assignment_id.assignment_name)
                 f_dates.append(uw.due_date)
                 r_days.append(days_left)
@@ -125,7 +125,7 @@ def home_page(request):
                 users.append(uw.user_id.username)
         #Create list of table data
         dataList = [{"type": t, "name": n, "due_date": dd, "days_left": dl, "group":g, "user":u} for t, n, dd, dl, g, u in zip(QA_type, names, f_dates, r_days, groups, users)]
-    json_data = json.dumps(dataList) 
+        json_data = json.dumps(dataList)
         return render(request, "ucs/home_page.html", {"dataList": json_data})
     else:
         return redirect(reverse("login"))
