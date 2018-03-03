@@ -73,7 +73,7 @@ def home_page(request):
             user_work = assignment_list.objects.all()
             #Loop through user assignments
             for uw in user_work:
-                time   = uw.due_date.split("-")
+                time = uw.due_date.split("-")
                 s_date = date(int(time[0]), int(time[1]), int(time[2]))
                 n_date = date(int(now.year), int(now.month), int(now.day))
                 delta  = s_date - n_date
@@ -92,7 +92,7 @@ def home_page(request):
             for qw in question_work:
                 days_left = "";
                 if qw.close_date:
-                    time = qw.close_date.split("-")
+                    time = qw.close_date.split("/")
                     s_date = date(int(time[0]), int(time[1]), int(time[2]))
                     n_date = date(int(now.year), int(now.month), int(now.day))
                     delta  = s_date - n_date
@@ -113,10 +113,10 @@ def home_page(request):
             for uw in user_work:
                 time   = uw.due_date.split("-")
                 s_date = date(int(time[0]), int(time[1]), int(time[2]))
-	        n_date = date(int(now.year), int(now.month), int(now.day))
+                n_date = date(int(now.year), int(now.month), int(now.day))
                 delta  = s_date - n_date
                 days_left = delta.days
-
+                
                 QA_type.append("Assignment")   
                 names.append(uw.assignment_id.assignment_name)
                 f_dates.append(uw.due_date)
@@ -125,7 +125,7 @@ def home_page(request):
                 users.append(uw.user_id.username)
         #Create list of table data
         dataList = [{"type": t, "name": n, "due_date": dd, "days_left": dl, "group":g, "user":u} for t, n, dd, dl, g, u in zip(QA_type, names, f_dates, r_days, groups, users)]
-	json_data = json.dumps(dataList) 
+    json_data = json.dumps(dataList) 
         return render(request, "ucs/home_page.html", {"dataList": json_data})
     else:
         return redirect(reverse("login"))
