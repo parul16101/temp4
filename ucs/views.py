@@ -1398,7 +1398,7 @@ def returnAssessments(answer):
 
 def computeResults(ASet):
     data=[]
-    intervals = 10          #change to field from form
+    intervals = 11          #change to field from form
     mindata = 5
     bins = [0 + x/float(intervals) for x in range(0,intervals+1)]
     bins[0] = -0.000001
@@ -1540,7 +1540,9 @@ def processAssessments(ASet):
                 else:
                     data.append([trueValue,operator,vAssigned,pAssigned,0])
             elif operator == "GE":
-                if trueValue >= vAssigned:
+                operator = "LE"
+                pAssigned = 1.0 - pAssigned
+                if trueValue <= vAssigned:
                     data.append([trueValue,operator,vAssigned,pAssigned,1])
                 else:
                     data.append([trueValue,operator,vAssigned,pAssigned,0])
