@@ -6,17 +6,18 @@
 		<h3><strong>This is an information page</strong></h3>
 	</div>
 	<div class="ibox-content">
-		<embed src="" width=800px height=2100px>
+		<!-- <embed src="http://pe-mcv-db.engr.tamu.edu/static/ucs/pdf/info.pdf" width="1024" height="1280"> -->
+		<iframe src="{% static 'ucs/pdf/info.pdf' %}" width="800px" height="600px"></iframe>
 	</div>
 </div>
 {% endblock %}
 
 {% block jsPart %}
 <!-- Mainly scripts -->
-<script src="{% static 'ucs/js/jquery-2.1.1.js'%}"></script>
-<script src="{% static 'ucs/js/bootstrap.min.js'%}"></script>
-<script src="{% static 'ucs/js/plugins/metisMenu/jquery.metisMenu.js'%}"></script>
-<script src="{% static 'ucs/js/plugins/slimscroll/jquery.slimscroll.min.js'%}"></script>
+<script src="{% static 'ucs/js/jquery-2.1.1.js' %}"></script>
+<script src="{% static 'ucs/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'ucs/js/plugins/metisMenu/jquery.metisMenu.js' %}"></script>
+<script src="{% static 'ucs/js/plugins/slimscroll/jquery.slimscroll.min.js' %}"></script>
 
 <!-- Custom and plugin javascript -->
 <script src="{% static 'ucs/js/inspinia.js' %}"></script>
