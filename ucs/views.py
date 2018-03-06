@@ -1204,7 +1204,7 @@ def result(request):
     user_id = request.session.get("userId")
     if not user_id:
         return redirect(reverse("login"))
-    current_user = User.objects.get(id= user_id)
+    current_user = User.objects.get(id=user_id)
     data = {}
     summary_results = {}
     plot = []
@@ -1218,14 +1218,13 @@ def result(request):
     if request.method == "POST":
 
         #Process request to get answer containing all option selected on scoring page
-        answer = processRequests(request,current_user)
-        print "answer\n\n\n\n",answer
-        #answer = [question_type, forecast, question_purpose, question_text, true_or_false, category, user_name, group_name, assignment_name, date_submitted]
+        answer = processRequests(request, current_user)
+        #answer:[question_type, forecast, question_purpose, question_text, true_or_false, category, user_name, group_name, assignment_name, date_submitted]
 
         #write answer in the file
-        #if not os.path.isdir('debug\\'):
-            #os.makedirs('debug\\')
-        with open('/tmp/data.csv', 'wb') as csvfile:
+        if not os.path.isdir('debug\\'):
+            os.makedirs('debug\\')
+        with open('debug\data.csv', 'wb') as csvfile:
             para_fieldnames = ['Question Type', 'Forecast', 'Question Purpose', 'Question Text', '# of Choices', 'Category', 'User', 'Group', 'Assignment Name', 'Date Submitted']
             writer = csv.DictWriter(csvfile, fieldnames=para_fieldnames)
             writer.writeheader()
@@ -1235,7 +1234,7 @@ def result(request):
         #########################IT'S NO LONGER RAUL CODE##############################
         ASet = returnAssessments(answer)
         temp = ASet.values()
-        with open('/tmp/data.csv', 'a') as csvfile:
+        with open('debug\data.csv', 'a') as csvfile:
             assessment_fieldnames = ['Question ID', 'Date of assessment','User Name','Operator','Answer Text','Details Of Assessment','Option Text','ID']
             writer = csv.DictWriter(csvfile, fieldnames=assessment_fieldnames,lineterminator='\n')
             writer.writeheader()
@@ -1246,7 +1245,7 @@ def result(request):
             csvfile.write("\n\n\n");
 
         summary_results, values, plot, datapoints = computeResults(ASet)
-        summary_fieldnames = ['Confidence', 'Calibration','Resolution','Knowledge','Brierscore']
+        summary_fieldnames = ['Confidence','Calibration','Resolution','Knowledge','Brierscore']
         insert_data_to_debug_file_vertically(summary_fieldnames,values,'a')
 
     return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot})
@@ -1273,9 +1272,10 @@ def insert_data_to_debug_file_vertically(fieldnames,values,file_mode):
 
 
 def processRequests(req,current_user):
+    ###########################################
     question_type = req.POST.get("question_type")
-
     if question_type == '1':
+        '''A Discrete Question'''
         question_type = True
     elif question_type == '0':
         question_type = False
@@ -1284,40 +1284,39 @@ def processRequests(req,current_user):
     ###########################################
     forecast = req.POST.get("forecast")
     if forecast == '1':
+        '''A Forecast Question'''
         forecast = True
     elif forecast == '0':
         forecast = False
     else:
         forecast = None
     ###########################################
-    ###########################################
-    question_purpose = req.POST.get("question_purpose")
-    if question_purpose == '1':
-        question_purpose = True
-    elif question_purpose == '0':
-        question_purpose = False
+    question_use = req.POST.get("question_use")
+    if question_use == '1':
+        '''A Training Question'''
+        question_use = True
+    elif question_use == '0':
+        question_use = False
     else:
-        question_purpose = None
+        question_use = None
     ###########################################
     question_text = req.POST.get("question_text")
     ###########################################
-    true_or_false = req.POST.get("true_or_false")
+    true_or_false = req.POST.get("number_of_choice")
     if true_or_false:
         true_or_false = int(true_or_false)
     ###########################################
     category = req.POST.get("category")
-
+    
     if current_user.admin_user==True:
-        user_name = req.POST.get("user_name")
+        user_name = req.POST.get("user")
     else:
         user_name = current_user.username
-
-    group_name = req.POST.get("group_name")
-    #print "\n\n\n\n\n\n\nusername = ", user_name
-    #print "\n\n\n\n\n\n\n\n groupname = ",group_name
+    
+    group_name = req.POST.get("group")
     assignment_name = req.POST.get("assignment_name")
     date_submitted = req.POST.get("date_submitted")
-    answer = [question_type, forecast, question_purpose, question_text, true_or_false, category, user_name, group_name, assignment_name, date_submitted]
+    answer = [question_type, forecast, question_use, question_text, true_or_false, category, user_name, group_name, assignment_name, date_submitted]
     print "answer \n\n",answer
     return answer
 
@@ -1333,6 +1332,7 @@ def returnAssessments(answer):
         #print 'QText: ', QText
         QSet = Question.objects.filter(question_text__in=Q_text)
         #print 'QSet: ', QSet
+        print answer[8]
     else:
         print 'The assignment name is not specified'
     if answer[0] is not None:
@@ -1364,28 +1364,24 @@ def returnAssessments(answer):
         tmp = Category.objects.get(category_text=answer[5])
         QSet = Question.objects.filter(id__in=QSet, category=tmp)
         #print 'GOT VALUE'
+        print tmp
     else:
         print 'The category is not specified'
     #Query on question_set, user_name, and ...
-    ASet = Assessment.objects.all()
-    if QSet:
-        ASet = Assessment.objects.filter(question_id__in=QSet)
-        #print len(ASet)
-    else:
-        print 'The QSet is empty'
+    ASet = Assessment.objects.filter(question_id__in=QSet)
     if answer[7]:
         G_user = []
         G_id = Group.objects.get(group_name=answer[7])
         GM_objs = Group_member.objects.filter(group_id=G_id)
         for obj in GM_objs:
             G_user.append(obj.user_id)
-        ASet = Assessment.objects.filter(user_id__in=G_user)
+        ASet = Assessment.objects.filter(id__in=ASet, user_id__in=G_user)
     else:
         print 'The group is not specified'
     if answer[6]:
-        upload_user = User.objects.get(username = answer[6])#no need to change
+        upload_user = User.objects.get(username=answer[6])#no need to change
         #print "User Object: ", upload_user
-        ASet = Assessment.objects.filter(user_id = upload_user)
+        ASet = Assessment.objects.filter(id__in=ASet, user_id=upload_user)
         #print len(ASet)
         #print "username ",answer[6]
     else:

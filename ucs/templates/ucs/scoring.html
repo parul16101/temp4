@@ -10,7 +10,7 @@
 			display: block;
 		}
 		input[id="submit"] {
-			display:none;
+			display: none;
 		}
 	</style>
 </head>
@@ -50,62 +50,62 @@
 					</fieldset>
 				</div>
 				<div class="form-group">
-					<label class="control-label" for="corporate_training">Question Use</label>
+					<label class="control-label" for="question_use">Question Use</label>
 					<fieldset>
 						<label class="">
-							<input type="radio" value="1" name="corporate_training" id="rad" >
+							<input type="radio" value="1" name="question_use" id="rad" >
 							Training &nbsp;&nbsp;&nbsp;&nbsp;
 						</label>
 						<label class="">
-							<input type="radio" value="0" name="corporate_training" id="rad" >
+							<input type="radio" value="0" name="question_use" id="rad" >
 							Corporate
 						</label>
 					</fieldset>
 				</div>
 				<div  class="form-group">
-					<label class="control-label" for="description">Question Text</label> <br>
-					<!-- <select id="question_text" name="question_text" class="form-control" style ="Width:100%"> -->
+					<label id="txt_lab" class="control-label" for="question_text">Question Text</label> <br>
 					<select id="question_text" name="question_text" class="js-example-basic-single" style ="Width:100%">
 						<option selected="selected"></option>
 					</select>
 				</div>
 				<div class="col-sm-4">
-					<label class="control-label" for="T_or_F">Number of Choices</label> <br>
-					<input type="number" id= "numberofchoice" name="numberofchoice" min="2" style ="Width:20%"></input>
+					<label id="noc_lab" class="control-label" for="number_of_choice">Number of Choices</label> <br>
+					<input type="number" id= "number_of_choice" name="number_of_choice" min="2" style ="Width:20%"></input>
 				</div>
 				<div class="col-sm-8">
-					<label class="control-label" for="category">Category</label> <br>
+					<label id="cat_lab" class="control-label" for="category">Category</label> <br>
 					<select id="category" name="category" class="form-control" style ="Width:50%">
 						<option selected="selected"></option>
 					</select>
 				</div>
 				<div class="col-sm-4">
-					<label class="control-label" for="description" id="label_user">User</label>
-					<select id="user_name" name="user_name" class="form-control" style ="Width:50%">
+					<label id="usr_lab" class="control-label" for="user">User</label>
+					<select id="user" name="user" class="form-control" style ="Width:50%">
 						<option selected="selected"></option>
 					</select>
 				</div>
 				<div class="col-sm-8">
-					<label class="control-label" for="T_or_F" id="label_group">Group</label>
-					<select id="group_name" name="group_name" class="form-control" style ="Width:20%">
+					<label id="grp_lab" class="control-label" for="group">Group</label>
+					<select id="group" name="group" class="form-control" style ="Width:20%">
 						<option selected="selected"></option>
 					</select>
 				</div>
 				<div class="col-sm-4">
-					<label class="control-label" for="description">Assignment Name</label>
-					<select style ="width:50%; margin-left:1%;" id="assignment_name" name="assignment_name" class="form-control">
+					<label class="control-label" for="assignment_name">Assignment Name</label>
+					<select id="assignment_name" name="assignment_name" class="form-control" style ="width:50%; margin-left:1%;">
 						<option selected="selected"></option>
 					</select>
 				</div>
 				<div class="col-sm-8" id="date1">
 					<label class="control-label" for="submitted_date">Date Submitted</label>
 					<div class="input-group date" style = "margin-bottom:1%;">
-						<span class="input-group-addon"><i class="fa fa-calendar"></i></span><input style="width:60%;" type="text" id="date_submitted" name="date_submitted" placeholder="Date assessment was submitted?" class="form-control">
+						<span class="input-group-addon"><i class="fa fa-calendar"></i></span><input style="width:40%;" type="text" id="date_submitted" name="date_submitted" placeholder="Date assessment was submitted?" class="form-control">
 					</div>
 				</div>
 			</div>
 		</div>
 		<div class="btn-toolbar">
+			<!-- <button type="button" id="submit" class="btn btn-success pull-left" style="width:10%;margin-left:1%;margin-top:1%"  onclick = "submit_query()">Submit</button> -->
 			<input style="width:10%; float:left; margin-top:1%; margin-left:1%;" type="submit" class="btn btn-success" value="Submit"  />
 		</div>
 	</form>
@@ -151,7 +151,7 @@
 	var question_type = 0;
 	var forecast = 0;
 	var question_text = "";
-	var true_or_false = 0;
+	var number_of_choice = 0;
 	var category = "Default";
 	var question_purpose = 0;
 	var user = "";
@@ -173,13 +173,13 @@
 	});
 	
 	var users = {{userList | safe}};
-	var select_user = document.getElementById("user_name");
+	var select_user = document.getElementById("user");
 	if(users.length == 0)
 	{
-		document.getElementById("user_name").style.visibility = "hidden";
-		document.getElementById("group_name").style.visibility = "hidden";
-		document.getElementById("label_user").style.visibility = "hidden";
-		document.getElementById("label_group").style.visibility = "hidden";
+	    document.getElementById("usr_lab").style.visibility = "hidden";
+		document.getElementById("user").style.visibility = "hidden";
+		document.getElementById("grp_lab").style.visibility = "hidden";
+		document.getElementById("group").style.visibility = "hidden";
 	}
 
 	users.forEach(function(name, index) {
@@ -188,7 +188,7 @@
 
 
 	var groups = {{groupList | safe}};
-	var select_group = document.getElementById("group_name");
+	var select_group = document.getElementById("group");
 	groups.forEach(function(name, index) {
 		select_group.options[select_group.options.length] = new Option(name.group);
 	});
@@ -199,68 +199,69 @@
 		select_assignment.options[select_assignment.options.length] = new Option(name.assignment);
 	});
 	
-	// function submit(){
-	// 	get_value();
+	/*
+	function submit_query(){
+		get_value();
 	// 	//pass_value();
 	// 	//window.location.replace("/result/");
-	// 	/*things to do on click*/
-	// }
+	// 	//things to do on click
+	}
 	
-	// function get_value(){
-	// 	var selected_question = document.querySelector('input[name = "question_type"]:checked');
-	// 	if (selected_question === null) {
-	// 		question_type = "";
-	// 	}
-	// 	else {
-	// 		question_type = selected_question.value;
-	// 	}
+	function get_value(){
+		var selected_question = document.querySelector('input[name = "question_type"]:checked');
+		if (selected_question === null) {
+			question_type = "";
+		}
+		else {
+			question_type = selected_question.value;
+		}
 		
-	// 	var selected_forcast = document.querySelector('input[name = "forecast"]:checked');
-	// 	if (selected_forcast === null) {
-	// 		forecast = "";
-	// 	}
-	// 	else {
-	// 		forecast = selected_forcast.value;
-	// 	}
+		var selected_forcast = document.querySelector('input[name = "forecast"]:checked');
+		if (selected_forcast === null) {
+			forecast = "";
+		}
+		else {
+			forecast = selected_forcast.value;
+		}
 		
-	// 	var selected_purpose = document.querySelector('input[name = "corporate_training"]:checked');
-	// 	if (selected_purpose === null) {
-	// 		question_purpose = "";
-	// 	}
-	// 	else {
-	// 		question_purpose = selected_purpose.value;
-	// 	}
+		var selected_purpose = document.querySelector('input[name = "corporate_training"]:checked');
+		if (selected_purpose === null) {
+			question_purpose = "";
+		}
+		else {
+			question_purpose = selected_purpose.value;
+		}
 		
-	// 	question_text = document.getElementById("question_text").value;
-	// 	true_or_false = document.getElementById("numberofchoice").value;
-	// 	category = document.getElementById("category").value;
-	// 	user_name = document.getElementById("user_name").value;
-	// 	group_name = document.getElementById("group_name").value;
-	// 	assignment_name = document.getElementById("assignment_name").value;
-	// 	date_submitted = document.getElementById("date_submitted").value;
-	
-	// 	var answer = [question_type, forecast, question_purpose, question_text, true_or_false, category, user_name, group_name, assignment_name, date_submitted];
-	// 	//console.log(answer);
-
-	// 	var url = "/result/";
-	// 	var params = {
-	// 			csrfmiddlewaretoken: "{{ csrf_token }}",
-	// 			'question_type':question_type,
-	// 			'forecast':forecast,
-	// 			'question_purpose':question_purpose,
-	// 			'question_text':question_text, // from form
-	// 			'true_or_false':true_or_false,
-	// 			'category':category,
-	// 			'user_name':user_name,
-	// 			'group_name':group_name,
-	// 			'assignment_name':assignment_name,
-	// 			'date_submitted':date_submitted
-	// 		};
-	// 	var xhr = new XMLHttpRequest();
-	// 	xhr.open("POST", url, true);
-	// 	xhr.send(params);
-
-	// }
+		question_text = document.getElementById("question_text").value;
+		true_or_false = document.getElementById("numberofchoice").value;
+		category = document.getElementById("category").value;
+		user_name = document.getElementById("user_name").value;
+		group_name = document.getElementById("group_name").value;
+		assignment_name = document.getElementById("assignment_name").value;
+		date_submitted = document.getElementById("date_submitted").value;
+		
+		var answer = [question_type, forecast, question_purpose, question_text, true_or_false, category, user_name, group_name, assignment_name, date_submitted];
+		//console.log(answer);
+		
+		var url = "/result/";
+		var params = {
+				csrfmiddlewaretoken: "{{ csrf_token }}",
+	 			'question_type':question_type,
+	 			'forecast':forecast,
+	 			'question_purpose':question_purpose,
+	 			'question_text':question_text, // from form
+	 			'true_or_false':true_or_false,
+	 			'category':category,
+	 			'user_name':user_name,
+	 			'group_name':group_name,
+	 			'assignment_name':assignment_name,
+	 			'date_submitted':date_submitted
+	 		};
+	 	var xhr = new XMLHttpRequest();
+	 	xhr.open("POST", url, true);
+	 	xhr.send(params);
+	}
+	*/
 	// $.extend({
 	// 	    redirectPost: function(location, args)
 	// 	    {
@@ -272,37 +273,39 @@
 	// 	    }
 	// 	});
 	// //TODO
-	// function pass_value(){
-	// 	$.ajax({
-	// 		type:"POST",
-	// 		url:"/result/",
-	// 		data: {
-	// 			csrfmiddlewaretoken: "{{ csrf_token }}",
-	// 			'question_type':question_type,
-	// 			'forecast':forecast,
-	// 			'question_purpose':question_purpose,
-	// 			'question_text':question_text, // from form
-	// 			'true_or_false':true_or_false,
-	// 			'category':category,
-	// 			'user_name':user_name,
-	// 			'group_name':group_name,
-	// 			'assignment_name':assignment_name,
-	// 			'date_submitted':date_submitted
-	// 		},
-	// 		success: function(data) {
-	// 			// if (data.status){
-	// 			// 	//alert(data.rep_message);
-	// 			// 	window.location.replace("/result/");
-	// 			// }
-	// 			// else if (!data.status){
-	// 			// 	alert(data.rep_message);
-	// 			// 	location.reload();
-	// 			// }
-	// 			$.redirectPost("/result/",{csrfmiddlewaretoken: "{{ csrf_token }}",summary:data});
-	// 		},
-	// 	});
-	// 	return false;
-	// }
+	/*
+	function pass_value(){
+		$.ajax({
+			type:"POST",
+			url:"/result/",
+			data: {
+				csrfmiddlewaretoken: "{{ csrf_token }}",
+				'question_type':question_type,
+	 			'forecast':forecast,
+	 			'question_purpose':question_purpose,
+	 			'question_text':question_text, // from form
+	 			'true_or_false':true_or_false,
+	 			'category':category,
+	 			'user_name':user_name,
+	 			'group_name':group_name,
+	 			'assignment_name':assignment_name,
+	 			'date_submitted':date_submitted
+	 		},
+	 		success: function(data) {
+	 			if (data.status){
+	 				//alert(data.rep_message);
+	 			 	window.location.replace("/result/");
+	 			}
+	 			else if (!data.status){
+	 			 	alert(data.rep_message);
+	 			 	location.reload();
+	 			 }
+	 			$.redirectPost("/result/",{csrfmiddlewaretoken: "{{ csrf_token }}",summary:data});
+	 		},
+	 	});
+	 	return false;
+	}
+	*/
 	$(document).ready(function() {
 		//Selector
 		$('.js-example-basic-single').select2();
@@ -314,12 +317,7 @@
 			calendarWeeks: true,
 			autoclose: true
 		});
-	});
-</script>
-<script>
-
-
-	$(function(){
+		//Radio select/deselect
 		$('input[id="rad"]').click(function(){
 			var $radio = $(this);
 			// if this was previously checked
@@ -333,6 +331,11 @@
 			// remove was checked from other radios
 			$radio.siblings('input[name="rad"]').data('waschecked', false);
 		});
+	});
+</script>
+<script>
+	$(function(){
+
 	});
 </script>
 {% endblock %}
