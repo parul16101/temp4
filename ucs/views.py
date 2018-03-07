@@ -1204,7 +1204,7 @@ def result(request):
     user_id = request.session.get("userId")
     if not user_id:
         return redirect(reverse("login"))
-    current_user = User.objects.get(id=user_id)
+    current_user = User.objects.get(id= user_id)
     data = {}
     summary_results = {}
     plot = []
@@ -1218,13 +1218,14 @@ def result(request):
     if request.method == "POST":
 
         #Process request to get answer containing all option selected on scoring page
-        answer = processRequests(request, current_user)
-        #answer:[question_type, forecast, question_purpose, question_text, true_or_false, category, user_name, group_name, assignment_name, date_submitted]
+        answer = processRequests(request,current_user)
+        print "answer\n\n\n\n",answer
+        #answer = [question_type, forecast, question_purpose, question_text, true_or_false, category, user_name, group_name, assignment_name, date_submitted]
 
         #write answer in the file
-        if not os.path.isdir('debug\\'):
-            os.makedirs('debug\\')
-        with open('debug\data.csv', 'wb') as csvfile:
+        #if not os.path.isdir('debug\\'):
+            #os.makedirs('debug\\')
+        with open('/tmp/data.csv', 'wb') as csvfile:
             para_fieldnames = ['Question Type', 'Forecast', 'Question Purpose', 'Question Text', '# of Choices', 'Category', 'User', 'Group', 'Assignment Name', 'Date Submitted']
             writer = csv.DictWriter(csvfile, fieldnames=para_fieldnames)
             writer.writeheader()
@@ -1234,7 +1235,7 @@ def result(request):
         #########################IT'S NO LONGER RAUL CODE##############################
         ASet = returnAssessments(answer)
         temp = ASet.values()
-        with open('debug\data.csv', 'a') as csvfile:
+        with open('/tmp/data.csv', 'a') as csvfile:
             assessment_fieldnames = ['Question ID', 'Date of assessment','User Name','Operator','Answer Text','Details Of Assessment','Option Text','ID']
             writer = csv.DictWriter(csvfile, fieldnames=assessment_fieldnames,lineterminator='\n')
             writer.writeheader()
@@ -1245,7 +1246,7 @@ def result(request):
             csvfile.write("\n\n\n");
 
         summary_results, values, plot, datapoints = computeResults(ASet)
-        summary_fieldnames = ['Confidence','Calibration','Resolution','Knowledge','Brierscore']
+        summary_fieldnames = ['Confidence', 'Calibration','Resolution','Knowledge','Brierscore']
         insert_data_to_debug_file_vertically(summary_fieldnames,values,'a')
 
     return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot})
