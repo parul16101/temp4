@@ -58,6 +58,7 @@ WarningQ = {0 : "The true value was updated for record in row ",
 #
 # Function for rendering home page. Home page is rendered when someone login successfully.
 def home_page(request):
+	#DJ Home page to do report
     if "userId" in request.session.keys():
         user_name = request.session.get("userId")
         QA_type = [] #Question  or Assignment
@@ -70,33 +71,44 @@ def home_page(request):
         #Check if admin
         current_user = User.objects.get(id= user_name)
         if current_user.admin_user==True:
-            user_work = Assignment_log.objects.all()
+            user_work = Assignment_log.objects.filter(user_id = current_user)
             #Loop through user assignments
             for uw in user_work:
                 days_left = 'N/A'
+                time = "E" #For error, no / or - in date to split
                 if uw.due_date:
-                    time = uw.due_date.split("/")
-                    if len(time) >= 3:
+                    if '/' in uw.due_date:
+                        time = uw.due_date.split("/")
                         s_date = datetime(int(time[2]), int(time[0]), int(time[1]))
+                    elif '-' in uw.due_date:
+                    	time = uw.due_date.split("-")
+                    	s_date = datetime(int(time[0]), int(time[1]), int(time[2]))
+                    if len(time) >= 3 and time != "E":
                         n_date = datetime(int(now.year), int(now.month), int(now.day))
                         delta  = s_date - n_date
                         days_left = delta.days
                 QA_type.append("Assignment")
                 names.append(uw.assignment_id.assignment_name)
                 f_dates.append(uw.due_date)
-                if uw.finish_date != "00-00-0000":
-                    r_days.append("s")
-                else:
+                print uw.finish_date
+                if uw.finish_date == "00-00-0000" or uw.finish_date == "00/00/0000":
                     r_days.append(days_left)
+                else:
+                	r_days.append("s")
                 groups.append(uw.group_id.group_name)
                 users.append(uw.user_id.username)
-            question_work = Question.objects.filter(true_value__isnull = False)
+            question_work = Question.objects.filter(true_value__isnull = False).filter(true_value__exact='')
             for qw in question_work:
+            	print qw.true_value
                 days_left = 'N/A'
+                time = "E" #For error, no / or - in date to split
                 if qw.close_date:
-                    time = qw.close_date.split("/")
-                    if len(time) >= 3:
-                        s_date = datetime(int(time[2]), int(time[0]), int(time[1]))
+                	if '/' in qw.close_date:
+                		time = qw.close_date.split("/")
+                	elif '-' in qw.close_date:
+                		time = qw.close_date.split("-")
+                	if len(time) >= 3 and time != "E":
+                		s_date = datetime(int(time[2]), int(time[0]), int(time[1]))
                         n_date = datetime(int(now.year), int(now.month), int(now.day))
                         delta = s_date - n_date
                         days_left = delta.days
@@ -112,10 +124,14 @@ def home_page(request):
             #Loop through user assignments
             for uw in user_work:
                 days_left = 'N/A'
+                time = "E" #For error, no / or - in date to split
                 if uw.due_date:
-                    time = uw.due_date.split("/")
-                    if len(time) >= 3:
-                        s_date = datetime(int(time[2]), int(time[0]), int(time[1]))
+                	if '/' in uw.due_date:
+                		time = uw.due_date.split("/")
+                	elif '-' in uw.due_date:
+                		time = uw.due_date.split("-")
+                	if len(time) >= 3 and time != "E":
+                		s_date = datetime(int(time[2]), int(time[0]), int(time[1]))
                         n_date = datetime(int(now.year), int(now.month), int(now.day))
                         delta  = s_date - n_date
                         days_left = delta.days
