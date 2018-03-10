@@ -744,7 +744,7 @@ def do_assignment(request):
         data['rep_message'] = 'Successfully Create Assessment. Redirect you to the Assignment List'
         data['status'] = True
 
-        now = datetime.datetime.now()
+        now = datetime.now()
         f_date = datetime.today().strftime("%Y-%m-%d")
 	#DJ
         assignment_target = Assignment.objects.filter(assignment_name = assignment_name)
