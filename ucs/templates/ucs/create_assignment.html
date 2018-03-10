@@ -85,6 +85,7 @@
 						</div>
 					</div>
 					<div class="form-group" style="width:100%">
+						<input type="checkbox" id="sendemail" name="sendemail" checked> Send Email </input>
 						<button type="button" class ="btn-success btn" style="width:15%;float:left;margin-top:0.1%;margin-left:80%;" id=submit_change>Submit</button>
 					</div>
 				</div>
@@ -209,7 +210,7 @@
 			url:"/create_assignment/",
 			data: {
 				csrfmiddlewaretoken: "{{ csrf_token }}",
-				'atname': $('#AssignmentName').val(), // from form
+				'assignment_name': $('#AssignmentName').val(), // from form
 				'closing_date': $('#closing_date').val(),
 				'agroup[]': member,
 				'aquestion[]': checkedQuestions
@@ -217,7 +218,9 @@
 			success: function(data) {
 				if (data.status){
 					//emailjs.send("<service_id>", "<templat_id>", { "variabls in template" })
-	                                emailjs.send("rtdstamu_gmail_com","exp1",{a_name: data.aname, e_list: data.emails});
+					if( $("#sendemail").is(':checked') ) {
+						emailjs.send("rtdstamu_gmail_com","exp1",{a_name: data.assignment_name, e_list: data.emails});
+					}
 					alert(data.rep_message);
 					window.location.replace("/search_assignment/");
 				}

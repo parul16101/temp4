@@ -176,7 +176,7 @@
 		var cell = element.parentNode.parentNode.rowIndex;
 		var gpname = document.getElementById("GroupTable").rows[cell].cells[0].innerHTML;
 		document.getElementById("GroupTable").deleteRow(cell);
-		var atname = document.getElementById("AssignmentName").value;
+		var a_name = document.getElementById("AssignmentName").value;
 		var action = "delete";
 		$.ajax({
 			type:"POST",
@@ -185,7 +185,7 @@
 				csrfmiddlewaretoken: "{{ csrf_token }}",
 				'action': action,
 				'gp_name': gpname, // from form
-				'at_name': atname,
+				'assignment_name': a_name,
 			},
 			success: function(data) {
 				location.reload();
@@ -205,7 +205,7 @@
 		for(j=0;j<si.options.length;j++){
 			gpname.push(si.options[j].value);
 		}
-		var atname = document.getElementById("AssignmentName").value;
+		var a_name = document.getElementById("AssignmentName").value;
 		var action = "add";
 		
 		$.ajax({
@@ -215,7 +215,7 @@
 				csrfmiddlewaretoken: "{{ csrf_token }}",
 				'action': action,
 				'gp_name[]': gpname,
-				'at_name' : atname,
+				'assignment_name': a_name
 			},
 			success: function(data) {
 				location.reload();

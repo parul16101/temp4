@@ -398,7 +398,7 @@ def create_assignment(request):
     json_user = json.dumps(grouplist)
     data = {'rep_message': "hello"}
     if request.method == 'POST':
-        assignment_name = request.POST['atname']
+        assignment_name = request.POST['assignment_name']
         assigned_date = request.POST['closing_date']
         assigned_group = request.POST.getlist('agroup[]')
         #Build Email List DJ
@@ -460,7 +460,7 @@ def create_assignment(request):
                 data['rep_message'] = 'Successfully Create Assignment. Redirect you to the Assignment List'
                 data['status'] = True
                 data['emails'] = email_list
-                data['aname'] = assignment_name
+                data['assignment_name'] = assignment_name
                 #Insert into assignment list table without the finish_date
                 for uid in all_users:
                     insertIntoAssignmentLog = Assignment_log(assignment_id = assignment_info, user_id = uid, due_date = assigned_date,
@@ -556,7 +556,7 @@ def search_assignment(request):
     json_assignment = json.dumps(at_pair)
     if request.method == 'POST':
         if request.POST['action'] == "delete":
-            assignment_name = request.POST['atname']
+            assignment_name = request.POST['assignment_name']
             existAssignment = Assignment.objects.filter(assignment_name = assignment_name)
             for assignment in existAssignment:
                 Assigned_question.objects.filter(assignment_id = assignment).delete()
@@ -591,10 +591,10 @@ def edit_assignment(request):
     user_id = request.session.get("userId")
     if not user_id:
         return redirect(reverse("login"))
-    atname = request.GET.get('assignment_name','')
-    #print atname
+    assignment_name = request.GET.get('assignment_name','')
+    #print assignment_name
 
-    assignment_info = Assignment.objects.filter(assignment_name = atname)
+    assignment_info = Assignment.objects.filter(assignment_name = assignment_name)
     question_in_assignment = Assigned_question.objects.filter(assignment_id = assignment_info)
     text_list = []
     cata_list = []
@@ -635,11 +635,11 @@ def edit_assignment(request):
         if request.POST['action'] == "delete":
             delete_group = request.POST['gp_name']
             Group_info2 = Group.objects.filter(group_name = delete_group)
-            delete_assignment = request.POST['at_name']
+            delete_assignment = request.POST['assignment_name']
             assignment_info = Assignment.objects.filter(assignment_name = delete_assignment)
             Assigned_group.objects.filter(assignment_id = assignment_info, group_id = Group_info2).delete()
         if request.POST['action'] == "add":
-            add_assignment = request.POST['at_name']
+            add_assignment = request.POST['assignment_name']
             assignment_222 = Assignment.objects.get(assignment_name = add_assignment)
             add_group = request.POST.getlist('gp_name[]')
             for item in add_group:
@@ -647,14 +647,14 @@ def edit_assignment(request):
                 Group_info3 = Group.objects.get(group_name = item)
                 newAssignedGroup = Assigned_group(assignment_id = assignment_222, group_id = Group_info3)
                 newAssignedGroup.save()
-    return  render(request, "ucs/edit_assignment.html", {"assignment_name": atname,"group_not_in_assignment": json_group, "group_in_assignment": group_info, "question_in_assignment": json_question})
+    return  render(request, "ucs/edit_assignment.html", {"assignment_name": assignment_name,"group_not_in_assignment": json_group, "group_in_assignment": group_info, "question_in_assignment": json_question})
 
 def do_assignment(request):
     user_id = request.session.get("userId")
     if not user_id:
         return redirect(reverse("login"))
-    asname = request.GET.get('assignment_name','')
-    assignment_target = Assignment.objects.filter(assignment_name = asname)
+    assignment_name = request.GET.get('assignment_name','')
+    assignment_target = Assignment.objects.filter(assignment_name = assignment_name)
     assignment_set = Assigned_question.objects.filter(assignment_id = assignment_target)
     text_list = []
     description_list = []
@@ -690,7 +690,7 @@ def do_assignment(request):
         upload_date = request.POST['upload_date']
         answered_text = request.POST.getlist('question_text[]')
         answered_question = request.POST.getlist('answer[]')
-        asname = request.POST['aname']
+        assignment_name = request.POST['assignment_name']
         j = 0
         print answered_text
         print answered_question
@@ -731,12 +731,12 @@ def do_assignment(request):
         now = datetime.datetime.now()
         f_date = datetime.date.today().strftime("%Y-%m-%d")
 	#DJ
-        assignment_target = Assignment.objects.filter(assignment_name = asname)
+        assignment_target = Assignment.objects.filter(assignment_name = assignment_name)
         print assignment_target
         print "UPDATE.."
         Assignment_log.objects.filter(assignment_id = assignment_target).filter(user_id = user).update(finish_date = f_date)
         return JsonResponse(data)
-    return render(request, "ucs/do_assignment.html", {"assignment_title":asname, "username": request.session.get("username"), "dataList": json_question})
+    return render(request, "ucs/do_assignment.html", {"assignment_title":assignment_name, "username":request.session.get("username"), "dataList":json_question})
 
 #[Junqi] Updates
 def create_group(request):

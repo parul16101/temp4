@@ -6,7 +6,7 @@
 		<h3><strong>Homepage</strong></h3>
 	</div>
 	<div class="ibox-content">
-		<h3 align="center"><strong>Summary Report</strong></h3>
+		<h3 align="center"><strong>To Do List</strong></h3>
 		<div class="table-responsive">
 			<div class="bodycontainer scrollable">
 				<table class="sortable table table-striped table-bordered table-hover dataTables-example table-scrollable" id="home-table">
@@ -16,9 +16,7 @@
 							<th>Name</th>
 							<th>Due Date</th>
 							<th>Days Left</th>
-							<th>Group</th>
-                                                        <th>User</th>
-                                                        <th>View</th>
+                            <th>View</th>
 						</tr>
 					</thead>
 					<tbody></tbody>
@@ -94,7 +92,7 @@
                         newCell.style.color = txtCol;
                         newCell.appendChild(newText);
                         //Column 5: group
-                        newCell = newRow.insertCell(4);
+                        /*newCell = newRow.insertCell(4);
                         newText = document.createTextNode(name.group);
                         newCell.style.backgroundColor = bgCol;
                         newCell.style.color = txtCol;
@@ -104,31 +102,31 @@
                         newText = document.createTextNode(name.user);
                         newCell.style.backgroundColor = bgCol;
                         newCell.style.color = txtCol;
-                        newCell.appendChild(newText);
+                        newCell.appendChild(newText);*/
                         //Column 7: View Button (Link to question or assignment)
-			newCell = newRow.insertCell(6);
+			newCell = newRow.insertCell(4);
 			newCell.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="view_type(this)" >'
-			+'<span class="glyphicon glyphicon-pencil"></span> View</button>';
+			+'<span class="glyphicon glyphicon-pencil"></span> Do</button>';
 			
 		});
 	}
 </script>
-<!-- function view_type will send redirect to the edit_question or assignment page --!>
+<!-- function view_type will send redirect to the edit_question or assignment page -->
 <script type="text/javascript" >
 	function view_type(element){
 		var cell = element.parentNode.parentNode.rowIndex;
 		var type = document.getElementById("home-table").rows[cell].cells[0].innerHTML
 		var names = document.getElementById("home-table").rows[cell].cells[1].innerHTML
                 if( type == "Question" ) {
-			window.location = '/edit_question?question_name=' + names;
+                	window.location = '/edit_question?question_name=' + names;
                 } else if( type == "Assignment" ) {
-			window.location = '/do_assignment?assignment_name=' + names;
+                	window.location = '/do_assignment?assignment_name=' + names;
                 } else {
                 	alert("ERROR: Type is not a Question or Assignment, please contact support");
                 }
 	}
 </script>
-<!-- This block is to integrate the dataTable plugin with table_id = home-table --!>
+<!-- This block is to integrate the dataTable plugin with table_id = home-table -->
 <script>
 	$(document).ready(function(){
 		$('.dataTables-example').DataTable({

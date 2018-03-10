@@ -21,7 +21,9 @@
 				</thead>
 			</table>
 		</div>
-		<button type="button" class="btn btn-success" style="width:30%" onclick="add_assignment();">+ Create Assignment</button>
+		<div class="btn-toolbar">
+			<input style="width:20%;float:left;margin-top:0.5%;margin-left:2%"type="button" class="btn btn-success" value="+ Create Assignment" onclick="add_assignment();" />
+		</div>
 	</div>
 </div>
 {% endblock %}
@@ -81,7 +83,7 @@
 				data: {
 					csrfmiddlewaretoken: "{{ csrf_token }}",
 					'action': action,
-					'atname': names, // from form
+					'assignment_name': names, // from form
 				},
 				success: function(data) {
 					location.reload();
