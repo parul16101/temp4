@@ -745,7 +745,7 @@ def do_assignment(request):
         data['status'] = True
 
         now = datetime.datetime.now()
-        f_date = datetime.date.today().strftime("%Y-%m-%d")
+        f_date = datetime.today().strftime("%Y-%m-%d")
 	#DJ
         assignment_target = Assignment.objects.filter(assignment_name = assignment_name)
         print assignment_target
