@@ -418,6 +418,7 @@ def create_assignment(request):
         assigned_date = request.POST['closing_date']
         assigned_group = request.POST.getlist('agroup[]')
         #Build Email List DJ
+	print "HERE"
         for ag in assigned_group:
             group_info = Group.objects.filter(group_name = ag)
             user_list = Group_member.objects.filter(group_id = group_info)
@@ -708,6 +709,7 @@ def do_assignment(request):
         answered_question = request.POST.getlist('answer[]')
         asname = request.POST['aname']
         j = 0
+        print "HERE"
         print answered_text
         print answered_question
         for item in answered_text:
@@ -744,9 +746,10 @@ def do_assignment(request):
         data['rep_message'] = 'Successfully Create Assessment. Redirect you to the Assignment List'
         data['status'] = True
 
-        now = datetime.datetime.now()
-        f_date = datetime.date.today().strftime("%Y-%m-%d")
-	#DJ
+        now = datetime.now()
+        f_date = now.strftime("%Y-%m-%d")
+        print f_date
+	    #DJ
         assignment_target = Assignment.objects.filter(assignment_name = asname)
         print assignment_target
         print "UPDATE.."
