@@ -695,39 +695,6 @@ def do_assignment(request):
     user_id = request.session.get("userId")
     if not user_id:
         return redirect(reverse("login"))
-    a_id = request.GET.get('assignment_id','')
-    a_id = int(a_id)
-    target_assignment = Assignment.objects.get(id = a_id)
-    assignment_name = target_assignment.assignment_name
-    print 'assignment_name: ', assignment_name
-    assignment_set = Assigned_question.objects.filter(assignment_id = target_assignment)
-    text_list = []
-    description_list = []
-    source_list = []
-    question_type_list = []
-    unit_list = []
-    option_list = []
-
-    for item in assignment_set:
-        print(item)
-        question_text = item.question_id.question_text
-        text_list.append(question_text)
-        question_description = item.question_id.question_description
-        description_list.append(question_description)
-        question_source = item.question_id.question_source
-        source_list.append(question_source)
-        unit = item.question_id.unit
-        unit_list.append(unit)
-        question_type = item.question_id.question_type
-        true_or_false = item.question_id.num_of_choices
-        option_list.append(true_or_false)
-        if question_type == True:
-            question_type_list.append("1")
-        else:
-            question_type_list.append("2")
-    question_pair = [{"question_text":t, "question_description":d, "question_source":s,  "unit":u, "question_type":y, "num_of_choices":o} for t, d, s, u, y, o in zip(text_list,description_list, source_list,unit_list,question_type_list, option_list)]
-    json_question = json.dumps(question_pair)
-
     if request.method == 'POST':
         data = {}
         print 'HERE '
@@ -736,7 +703,11 @@ def do_assignment(request):
         upload_date = request.POST['upload_date']
         answered_text = request.POST.getlist('question_text[]')
         answered_question = request.POST.getlist('answer[]')
-        assignment_name = request.POST['assignment_name']
+        a_id = request.POST['assignment_id']
+        a_id = int(a_id)
+        target_assignment = Assignment.objects.get(id = a_id)
+        assignment_name = target_assignment.assignment_name
+        print 'assignment_name: ', assignment_name
         j = 0
         print answered_text
         print answered_question
@@ -771,19 +742,52 @@ def do_assignment(request):
                 #print operator
                 new_assessment = Assessment(question_id = filtered_question, user_id = target_user, option_text = option, answer_text = answer, operator = operator, date_of_assessment = upload_date)
                 new_assessment.save()
-        data['rep_message'] = 'Successfully Create Assessment. Redirect you to the Assignment List'
-        data['status'] = True
-
-        now = datetime.now()
+        #now = datetime.now()
         f_date = datetime.today().strftime("%Y-%m-%d")
         print 'f_date: ', f_date
         #DJ
+        print 'assignment_name: ', assignment_name
         target_assignment = Assignment.objects.filter(assignment_name = assignment_name)
         print target_assignment
-        print "UPDATE..."
+        print 'Update...'
         Assignment_log.objects.filter(assignment_id = target_assignment).filter(user_id = target_user).update(finish_date = f_date)
         print 'COMPLETE...'
+        data['rep_message'] = 'Successfully Create Assessment. Redirect you to the Assignment List'
+        data['status'] = True
         return JsonResponse(data)
+    else:
+        a_id = request.GET.get('assignment_id','')
+        a_id = int(a_id)
+        target_assignment = Assignment.objects.get(id = a_id)
+        assignment_name = target_assignment.assignment_name
+        print 'assignment_name: ', assignment_name
+        assignment_set = Assigned_question.objects.filter(assignment_id = target_assignment)
+        text_list = []
+        description_list = []
+        source_list = []
+        question_type_list = []
+        unit_list = []
+        option_list = []
+
+        for item in assignment_set:
+            print(item)
+            question_text = item.question_id.question_text
+            text_list.append(question_text)
+            question_description = item.question_id.question_description
+            description_list.append(question_description)
+            question_source = item.question_id.question_source
+            source_list.append(question_source)
+            unit = item.question_id.unit
+            unit_list.append(unit)
+            question_type = item.question_id.question_type
+            true_or_false = item.question_id.num_of_choices
+            option_list.append(true_or_false)
+            if question_type == True:
+                question_type_list.append("1")
+            else:
+                question_type_list.append("2")
+        question_pair = [{"question_text":t, "question_description":d, "question_source":s,  "unit":u, "question_type":y, "num_of_choices":o} for t, d, s, u, y, o in zip(text_list,description_list, source_list,unit_list,question_type_list, option_list)]
+        json_question = json.dumps(question_pair)
     return render(request, "ucs/do_assignment.html", {"assignment_title":assignment_name, "username": request.session.get("username"), "dataList": json_question})
 
 
