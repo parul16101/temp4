@@ -12,6 +12,7 @@
 				<table class="sortable table table-striped table-bordered table-hover dataTables-example table-scrollable" id="QuestionTable">
 					<thead>
 						<tr>
+							<th style="display:none;">#</th>
 							<th>Question Text</th>
 							<th>Category</th>
 							<th>Question Type</th>
@@ -70,7 +71,7 @@
 <script src="{% static 'ucs/js/sorttable.js' %}"></script>
 <script src="{% static 'ucs/js/inspinia.js' %}"></script>
 <script src="{% static 'ucs/js/plugins/pace/pace.min.js' %}"></script>
-<script src="{% static 'ucs/js/plugins/dataTables/datatables.min.js' %}"></script>
+<script src="{% static 'ucs/js/plugins/dataTables/dataTables.min.js' %}"></script>
 <script type="text/javascript">
 	/*
 	$('.fold_search').click(function() {
@@ -107,63 +108,62 @@
 		datas.forEach(function(name, index) {
 			var num = tableRef.rows.length;
 			var newRow   = tableRef.insertRow(num);
-			var newCell_1  = newRow.insertCell(0);
+			var newCell_0  = newRow.insertCell(0);
+			var newText0  = document.createTextNode(name.question_id);
+			newCell_0.appendChild(newText0);
+			newCell_0.style.display = 'none';
+			
+			var newCell_1  = newRow.insertCell(1);
 			var newText1  = document.createTextNode(name.question_text);
 			newCell_1.appendChild(newText1);
 			
-			var newCell_2  = newRow.insertCell(1);
+			var newCell_2  = newRow.insertCell(2);
 			var newText2  = document.createTextNode(name.category_text);
 			newCell_2.appendChild(newText2)
 			
-			var newCell_3  = newRow.insertCell(2);
-			var newText3  = document.createTextNode(name.q_type);
+			var newCell_3  = newRow.insertCell(3);
+			//var newText3  = document.createTextNode(name.q_type);
 			if(name.q_type == false ){
-				newText3 = document.createTextNode("Continuous");
+				var newText3 = document.createTextNode("Continuous");
 			}
 			else{
-				newText3 = document.createTextNode("Discrete");
+				var newText3 = document.createTextNode("Discrete");
 			}
 			newCell_3.appendChild(newText3);
 			
-			var newCell_4  = newRow.insertCell(3);
-			var newText4  = document.createTextNode(name.q_use);
+			var newCell_4  = newRow.insertCell(4);
+			//var newText4  = document.createTextNode(name.q_use);
 			if(name.q_use == false ){
-				newText4 = document.createTextNode("Corporate");
+				var newText4 = document.createTextNode("Corporate");
 			}
 			else{
-				newText4 = document.createTextNode("Training");
+				var newText4 = document.createTextNode("Training");
 			}
 			newCell_4.appendChild(newText4);
 			
-			var newCell_5  = newRow.insertCell(4);
-			var newText5  = document.createTextNode(name.num_co);
-			if(name.num_co > 2 ){
-				newText5 = document.createTextNode("2+");
-			}
-			else{
-				newText5 = document.createTextNode("2");
-			}
+			var newCell_5  = newRow.insertCell(5);
+			var newText5 = document.createTextNode(name.num_co.toString());
 			newCell_5.appendChild(newText5);
 			
-			var newCell_6  = newRow.insertCell(5);
-			var newText6  = document.createTextNode(name.forecast);
-			if(name.forecast == false ){
-				newText6 = document.createTextNode("No");
+			var newCell_6  = newRow.insertCell(6);
+			//var newText6  = document.createTextNode(name.forecast);
+			if(name.forecast == false){
+				var newText6 = document.createTextNode("No");
 			}
 			else{
-				newText6 = document.createTextNode("Yes");
+				var newText6 = document.createTextNode("Yes");
 			}
 			newCell_6.appendChild(newText6);
 			
-			var newCell_7  = newRow.insertCell(6);
+			var newCell_7  = newRow.insertCell(7);
 			var newText7 = document.createTextNode(name.end_time);
 			newCell_7.appendChild(newText7);
 			
-			var newCell_8  = newRow.insertCell(7);
+			var newCell_8  = newRow.insertCell(8);
 			newCell_8.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="edit_question(this)" >'
 			+'<span class="glyphicon glyphicon-pencil"></span> Edit</button>';
 			
-			var newCell_9  = newRow.insertCell(8);
+			var newCell_9  = newRow.insertCell(9);
 			newCell_9.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="delete_question(this)" >'
 			+'<span class="glyphicon glyphicon-pencil"></span> Delete</button>';
 		});
@@ -174,7 +174,7 @@
 		var cell = element.parentNode.parentNode.rowIndex;
 		var names = document.getElementById("QuestionTable").rows[cell].cells[0].innerHTML
 		var action = "edit";
-		window.location = '/edit_question?question_name=' + names;
+		window.location = '/edit_question?question_id=' + names;
 	}
 </script>
 <script type="text/javascript" >
@@ -190,10 +190,11 @@
 				data:{
 					csrfmiddlewaretoken: "{{ csrf_token }}",
 					'action': action,
-					'qname': names, // from form
+					'question_id': names, // from form
 				},
 				success: function(data) {
-					location.reload();
+					document.getElementById("QuestionTable").deleteRow(cell)
+					//location.reload();
 				},
 			});
 			return false;

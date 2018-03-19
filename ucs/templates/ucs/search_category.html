@@ -32,6 +32,7 @@
 					<col width="10%" />
 					<thead>
 						<tr>
+							<th style="display:none;">#</th>
 							<th>Category Name</th>
 							<th>Number of Questions</th>
 							<th></th>
@@ -90,15 +91,20 @@
 	datas.forEach(function(name, index) {
 		var num = tableRef.rows.length;
 		var newRow = tableRef.insertRow(num);
-		var newCell_1 = newRow.insertCell(0);
+		var newCell_0 = newRow.insertCell(0);
+		var newText0 = document.createTextNode(name.category_id);
+		newCell_0.appendChild(newText0);
+		newCell_0.style.display = 'none';
+		
+		var newCell_1 = newRow.insertCell(1);
 		var newText1 = document.createTextNode(name.category);
 		newCell_1.appendChild(newText1);
 		
-		var newCell_2 = newRow.insertCell(1);
+		var newCell_2 = newRow.insertCell(2);
 		var newText2 = document.createTextNode(name.number);
 		newCell_2.appendChild(newText2);
 		
-		var newCell_3 = newRow.insertCell(2);
+		var newCell_3 = newRow.insertCell(3);
 		if(name.category != "Default"){
 			newCell_3.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="delete_category(this)" >'
 			+'<span class="glyphicon glyphicon-pencil"></span> Delete </button>';
@@ -118,7 +124,7 @@
 				data: {
 					csrfmiddlewaretoken: "{{ csrf_token }}",
 					'action': action,
-					'category_text': names, // from form
+					'category_id': names, // from form
 				},
 				success: function(data) {
 					document.getElementById("TagTable").deleteRow(cell)

@@ -30,6 +30,7 @@
 						<div class="form-group" style="width:100%">
 							<label class="control-label" for="source">Group Name</label>
 							<input type="text" name="GroupName" id="GroupName" class="form-control">
+							<input type="hidden" id="group_id" name="group_id" value="{{group_id}}">
 						</div>
 						<div class="table-responsive">
 							<label class="control-label" for="source">Exsiting Group Member</label>
@@ -128,6 +129,7 @@
 		document.getElementById("UserTable").deleteRow(cell)
 		var gpname = document.getElementById("GroupName").value;
 		var action = "delete";
+		var g_id = $("#group_id").val();
 		$.ajax({
 			type:"POST",
 			url:"/edit_group/",
@@ -135,7 +137,7 @@
 				csrfmiddlewaretoken: "{{ csrf_token }}",
 				'action': action,
 				'member_name': names, // from form
-				'g_name' : gpname,
+				'group_id' : g_id
 			},
 			success: function(data) {
 				location.reload();
@@ -154,9 +156,9 @@
 		for(j=0;j<si.options.length;j++){
 			member.push(si.options[j].value);
 		}
-		var gpname = document.getElementById("GroupName").value;
+		//var gpname = document.getElementById("GroupName").value;
 		var action = "add";
-		
+		var g_id = $("#group_id").val();
 		$.ajax({
 			type:"POST",
 			url:"/edit_group/",
@@ -164,7 +166,7 @@
 				csrfmiddlewaretoken: "{{ csrf_token }}",
 				'action': action,
 				'gmember[]': member,
-				'g_name' : gpname,
+				'group_id' : g_id
 			},
 			success: function(data) {
 				location.reload();

@@ -454,7 +454,13 @@
 	}
 	
 	function cancel_test(){
-		window.location.replace("/show_assignment/");
+		var is_admin = "{{request.session.admin_user}}";
+		if(is_admin == 'True'){
+			window.location.replace("/search_assignment/");
+		}
+		else{
+			window.location.replace("/show_assignment/");
+		}
 	}
 	
 	function next(){

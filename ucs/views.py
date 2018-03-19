@@ -61,6 +61,7 @@ def home_page(request):
 	#DJ Home page to do report
     if "userId" in request.session.keys():
         user_name = request.session.get("userId")
+        QA_id   = [] #Queation  or Assignment ID
         QA_type = [] #Question  or Assignment
         names   = [] #question text or assignment name
         f_dates = [] #due dates
@@ -81,12 +82,13 @@ def home_page(request):
                         time = uw.due_date.split("/")
                         s_date = datetime(int(time[2]), int(time[0]), int(time[1]))
                     elif '-' in uw.due_date:
-                    	time = uw.due_date.split("-")
-                    	s_date = datetime(int(time[0]), int(time[1]), int(time[2]))
+                        time = uw.due_date.split("-")
+                        s_date = datetime(int(time[0]), int(time[1]), int(time[2]))
                     if len(time) >= 3 and time != "E":
                         n_date = datetime(int(now.year), int(now.month), int(now.day))
                         delta  = s_date - n_date
                         days_left = delta.days
+                QA_id.append(uw.assignment_id.id)
                 QA_type.append("Assignment")
                 names.append(uw.assignment_id.assignment_name)
                 f_dates.append(uw.due_date)
@@ -94,24 +96,25 @@ def home_page(request):
                 if uw.finish_date == "00-00-0000" or uw.finish_date == "00/00/0000":
                     r_days.append(days_left)
                 else:
-                	r_days.append("s")
+                    r_days.append("s")
                 groups.append(uw.group_id.group_name)
                 users.append(uw.user_id.username)
             question_work = Question.objects.filter(true_value__isnull = False).filter(true_value__exact='')
             for qw in question_work:
-            	print qw.true_value
+                print qw.true_value
                 days_left = 'N/A'
                 time = "E" #For error, no / or - in date to split
                 if qw.close_date:
-                	if '/' in qw.close_date:
-                		time = qw.close_date.split("/")
-                	elif '-' in qw.close_date:
-                		time = qw.close_date.split("-")
-                	if len(time) >= 3 and time != "E":
-                		s_date = datetime(int(time[2]), int(time[0]), int(time[1]))
+                    if '/' in qw.close_date:
+                        time = qw.close_date.split("/")
+                    elif '-' in qw.close_date:
+                        time = qw.close_date.split("-")
+                    if len(time) >= 3 and time != "E":
+                        s_date = datetime(int(time[2]), int(time[0]), int(time[1]))
                         n_date = datetime(int(now.year), int(now.month), int(now.day))
                         delta = s_date - n_date
                         days_left = delta.days
+                QA_id.append(qw.id)
                 QA_type.append("Question")
                 names.append(qw.question_text)
                 f_dates.append(qw.close_date)
@@ -126,12 +129,12 @@ def home_page(request):
                 days_left = 'N/A'
                 time = "E" #For error, no / or - in date to split
                 if uw.due_date:
-                	if '/' in uw.due_date:
-                		time = uw.due_date.split("/")
-                	elif '-' in uw.due_date:
-                		time = uw.due_date.split("-")
-                	if len(time) >= 3 and time != "E":
-                		s_date = datetime(int(time[2]), int(time[0]), int(time[1]))
+                    if '/' in uw.due_date:
+                        time = uw.due_date.split("/")
+                    elif '-' in uw.due_date:
+                        time = uw.due_date.split("-")
+                    if len(time) >= 3 and time != "E":
+                        s_date = datetime(int(time[2]), int(time[0]), int(time[1]))
                         n_date = datetime(int(now.year), int(now.month), int(now.day))
                         delta  = s_date - n_date
                         days_left = delta.days
@@ -142,15 +145,18 @@ def home_page(request):
                 groups.append(uw.group_id.group_name)
                 users.append(uw.user_id.username)
         #Create list of table data
-        dataList = [{"type": t, "name": n, "due_date": dd, "days_left": dl, "group":g, "user":u} for t, n, dd, dl, g, u in zip(QA_type, names, f_dates, r_days, groups, users)]
+        dataList = [{"id":i, "type": t, "name": n, "due_date": dd, "days_left": dl, "group":g, "user":u} for i, t, n, dd, dl, g, u in zip(QA_id, QA_type, names, f_dates, r_days, groups, users)]
         json_data = json.dumps(dataList)
         return render(request, "ucs/home_page.html", {"dataList": json_data})
     else:
         return redirect(reverse("login"))
+
+
 ## Function to render information page
 #
 def info_page(request):
     return render(request, "ucs/info_page.html", {})
+
 
 def register(request):
     message = None
@@ -180,6 +186,7 @@ def register(request):
             newMember.save()
             message = "You successfully registered! Now login!"
     return render(request, "ucs/register.html", {"message" : message, "status": status})
+
 
 def login(request):
     message = None
@@ -316,6 +323,7 @@ def create_question(request):
             return JsonResponse(data)
     return render(request, "ucs/create_question.html",{"message": message, "username": request.session.get("username"), "dataList": json_group})
 
+
 def edit_question(request):
     user_id = request.session.get("userId")
     if not user_id:
@@ -328,13 +336,16 @@ def edit_question(request):
     cata_data = [{"category": c} for c in cata_list]
     json_cata = json.dumps(cata_data)
 
-    qname = request.GET.get('question_name','')
-    question = Question.objects.get(question_text=qname)
+    q_id = request.GET.get('question_id','')
+    q_id = int(q_id)
+    print q_id
+    question = Question.objects.get(id=q_id)
     owned = False
     if user_id != question.uploader_id:
         owned = True
 
     return render(request, "ucs/edit_question.html", {"question":question, "userId": user_id, "uploaderId": question.uploader_id, "owned": owned, "username":request.session.get("username"), "cataList": json_cata})
+
 
 def search_question(request):
     user_id = request.session.get("userId")
@@ -352,7 +363,7 @@ def search_question(request):
     CloseTimeList = []
     #Remove the files that are not accessible (deleted or not mounted)
     for question in questionSet:
-    	qidList.append(question.id)
+        qidList.append(question.id)
         questionList.append(question.question_text)
         categoryList.append(question.category.category_text)
         forecastList.append(question.forecast)
@@ -372,12 +383,10 @@ def search_question(request):
 
     if request.method == 'POST':
         if request.POST['action'] == "delete":
-            question_name = request.POST['qname']
-            exsitQuestion = Question.objects.filter(question_text = question_name)
-            for question in exsitQuestion:
-                #question.category.num_of_question = question.category.num_of_question - 1
-                question.delete()
+            q_id = request.POST['question_id']
+            Question.objects.get(id=q_id).delete()
     return render(request, "ucs/search_question.html", {"dataList": json_group,"catelist":json_user, "username": request.session.get("username")})
+
 
 def save_question(request):
     user_id = request.session.get("userId")
@@ -399,6 +408,7 @@ def save_question(request):
         question.question_text = question_text
         question.save()
     return HttpResponse("success")
+
 
 def create_assignment(request):
     message = None
@@ -507,15 +517,18 @@ def create_assignment(request):
     ###################################
     return render(request, "ucs/create_assignment.html", {"dataList": json_group, "message": message, "group_name": request.session.get("group_name"), "initialItems": json_user})
 
+
 def manage_category(request):
     tag_set = Category.objects.all()
     if not tag_set:
         new_tag = Category(category_text = "Default", num_of_question = 0)
         new_tag.save()
         tag_set = Category.objects.all()
+    cidList = []
     category_list = []
     number_list = []
     for item in tag_set:
+        cidList.append(item.id)
         category_list.append(item.category_text)
         filtered_question = Question.objects.filter(category = item)
         if item.num_of_question != len(filtered_question):
@@ -524,19 +537,17 @@ def manage_category(request):
         else:
             pass
         number_list.append(item.num_of_question)
-    category_pair = [{"category":g, "number":n} for g, n in zip(category_list, number_list)]
+    category_pair = [{"category_id":i, "category":g, "number":n} for i, g, n in zip(cidList, category_list, number_list)]
     print category_pair
     json_group = json.dumps(category_pair)
 
-
     if request.method == "POST":
-        category_text = request.POST.get("category_text")
+        c_id = request.POST.get("category_id")
         if request.POST['action'] == "delete":
-            exsitCategory = Category.objects.filter(category_text = category_text)
-            for category_obj in exsitCategory:
-                Category.objects.filter(id = category_obj.id).delete()
+            Category.objects.get(id = c_id).delete()
         elif request.POST['action'] == "add":
             data = {'rep_message': "None", 'status': False}
+            category_text = request.POST.get("category_text")
             exsit_cate = Category.objects.filter(category_text = category_text)
             if exsit_cate.exists():
                 data['rep_message'] = 'Same category exist'
@@ -552,6 +563,7 @@ def manage_category(request):
             return JsonResponse(data)
     return render(request, "ucs/search_category.html", {"username": request.session.get("username"), "dataList": json_group})
 
+
 def search_assignment(request):
     user_id = request.session.get("userId")
     if not user_id:
@@ -559,26 +571,29 @@ def search_assignment(request):
     message = None
 
     existAssignment = Assignment.objects.all()
+    aidList = []
     assignmentlist = []
     qnumber = []
     for assignment in existAssignment:
+        aidList.append(assignment.id)
         number = Assigned_question.objects.filter(assignment_id = assignment).count()
         if number == 0:
-        	assignment.delete()
+            assignment.delete()
         else:
             assignmentlist.append(assignment.assignment_name)
             qnumber.append(number)
-    at_pair = [{"assignment_name":g, "number":n} for g, n in zip(assignmentlist, qnumber)]
+    at_pair = [{"assignment_id":i, "assignment_name":g, "number":n} for i, g, n in zip(aidList, assignmentlist, qnumber)]
     json_assignment = json.dumps(at_pair)
     if request.method == 'POST':
         if request.POST['action'] == "delete":
-            assignment_name = request.POST['assignment_name']
-            existAssignment = Assignment.objects.filter(assignment_name = assignment_name)
-            for assignment in existAssignment:
-                Assigned_question.objects.filter(assignment_id = assignment).delete()
-                Assigned_group.objects.filter(assignment_id = assignment).delete()
-                assignment.delete()
+            a_id = request.POST['assignment_id']
+            assignment = Assignment.objects.get(id = a_id)
+            #for assignment in existAssignment:
+            Assigned_question.objects.filter(assignment_id = assignment).delete()
+            Assigned_group.objects.filter(assignment_id = assignment).delete()
+            assignment.delete()
     return  render(request, "ucs/search_assignment.html", {"message": message, "username": request.session.get("username"), "dataList": json_assignment})
+
 
 def show_assignment(request):
     user_id = request.session.get("userId")
@@ -593,25 +608,51 @@ def show_assignment(request):
         groupAssignments = Assigned_group.objects.filter(group_id = group.group_id)
         for assignment in groupAssignments:
             existAssignment.append(assignment.assignment_id)
+    aidList = []
     assignmentlist = []
     qnumber = []
     for assignment in existAssignment:
+        aidList.append(assignment.id)
         assignmentlist.append(assignment.assignment_name)
         number = Assigned_question.objects.filter(assignment_id = assignment).count()
         qnumber.append(number)
-    at_pair = [{"assignment_name":g, "number":n} for g, n in zip(assignmentlist, qnumber)]
+    at_pair = [{"assignment_id":i, "assignment_name":g, "number":n} for i, g, n in zip(aidList, assignmentlist, qnumber)]
     json_assignment = json.dumps(at_pair)
     return  render(request, "ucs/show_assignment.html", {"message": message, "username": request.session.get("username"), "dataList": json_assignment})
+
 
 def edit_assignment(request):
     user_id = request.session.get("userId")
     if not user_id:
         return redirect(reverse("login"))
-    assignment_name = request.GET.get('assignment_name','')
-    #print assignment_name
-
-    assignment_info = Assignment.objects.filter(assignment_name = assignment_name)
-    question_in_assignment = Assigned_question.objects.filter(assignment_id = assignment_info)
+    #%$%$%$%$%$%$%$%$%$%$
+    if request.method == 'POST':
+        a_id = request.POST['assignment_id']
+        a_id = int(a_id)
+        print 'Assignment id: ', a_id
+        target_assignment = Assignment.objects.get(id = a_id)
+        a_name = target_assignment.assignment_name
+        print 'Assignment name: ', a_name
+        if request.POST['action'] == "delete":
+            g_name = request.POST['gp_name']
+            target_group = Group.objects.filter(group_name = g_name)
+            Assigned_group.objects.filter(assignment_id = target_assignment, group_id = target_group).delete()
+        if request.POST['action'] == "add":
+            add_group = request.POST.getlist('gp_name[]')
+            for item in add_group:
+                item = item.encode("utf-8")
+                target_group = Group.objects.get(group_name = item)
+                newAssignedGroup = Assigned_group(assignment_id = target_assignment, group_id = target_group)
+                newAssignedGroup.save()
+    else:
+        a_id = request.GET.get('assignment_id','')
+        a_id = int(a_id)
+        print 'Assignment id: ', a_id
+        target_assignment = Assignment.objects.get(id = a_id)
+        a_name = target_assignment.assignment_name
+        print 'Assignment name: ', a_name
+    #$$%$%$%$%$%$%$%$%$%$%
+    question_in_assignment = Assigned_question.objects.filter(assignment_id = target_assignment)
     text_list = []
     cata_list = []
     question_type_list = []
@@ -629,49 +670,37 @@ def edit_assignment(request):
     question_pair = [{"question_text":t, "cata_text":c, "question_type":y} for t, c, y in zip(text_list, cata_list, question_type_list)]
     print question_pair
     json_question = json.dumps(question_pair)
-
-    group_in_assignment = Assigned_group.objects.filter(assignment_id = assignment_info)
+    group_in_assignment = Assigned_group.objects.filter(assignment_id = target_assignment)
     AllGroup = Group.objects.all()
     grouplist = []
     for group in AllGroup:
-        exsit_in = Assigned_group.objects.filter(assignment_id = assignment_info, group_id = group)
+        exsit_in = Assigned_group.objects.filter(assignment_id = target_assignment, group_id = group)
         if not exsit_in:
             grouplist.append(group.group_name)
     json_group = json.dumps(grouplist)
 
+    gidList = []
     exgrouplist = []
     for exgroup in group_in_assignment:
         group = exgroup.group_id;
+        gidList.append(group.id)
         exgrouplist.append(group.group_name)
 
-    at_pair = [{"group_name":g} for g in zip(exgrouplist)]
+    at_pair = [{"group_id":i, "group_name":g} for i, g in zip(gidList, exgrouplist)]
     group_info = json.dumps(at_pair)
+    return  render(request, "ucs/edit_assignment.html", {"assignment_id": a_id, "assignment_name": a_name, "group_not_in_assignment": json_group, "group_in_assignment": group_info, "question_in_assignment": json_question})
 
-    if request.method == 'POST':
-        if request.POST['action'] == "delete":
-            delete_group = request.POST['gp_name']
-            Group_info2 = Group.objects.filter(group_name = delete_group)
-            delete_assignment = request.POST['assignment_name']
-            assignment_info = Assignment.objects.filter(assignment_name = delete_assignment)
-            Assigned_group.objects.filter(assignment_id = assignment_info, group_id = Group_info2).delete()
-        if request.POST['action'] == "add":
-            add_assignment = request.POST['assignment_name']
-            assignment_222 = Assignment.objects.get(assignment_name = add_assignment)
-            add_group = request.POST.getlist('gp_name[]')
-            for item in add_group:
-                item = item.encode("utf-8")
-                Group_info3 = Group.objects.get(group_name = item)
-                newAssignedGroup = Assigned_group(assignment_id = assignment_222, group_id = Group_info3)
-                newAssignedGroup.save()
-    return  render(request, "ucs/edit_assignment.html", {"assignment_name": assignment_name,"group_not_in_assignment": json_group, "group_in_assignment": group_info, "question_in_assignment": json_question})
 
 def do_assignment(request):
     user_id = request.session.get("userId")
     if not user_id:
         return redirect(reverse("login"))
-    assignment_name = request.GET.get('assignment_name','')
-    assignment_target = Assignment.objects.filter(assignment_name = assignment_name)
-    assignment_set = Assigned_question.objects.filter(assignment_id = assignment_target)
+    a_id = request.GET.get('assignment_id','')
+    a_id = int(a_id)
+    target_assignment = Assignment.objects.get(id = a_id)
+    assignment_name = target_assignment.assignment_name
+    print 'assignment_name: ', assignment_name
+    assignment_set = Assigned_question.objects.filter(assignment_id = target_assignment)
     text_list = []
     description_list = []
     source_list = []
@@ -699,10 +728,11 @@ def do_assignment(request):
     question_pair = [{"question_text":t, "question_description":d, "question_source":s,  "unit":u, "question_type":y, "num_of_choices":o} for t, d, s, u, y, o in zip(text_list,description_list, source_list,unit_list,question_type_list, option_list)]
     json_question = json.dumps(question_pair)
 
-    data = {}
     if request.method == 'POST':
+        data = {}
+        print 'HERE '
         uploader = request.POST['uploader']
-        user = User.objects.get(username = uploader)
+        target_user = User.objects.get(username = uploader)
         upload_date = request.POST['upload_date']
         answered_text = request.POST.getlist('question_text[]')
         answered_question = request.POST.getlist('answer[]')
@@ -739,20 +769,23 @@ def do_assignment(request):
                 #operator = content[i]
                 #i = i + 1
                 #print operator
-                new_assessment = Assessment(question_id = filtered_question, user_id = user, option_text = option, answer_text = answer, operator = operator, date_of_assessment = upload_date)
+                new_assessment = Assessment(question_id = filtered_question, user_id = target_user, option_text = option, answer_text = answer, operator = operator, date_of_assessment = upload_date)
                 new_assessment.save()
         data['rep_message'] = 'Successfully Create Assessment. Redirect you to the Assignment List'
         data['status'] = True
 
         now = datetime.now()
         f_date = datetime.today().strftime("%Y-%m-%d")
-	#DJ
-        assignment_target = Assignment.objects.filter(assignment_name = assignment_name)
-        print assignment_target
-        print "UPDATE.."
-        Assignment_log.objects.filter(assignment_id = assignment_target).filter(user_id = user).update(finish_date = f_date)
+        print 'f_date: ', f_date
+        #DJ
+        target_assignment = Assignment.objects.filter(assignment_name = assignment_name)
+        print target_assignment
+        print "UPDATE..."
+        Assignment_log.objects.filter(assignment_id = target_assignment).filter(user_id = target_user).update(finish_date = f_date)
+        print 'COMPLETE...'
         return JsonResponse(data)
-    return render(request, "ucs/do_assignment.html", {"assignment_title":assignment_name, "username":request.session.get("username"), "dataList":json_question})
+    return render(request, "ucs/do_assignment.html", {"assignment_title":assignment_name, "username": request.session.get("username"), "dataList": json_question})
+
 
 #[Junqi] Updates
 def create_group(request):
@@ -811,70 +844,72 @@ def search_group(request):
     if not user_id:
         return redirect(reverse("login"))
     message = None
-
+    if request.method == 'POST':
+        if request.POST['action'] == "delete":
+            g_id = request.POST['group_id']
+            target_group = Group.objects.get(id = g_id)
+            Group_member.objects.filter(group_id = target_group).delete()
+            target_group.delete()
     existGroup = Group.objects.all()
+    gidList = []
     grouplist = []
     mnumber = []
     for group in existGroup:
+        gidList.append(group.id)
         grouplist.append(group.group_name)
         number = Group_member.objects.filter(group_id = group).count()
         mnumber.append(number)
-    gp_pair = [{"group_name":g, "number":n} for g, n in zip(grouplist, mnumber)]
+    gp_pair = [{"group_id":i, "group_name":g, "number":n} for i, g, n in zip(gidList, grouplist, mnumber)]
     json_group = json.dumps(gp_pair)
-    if request.method == 'POST':
-        if request.POST['action'] == "delete":
-            group_name = request.POST['gpname']
-            exsitGroup = Group.objects.filter(group_name = group_name)
-            for group in exsitGroup:
-                Group_member.objects.filter(group_id = group).delete()
-                group.delete()
+
     return  render(request, "ucs/search_group.html", {"message": message, "username": request.session.get("username"), "dataList": json_group})
+
 
 def edit_group(request):
     user_id = request.session.get("userId")
     if not user_id:
         return redirect(reverse("login"))
-    gpname = request.GET.get('group_name','')
-
-    group_info = Group.objects.filter(group_name = gpname)
-    user_in_group = Group_member.objects.filter(group_id = group_info)
+    if request.method == 'POST':
+        g_id = request.POST['group_id']
+        g_id = int(g_id)
+        target_group = Group.objects.get(id = g_id)
+        if request.POST['action'] == "delete":
+            u_name = request.POST['member_name']
+            target_user = User.objects.filter(username = u_name)
+            Group_member.objects.filter(group_id = target_group, user_id = target_user).delete()
+        if request.POST['action'] == "add":
+            g_user = request.POST.getlist('gmember[]')
+            for u_name in g_user:
+                u_name = u_name.encode("utf-8")
+                target_user = User.objects.get(username = u_name)
+                newAssignedGroup = Group_member(group_id = target_group, user_id = target_user)
+                newAssignedGroup.save()
+    else:
+        g_id = request.GET.get('group_id','')
+        g_id = int(g_id)
+        target_group = Group.objects.get(id = g_id)
+    gpname = target_group.group_name
+    user_in_group = Group_member.objects.filter(group_id = target_group)
     AllUser = User.objects.all()
     userlist = []
     for user in AllUser:
-        exsit_in = Group_member.objects.filter(group_id = group_info, user_id = user)
-        if not exsit_in:
+        exist_in_group = Group_member.objects.filter(group_id = target_group, user_id = user)
+        if not exist_in_group:
             userlist.append(user.username)
     json_user = json.dumps(userlist)
 
-    exuserlist = []
-    exuseremail = []
-    exuserlast = []
-    exuserfirst = []
-    for exuser in user_in_group:
-        userss = exuser.user_id;
-        exuserlist.append(userss.username)
-        exuseremail.append(userss.email)
+    exist_user_list = []
+    exist_user_email = []
+    for exist_user in user_in_group:
+        target_user = exist_user.user_id;
+        exist_user_list.append(target_user.username)
+        exist_user_email.append(target_user.email)
 
-    gp_pair = [{"user_name":g, "user_email":e} for g, e in zip(exuserlist, exuseremail)]
+    gp_pair = [{"user_name":g, "user_email":e} for g, e in zip(exist_user_list, exist_user_email)]
     user_info = json.dumps(gp_pair)
 
-    if request.method == 'POST':
-        if request.POST['action'] == "delete":
-            delete_name = request.POST['member_name']
-            User_info2 = User.objects.filter(username = delete_name)
-            delete_group = request.POST['g_name']
-            group_info = Group.objects.filter(group_name = delete_group)
-            Group_member.objects.filter(group_id = group_info, user_id = User_info2).delete()
-        if request.POST['action'] == "add":
-            delete_group = request.POST['g_name']
-            group_222 = Group.objects.get(group_name = delete_group)
-            gmember = request.POST.getlist('gmember[]')
-            for item in gmember:
-                item = item.encode("utf-8")
-                User_info3 = User.objects.get(username = item)
-                newAssignedGroup = Group_member(group_id = group_222, user_id = User_info3)
-                newAssignedGroup.save()
-    return  render(request, "ucs/edit_group.html", {"group_name": gpname,"user_not_in_group": json_user, "user_in_group": user_info})
+    return  render(request, "ucs/edit_group.html", {"group_id": g_id, "group_name": gpname, "user_not_in_group": json_user, "user_in_group": user_info})
+
 
 def batch_import(request):
     user_id = request.session.get("userId")
@@ -1152,6 +1187,7 @@ def batch_import(request):
     ##############################################ENDING CODE###########################################
     return render(request, "ucs/batch_import.html",{"message": message, "username": request.session.get("username")})
 
+
 def scoring(request):
     user_id = request.session.get("userId")
     if not user_id:
@@ -1213,8 +1249,10 @@ def scoring(request):
     return render(request, "ucs/scoring.html",{"message": message, "username": request.session.get("username"), "questionList": json_question,
         "cataList": json_cata, "userList": json_user, "groupList": json_group, "assignmentList": json_assignment})
 
+
 def plotting(request):
     return render(request, "ucs/plotting.html", {})
+
 
 def result(request):
     user_id = request.session.get("userId")
@@ -1267,6 +1305,7 @@ def result(request):
 
     return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot})
 
+
 def download_log(request):
     #zip("debug\\","debugzip")
     #file_path = "debugzip.zip"
@@ -1278,6 +1317,7 @@ def download_log(request):
             return response
     else:
         return HttpResponse("<h1>File not found.</h1>")
+
 
 ## Function to insert data into debug.csv
 def insert_data_to_debug_file_vertically(fieldnames,values,file_mode):
@@ -1336,6 +1376,7 @@ def processRequests(req,current_user):
     answer = [question_type, forecast, question_use, question_text, true_or_false, category, user_name, group_name, assignment_name, date_submitted]
     print "answer \n\n",answer
     return answer
+
 
 def returnAssessments(answer):
     QSet = Question.objects.all()
@@ -1408,6 +1449,7 @@ def returnAssessments(answer):
     else:
         print 'The date of assessment is not specified'
     return ASet
+
 
 def computeResults(ASet):
     data=[]
@@ -1528,6 +1570,7 @@ def computeResults(ASet):
             print "Something Unexpected Happened!!!"
 
     return summary_results, values, plot, datapoints
+
 
 def processAssessments(ASet):
     data = []
