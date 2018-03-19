@@ -87,8 +87,8 @@
 					<div style="width:12%;float:left;" class="form-group">
 						<button  style="width:80%;float:left;margin-top:20%;margin-left:10%" onclick="addItems();return false;"><span class="fa fa-arrow-right"> </span> </button>
 						<button  style="width:80%;float:left;margin-top:10%;margin-left:10%" onclick="addAll();return false;"><span class="fa fa-plus-circle"> </span> All </button>
-						<button  style="width:80%;float:left;margin-top:10%;margin-left:10%" onclick="removeItems();return false;"><span class="fa fa-minus-circle"> </span> All </button>
-						<button  style="width:80%;float:left;margin-top:10%;margin-left:10%" onclick="removeAll();return false;"><span class="fa fa-arrow-left"> </span> </button>
+						<button  style="width:80%;float:left;margin-top:10%;margin-left:10%" onclick="removeAll();return false;"><span class="fa fa-minus-circle"> </span> All </button>
+						<button  style="width:80%;float:left;margin-top:10%;margin-left:10%" onclick="removeItems();return false;"><span class="fa fa-arrow-left"> </span> </button>
 					</div>
 					<div style="width:44%;float:left" class="form-group">
 						<select size="10" multiple="multiple" name="selectedGroups" id="selectedGroups" style="width:100%;" ></select>
@@ -179,7 +179,7 @@
 		document.getElementById("GroupTable").deleteRow(cell);
 		var a_id = $("#assignment_id").val();
 		var action = "delete";
-		alert(a_id);
+		//alert(a_id);
 		$.ajax({
 			type:"POST",
 			url:"/edit_assignment/",
