@@ -131,17 +131,23 @@ def home_page(request):
                 if uw.due_date:
                     if '/' in uw.due_date:
                         time = uw.due_date.split("/")
+                        s_date = datetime(int(time[2]), int(time[0]), int(time[1]))
                     elif '-' in uw.due_date:
                         time = uw.due_date.split("-")
+                        s_date = datetime(int(time[0]), int(time[1]), int(time[2]))
                     if len(time) >= 3 and time != "E":
-                        s_date = datetime(int(time[2]), int(time[0]), int(time[1]))
                         n_date = datetime(int(now.year), int(now.month), int(now.day))
                         delta  = s_date - n_date
                         days_left = delta.days
+                QA_id.append(uw.assignment_id.id)
                 QA_type.append("Assignment")
                 names.append(uw.assignment_id.assignment_name)
                 f_dates.append(uw.due_date)
-                r_days.append(days_left)
+                print uw.finish_date
+                if uw.finish_date == "00-00-0000" or uw.finish_date == "00/00/0000":
+                    r_days.append(days_left)
+                else:
+                    r_days.append("s")
                 groups.append(uw.group_id.group_name)
                 users.append(uw.user_id.username)
         #Create list of table data
