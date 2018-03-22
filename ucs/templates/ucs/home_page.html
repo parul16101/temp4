@@ -67,66 +67,72 @@
                         	bgCol  = "#F08080";
                                 txtCol = "#FFFFFF";
                         }
-                        //Column 1: type                     
+                        //Column 0: id
                         var newCell = newRow.insertCell(0);
-                        var newText = document.createTextNode(name.type);
+                        var newText = document.createTextNode(name.id);
+                        newCell.appendChild(newText);
+                        newCell.style.display = 'none';
+                        //Column 1: type                     
+                        newCell = newRow.insertCell(1);
+                        newText = document.createTextNode(name.type);
                         newCell.style.backgroundColor = bgCol;
                         newCell.style.color = txtCol;
                         newCell.appendChild(newText);
                         //Column 2: name
-                        newCell = newRow.insertCell(1); 
+                        newCell = newRow.insertCell(2); 
                         newText = document.createTextNode(name.name);
                         newCell.style.backgroundColor = bgCol;
                         newCell.style.color = txtCol;
                         newCell.appendChild(newText);
                         //Column 3: due_date
-                        newCell = newRow.insertCell(2);
+                        newCell = newRow.insertCell(3);
                         newText = document.createTextNode(name.due_date);
                         newCell.style.backgroundColor = bgCol;
                         newCell.style.color = txtCol;
                         newCell.appendChild(newText);
                         //Column 4: days_left
-                        newCell = newRow.insertCell(3);
+                        newCell = newRow.insertCell(4);
                         newText = document.createTextNode(name.days_left);
                         newCell.style.backgroundColor = bgCol;
                         newCell.style.color = txtCol;
                         newCell.appendChild(newText);
                         //Column 5: group
-                        /*newCell = newRow.insertCell(4);
+                        /*newCell = newRow.insertCell(5);
                         newText = document.createTextNode(name.group);
                         newCell.style.backgroundColor = bgCol;
                         newCell.style.color = txtCol;
                         newCell.appendChild(newText);
                         //Column 6: group
-                        newCell = newRow.insertCell(5);
+                        newCell = newRow.insertCell(6);
                         newText = document.createTextNode(name.user);
                         newCell.style.backgroundColor = bgCol;
                         newCell.style.color = txtCol;
                         newCell.appendChild(newText);*/
                         //Column 7: View Button (Link to question or assignment)
-			newCell = newRow.insertCell(4);
+			newCell = newRow.insertCell(5);
 			newCell.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="view_type(this)" >'
 			+'<span class="glyphicon glyphicon-pencil"></span> Do</button>';
 			
 		});
 	}
 </script>
-<!-- function view_type will send redirect to the edit_question or assignment page --!>
+<!-- function view_type will send redirect to the edit_question or assignment page -->
 <script type="text/javascript" >
 	function view_type(element){
 		var cell = element.parentNode.parentNode.rowIndex;
-		var type = document.getElementById("home-table").rows[cell].cells[0].innerHTML
-		var names = document.getElementById("home-table").rows[cell].cells[1].innerHTML
+		var id = document.getElementById("home-table").rows[cell].cells[0].innerHTML
+		var type = document.getElementById("home-table").rows[cell].cells[1].innerHTML
+		var names = document.getElementById("home-table").rows[cell].cells[2].innerHTML
                 if( type == "Question" ) {
-			window.location = '/edit_question?question_name=' + names;
+                	window.location = '/edit_question?question_id=' + id;
                 } else if( type == "Assignment" ) {
-			window.location = '/do_assignment?assignment_name=' + names;
+                	window.location = '/do_assignment?assignment_id=' + id;
                 } else {
                 	alert("ERROR: Type is not a Question or Assignment, please contact support");
                 }
 	}
 </script>
-<!-- This block is to integrate the dataTable plugin with table_id = home-table --!>
+<!-- This block is to integrate the dataTable plugin with table_id = home-table -->
 <script>
 	$(document).ready(function(){
 		$('.dataTables-example').DataTable({

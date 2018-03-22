@@ -91,7 +91,6 @@
 	var title = document.getElementById("Intro_name");
 	title.innerHTML = "{{assignment_title}}";
 	load_question(N_question);
-	//console.log(N_question);
 	
 	function load_question(index){
 		add_button.disabled = true;
@@ -147,24 +146,19 @@
 			for(var i = 0;i<optionsN;i++) {
 				var num = tableRef.rows.length;
 				var newRow   = tableRef.insertRow(num);
-				var newCell_1  = newRow.insertCell(0);
-				newCell_1.innerHTML = '<input type="text" class="form-control" value = "'+options[i+1].trim()+'" readonly></input>';
+				var newCell_0  = newRow.insertCell(0);
+				newCell_0.innerHTML = '<input type="text" class="form-control" value = "'+options[i+1].trim()+'" readonly></input>';
 				
-				var newCell_2  = newRow.insertCell(1);
-				newCell_2.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)"></input>';
+				var newCell_1  = newRow.insertCell(1);
+				newCell_1.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)"></input>';
 				
-				//var newCell_3  = newRow.insertCell(2);
-				//newCell_3.innerHTML = '<select id="operator" name="operator" placeholder="" class="form-control" style ="Width:90%">'
-				//+'<option value="EQ" id="EQ">EQ</option></select>';
-				
-				var newCell_4  = newRow.insertCell(2);
-				var newText4 = document.createTextNode("N/A");
-				newCell_4.appendChild(newText4);
+				var newCell_2  = newRow.insertCell(2);
+				var newText2 = document.createTextNode("N/A");
+				newCell_2.appendChild(newText2);
 			}
 			
 			if(saved_answer[index]){
 				var answer = saved_answer[index];
-				//console.log(answer);
 				answer.forEach(function(element, idx) {
 					if(element[1]){
 						tableRef.rows[idx+1].cells[1].children[0].value = element[1];
@@ -187,31 +181,14 @@
 				answer.forEach(function(element, idx) {
 					var num = tableRef.rows.length;
 					var newRow   = tableRef.insertRow(num);
-					var newCell_1  = newRow.insertCell(0);
-					newCell_1.innerHTML = '<input type="text" class="form-control" value="'+element[0]+'"></input>';
-					var newCell_2  = newRow.insertCell(1);
-					newCell_2.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)" value="'+element[1]+'"></input>';
+					var newCell_0  = newRow.insertCell(0);
+					newCell_0.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)" value="'+element[0]+'"></input>';
 					
-					/*
-					if(element[2] == "GE") {
-						var newCell_3  = newRow.insertCell(2);
-						newCell_3.innerHTML = '<select id="operator" name="operator" class="form-control" style ="Width:90%">'
-						+'<option value="EQ" id="EQ">EQ</option><option value="GE" id="GE" selected>GE</option><option value="LE" id="LE">LE</option></select>';
-					}
-					else if(element[2] == "LE") {
-						var newCell_3  = newRow.insertCell(2);
-						newCell_3.innerHTML = '<select id="operator" name="operator" class="form-control" style ="Width:90%">'
-						+'<option value="EQ" id="EQ">EQ</option><option value="GE" id="GE">GE</option><option value="LE" id="LE" selected>LE</option></select>';
-					}
-					else {
-						var newCell_3  = newRow.insertCell(2);
-						newCell_3.innerHTML = '<select id="operator" name="operator" class="form-control" style ="Width:90%">'
-						+'<option value="EQ" id="EQ" selected>EQ</option><option value="GE" id="GE">GE</option><option value="LE" id="LE">LE</option></select>';
-					}
-					*/
+					var newCell_1  = newRow.insertCell(1);
+					newCell_1.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)" value="'+element[1]+'"></input>';
 					
-					var newCell_4  = newRow.insertCell(2);
-					newCell_4.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="delete_answer(this)" >'
+					var newCell_2  = newRow.insertCell(2);
+					newCell_2.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="delete_answer(this)" >'
 					+'<span class="glyphicon glyphicon-pencil"></span> Delete </button>';
 				});
 			}
@@ -221,19 +198,14 @@
 				var num = tableRef.rows.length;
 				for (i = 0; i < default_prob.length; i++) {
 					var newRow = tableRef.insertRow(num);
-					var newCell_1  = newRow.insertCell(0);
-					newCell_1.innerHTML = '<input type="text" class="form-control"></input>';
-					var newCell_2  = newRow.insertCell(1);
-					newCell_2.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)" value="'+default_prob[i]+'" ></input>';
+					var newCell_0  = newRow.insertCell(0);
+					newCell_0.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)"></input>';
 					
-					/*
-					var newCell_3  = newRow.insertCell(2);
-					newCell_3.innerHTML = '<select id="operator" name="operator" placeholder="" class="form-control" style ="Width:90%">'
-					+'<option value="EQ" id="EQ">EQ</option><option value="GE" id="GE">GE</option><option value="LE" id="LE">LE</option></select>';
-					*/
+					var newCell_1  = newRow.insertCell(1);
+					newCell_1.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)" value="'+default_prob[i]+'" ></input>';
 					
-					var newCell_4  = newRow.insertCell(2);
-					newCell_4.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="delete_answer(this)" >'
+					var newCell_2  = newRow.insertCell(2);
+					newCell_2.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="delete_answer(this)" >'
 					+'<span class="glyphicon glyphicon-pencil"></span> Delete </button>';
 				}
 			}
@@ -242,31 +214,27 @@
 </script>
 <script type="text/javascript">
 	$("#start_assignment").click(function () {
-		//var proce = confirm("The assignment will start, you sure?");
-		//if(proce)
-		{
-			var current = $(".qn:visible"),
-			total = $(".qn").length,
-			last = $(".qn:last");
-			console.log(N_question)
-			console.log(datas.length)
-			console.log(datas)
-			
-			$(current).next().show();
-			$(current).hide();
-			$("#start_assignment").hide();
-			$("#cancel").hide();
-			$("#prev").hide();
-            if(N_question == datas.length - 1){
-            	$("#next").hide();
-            }
-            else {
-            	$("#submit").hide();
-            }
-			console.log(N_question)
-			console.log(datas.length)
-			console.log(datas)
-		}
+		var current = $(".qn:visible"),
+		total = $(".qn").length,
+		last = $(".qn:last");
+		//console.log(N_question)
+		//console.log(datas.length)
+		//console.log(datas)
+		
+		$(current).next().show();
+		$(current).hide();
+		$("#start_assignment").hide();
+		$("#cancel").hide();
+		$("#prev").hide();
+        if(N_question == datas.length - 1){
+            $("#next").hide();
+        }
+        else {
+            $("#submit").hide();
+        }
+		//console.log(N_question)
+		//console.log(datas.length)
+		//console.log(datas)
 	});
 	
 	function Comparator(a, b) {
@@ -282,15 +250,16 @@
 				var option = i;
 			}
 			else{
-				var option = tableRef.rows[i].cells[0].children[0].value;
+				var option = parseFloat(tableRef.rows[i].cells[0].children[0].value);
 			}
-			var prob = tableRef.rows[i].cells[1].children[0].value;
-			var e = tableRef.rows[i].cells[2].children[0];
+			var prob = parseFloat(tableRef.rows[i].cells[1].children[0].value);
+			//var e = tableRef.rows[i].cells[2].children[0];
 			//var optrs = e.options[e.selectedIndex].text;
 			//var answer = [option, prob, optrs]
 			console.log('option: '+option);
 			console.log('prob: '+prob);
 			if(datas[index].question_type == "1"){
+				//For Discrete Assessment
 				if(prob == ""){
 					return 0;
 				}
@@ -299,8 +268,12 @@
 					console.log(prob);
 					return -1;
 				}
+				//if(prob >= 100){
+				//	return 4;
+				//}
 			}
 			else{
+				//For Continuous Assessment
 				if(option == "" || prob == ""){
 					return 0;
 				}
@@ -309,6 +282,9 @@
 					console.log(option);
 					return -1;
 				}
+				if(prob >= 100){
+					return 4;
+				}
 			}
 			var answer = [option, prob];
 			answers.push(answer);
@@ -316,6 +292,7 @@
         //console.log(index);
         //console.log(saved_answer.length);
         if(datas[index].question_type == "1"){
+        	//For Discrete Assessment
 			alen = answers.length;
 			sum = 0;
 			
@@ -328,6 +305,7 @@
 			}
 		}
 		else{
+			//For Continuous Assessment
 			answers = answers.sort(Comparator);
 			console.log(answers);
 			//answers are sorted according to probability
@@ -367,11 +345,6 @@
 		saved_answer[index] = answers;
 		console.log(saved_answer);
 		//**********************
-		/*for (i = 0; i < saved_answer.length; i++) {
-			for (j = 0; j < saved_answer[i].length; j++) {
-				console.log(saved_answer[i][j][0]*100);
-			}
-		}*/
 		return 1;
 	}
 	
@@ -382,8 +355,8 @@
 		var mm = today.getMonth()+1; //January is 0!
 		var yyyy = today.getFullYear();
 		var url_string = window.location.href;
-                var url = new URL(url_string);
-		var param = url.searchParams.get("assignment_name");
+        var url = new URL(url_string);
+		var param = url.searchParams.get("assignment_id");
 		if(dd<10){
 			dd='0'+dd
 		} 
@@ -392,13 +365,10 @@
 		} 
 		today = mm+'/'+dd+'/'+yyyy;
 		//**********************
-		/*for (i = 0; i < saved_answer.length; i++) {
-			for (j = 0; j < saved_answer[i].length; j++) {
-				console.log(saved_answer[i][0]+saved_answer[i][1]);
-			}
-		}*/
 		var upload_date = today;
 		var uploader = "{{request.session.username}}";
+		
+		
 		$.ajax({
 			type:"POST",
 			url:"/do_assignment/",
@@ -408,28 +378,10 @@
 				'uploader':uploader,
 				'upload_date':upload_date,
 				'answer[]':saved_answer,
-				'aname': param
+				'assignment_id':param
 			},
 			success: function(data) {
-				if (data.status){
-					alert(data.rep_message);
-				}
-				else if (!data.status){
-					alert(data.rep_message);
-					document.getElementById("question_text").value = "";
-					//location.reload();
-					//window.location.replace("/search_question/");
-				}
-			},
-		});
-	}
-	
-	function submit_answer(){
-		var x = save_answer(N_question);
-		if(x == 1){
-			var proce = confirm("The current answer will be stored into database and you will not be able to go back, are you sure?");
-			if(proce){
-				save_database()
+				alert(data.rep_message);
 				var is_admin = "{{request.session.admin_user}}";
 				if(is_admin == "False"){
 					window.location.replace("/show_assignment/");
@@ -437,24 +389,43 @@
 				else{
 					window.location.replace("/search_assignment/");
 				}
+			},
+		});
+	}
+	
+	function submit_answer(){
+		var x = save_answer(N_question);
+		if(x==1){
+			var proce = confirm("The current answer will be stored into database and you will not be able to go back, are you sure?");
+			if(proce){
+				save_database();
 			}
 		}
 		else if(x==0){
-			alert("Please don't leave any options empty.");
+			alert("Please don't leave any options empty ...");
 		}
 		else if(x==2 || x==-2){
-			alert("Values should either monotonically increase or monotonically decrease with cumulative probability.");
+			alert("Values should either monotonically increase or monotonically decrease with cumulative probability ...");
 		}
 		else if(x==3){
-			alert("Values should sum up to 100.");
+			alert("Values should sum up to 100 ...");
+		}
+		else if(x==4){
+			alert("Nothing is greater than or equal to 100% ...");
 		}
 		else{
-			alert("Please enter integer values.");
+			alert("Please enter integer values ...");
 		}
 	}
 	
 	function cancel_test(){
-		window.location.replace("/show_assignment/");
+		var is_admin = "{{request.session.admin_user}}";
+		if(is_admin == 'True'){
+			window.location.replace("/search_assignment/");
+		}
+		else{
+			window.location.replace("/show_assignment/");
+		}
 	}
 	
 	function next(){
@@ -472,16 +443,19 @@
 			$("#prev").show();
 		}
 		else if(x==0){
-			alert("Please don't leave any options empty.");
+			alert("Please don't leave any options empty ...");
 		}
 		else if(x==2 || x==-2){
-			alert("Values should either monotonically increase or monotonically decrease with cumulative probability.");
+			alert("Values should either monotonically increase or monotonically decrease with cumulative probability ...");
 		}
 		else if(x==3){
-			alert("Values should sum up to 100.");
+			alert("Values should sum up to 100 ...");
+		}
+		else if(x==4){
+			alert("Nothing is greater than or equal to 100% ...");
 		}
 		else{
-			alert("Please enter integer values.");
+			alert("Please enter integer values ...");
 		}
 	}
 	
@@ -490,7 +464,6 @@
 		N_question = N_question - 1;
 		if(N_question >= 0){
 			load_question(N_question);
-			//console.log(N_question);
 			if(N_question == 0){
 				$("#prev").hide();
 			}
@@ -503,20 +476,14 @@
 	function add_answer(){
 		var num = tableRef.rows.length;
 		var newRow   = tableRef.insertRow(num);
-		var newCell_1  = newRow.insertCell(0);
-		newCell_1.innerHTML = '<input type="text" class="form-control"></input>';
+		var newCell_0  = newRow.insertCell(0);
+		newCell_0.innerHTML = '<input type="text" class="form-control"></input>';
 		
-		var newCell_2  = newRow.insertCell(1);
-		newCell_2.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)" required></input>';
+		var newCell_1  = newRow.insertCell(1);
+		newCell_1.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)" required></input>';
 		
-		/*
-		var newCell_3  = newRow.insertCell(2);
-		newCell_3.innerHTML = '<select id="operator" name="operator" placeholder="" class="form-control" style ="Width:90%">'
-		+'<option value="EQ" id="EQ">EQ</option><option value="GE" id="GE">GE</option><option value="LE" id="LE">LE</option></select>';
-		*/
-		
-		var newCell_4  = newRow.insertCell(2);
-		newCell_4.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="delete_answer(this)" >'
+		var newCell_2  = newRow.insertCell(2);
+		newCell_2.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="delete_answer(this)" >'
 		+'<span class="glyphicon glyphicon-pencil"></span> Delete </button>';
 	}
 </script>
