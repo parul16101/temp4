@@ -120,10 +120,10 @@
 <script type="text/javascript">
     
 
-    var bindata = {{WLS_DATA | safe}};
+    //var bindata = {{WLS_DATA | safe}};
     var tableRef = document.getElementById("binTable").getElementsByTagName('tbody')[0];
 
-    bindata.forEach(function(name,index) {
+    /*bindata.forEach(function(name,index) {
         var num = tableRef.rows.length;
         var newRow = tableRef.insertRow(num);
 
@@ -150,7 +150,7 @@
         newCell = newRow.insertCell(5);
         newText = document.createTextNode(name.binpercorr);
         newCell.appendChild(newText);
-    });
+    });*/
 
 
 </script>
@@ -217,7 +217,7 @@ Chart.defaults.global.defaultFontFamily = "Lato";
 Chart.defaults.global.defaultFontSize = 18;
 
 var datapoints = {{ datapoints | safe }};
-var wls_datapoints = {{wls_datapoints | safe}};
+//var wls_datapoints = {{wls_datapoints | safe}};
 // var y = {{ y | safe }};
 
 var d = [{
