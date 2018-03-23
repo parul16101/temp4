@@ -1350,7 +1350,15 @@ def result(request):
         WLS_X_T = WLS_X.transpose()
         WLS_W_D = np.diag(WLS_W)
 
-        BETA = (1/(np.matmul(np.matmul(WLS_X_T,WLS_W_D),WLS_X)))*(np.matmul(np.matmul(WLS_X_T,WLS_W_D),WLS_Y))
+        X_W  = np.matmul(WLS_X_T,WLS_W_D)
+        X_W2 = np.matmul(X_W,WLS_X)
+        X_WR = 1/X_W2
+
+        R_W = np.matmul(WLS_X_T,WLS_W_D)
+        R_W2 = np.matmul(R_W,WLS_Y)
+
+
+        BETA = X_WR * R_W2
 
         #Calculate mean indepdent and dependent variable (mi.md) line must cross this point. The x and y value is used to get alpha
         Y_SUM = WLS_X.sum()
