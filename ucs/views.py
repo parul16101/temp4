@@ -1287,10 +1287,6 @@ def scoring(request):
 def plotting(request):
     return render(request, "ucs/plotting.html", {})
 
-
-def f(x):
-    return x
-
 def result(request):
     user_id = request.session.get("userId")
     if not user_id:
