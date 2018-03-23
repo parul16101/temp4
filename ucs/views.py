@@ -1645,8 +1645,8 @@ def computeResults(ASet):
 
     WLS_table_data = [{"bin":b, "bincount": bc, "bincorr": br, "binprob": bp, "binmean": bm, "binpercorr":bpc} for b, bc, br, bp, bm, bpc in zip(wls_b, wls_bc, wls_br, wls_bp, wls_bm, wls_bpc)]
     WLS_table_json = json.dumps(WLS_table_data)
-    #return summary_results, values, plot, datapoints, WLS_table_json, wls_bm, wls_bpc, wls_bc
-    return summary_results, values, plot, datapoints, WLS_table_json
+    return summary_results, values, plot, datapoints, WLS_table_json, wls_bm, wls_bpc, wls_bc
+    #return summary_results, values, plot, datapoints, WLS_table_json
 
 
 def processAssessments(ASet):
