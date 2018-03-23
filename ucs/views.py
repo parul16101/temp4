@@ -1373,7 +1373,7 @@ def result(request):
             temp['y'] = round(ALPHA + (BETA*x),3)
             wls_datapoints.append(temp)
         '''
-        wls_datapoints = [{'y': 1.171, 'x': 0.033}, {'y': 1.222, 'x': 0.101}, {'y': 1.295, 'x': 0.2}, {'y': 1.37, 'x': 0.3}, {'y': 1.445, 'x': 0.4}, {'y': 1.519, 'x': 0.5}, {'y': 1.594, 'x': 0.6}, {'y': 1.668, 'x': 0.7}, {'y': 1.743, 'x': 0.8}, {'y': 1.817, 'x': 0.899}, {'y': 1.868, 'x': 0.967}]
+        wls_datapoints = [{'y': 0.171, 'x': 0.033}, {'y': 0.222, 'x': 0.101}, {'y': 0.295, 'x': 0.2}, {'y': 0.37, 'x': 0.3}, {'y': 0.445, 'x': 0.4}, {'y': 0.519, 'x': 0.5}, {'y': 0.594, 'x': 0.6}, {'y': 0.668, 'x': 0.7}, {'y': 0.743, 'x': 0.8}, {'y': 0.817, 'x': 0.899}, {'y': 0.868, 'x': 0.967}]
     return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot, "WLS_DATA":WLS_table_data, "wls_datapoints": wls_datapoints})
     #return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot,"WLS_DATA":WLS_table_data})
 
@@ -1596,12 +1596,12 @@ def computeResults(ASet):
                 plot.append([round(binmean,3),round(binpercorr,3),round(bincount,3)])
             bin_data.append([bins[j+1], bincount, bincorr, binprob, binmean, binpercorr]) #For DEBUG
             #WLS DJ
-            wls_b.append(round(bins[j+1],3))
-            wls_bc.append(round(bincount,3))
-            wls_br.append(round(bincorr,3))
-            wls_bp.append(round(binprob,3))
-            wls_bm.append(round(binmean,3))
-            wls_bpc.append(round(binpercorr,3))
+            wls_b.append(bins[j+1])
+            wls_bc.append(bincount)
+            wls_br.append(bincorr)
+            wls_bp.append(binprob)
+            wls_bm.append(binmean)
+            wls_bpc.append(binpercorr)
         ######################Dump the bins#########################
         #Create bins Table
         with open('/tmp/data.csv', 'a') as csvfile:
