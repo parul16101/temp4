@@ -1350,7 +1350,6 @@ def result(request):
 
         WLS_X_T = WLS_X.transpose()
         WLS_W_D = np.diag(WLS_W)
-
         '''
         BETA = (1/(np.matmul(np.matmul(WLS_X_T,WLS_W_D),WLS_X)))*(np.matmul(np.matmul(WLS_X_T,WLS_W_D),WLS_Y))
 
