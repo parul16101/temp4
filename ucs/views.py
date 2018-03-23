@@ -1363,7 +1363,8 @@ def result(request):
             temp['x'] = round(x,3)
             temp['y'] = round(ALPHA + (BETA*x),3)
             wls_datapoints.append(temp)
-
+    WLS_table_data = {}
+    wls_datapoints = []
     return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot, "WLS_DATA":WLS_table_data, "wls_datapoints": wls_datapoints})
 
 def download_log(request):
