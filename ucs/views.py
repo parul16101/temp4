@@ -1338,7 +1338,8 @@ def result(request):
              'Details Of Assessment':value['details_of_assessment'], 'Option Text':value['option_text'],'ID':value['id']})
             csvfile.write("\n\n\n");
 
-        summary_results, values, plot, datapoints, WLS_table_data, WLS_X, WLS_Y, WLS_W = computeResults(ASet)
+        #summary_results, values, plot, datapoints, WLS_table_data, WLS_X, WLS_Y, WLS_W = computeResults(ASet)
+        summary_results, values, plot, datapoints = computeResults(ASet)
         summary_fieldnames = ['Confidence', 'Calibration','Resolution','Knowledge','Brierscore']
         insert_data_to_debug_file_vertically(summary_fieldnames,values,'a')
 
