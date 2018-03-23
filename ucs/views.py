@@ -92,6 +92,8 @@ def home_page(request):
                         days_left = delta.days
                 if days_left < 0:
                     continue
+                if days_left == 0:
+                	days_left = 1
                 QA_id.append(uw.assignment_id.id)
                 QA_type.append("Assignment")
                 names.append(uw.assignment_id.assignment_name)
@@ -118,6 +120,8 @@ def home_page(request):
                         n_date = datetime(int(now.year), int(now.month), int(now.day))
                         delta = s_date - n_date
                         days_left = delta.days
+                if days_left == 0:
+                	days_left = 1
                 QA_id.append(qw.id)
                 QA_type.append("Question")
                 names.append(qw.question_text)
@@ -145,6 +149,8 @@ def home_page(request):
                         days_left = delta.days
                 if days_left < 0:
                 	continue
+                if days_left == 0:
+                	days_left = 1
                 QA_id.append(uw.assignment_id.id)
                 QA_type.append("Assignment")
                 names.append(uw.assignment_id.assignment_name)
@@ -586,25 +592,7 @@ def search_assignment(request):
     aidList = []
     assignmentlist = []
     qnumber = []
-    #DJ Remove assignments from the manage page that are past the closeing date
-    now = datetime.now()
-    n_date = datetime(int(now.year), int(now.month), int(now.day))
     for assignment in existAssignment:
-        #Split the date, check for / or - because of format changes
-        time = 'E' #For error checking
-        if '/' in assignment.due_date:
-            time = assignment.due_date.split("/")
-            s_date = datetime(int(time[2]), int(time[0]), int(time[1]))
-        elif '-' in assignment.due_date:
-            time = assignment.due_date.split("-")
-            s_date = datetime(int(time[0]), int(time[1]), int(time[2]))
-        if len(time) >= 3 and time != "E":
-            n_date = datetime(int(now.year), int(now.month), int(now.day))
-            delta  = s_date - n_date
-            days_left = delta.days
-        if days_left < 0:
-            continue
-        #End of past due assignment filtering
         aidList.append(assignment.id)
         number = Assigned_question.objects.filter(assignment_id = assignment).count()
         if number == 0:
@@ -641,7 +629,25 @@ def show_assignment(request):
     aidList = []
     assignmentlist = []
     qnumber = []
+    #DJ Remove assignments from the manage page that are past the closeing date
+    now = datetime.now()
+    n_date = datetime(int(now.year), int(now.month), int(now.day))
     for assignment in existAssignment:
+    	#Split the date, check for / or - because of format changes
+        time = 'E' #For error checking
+        if '/' in assignment.due_date:
+            time = assignment.due_date.split("/")
+            s_date = datetime(int(time[2]), int(time[0]), int(time[1]))
+        elif '-' in assignment.due_date:
+            time = assignment.due_date.split("-")
+            s_date = datetime(int(time[0]), int(time[1]), int(time[2]))
+        if len(time) >= 3 and time != "E":
+            n_date = datetime(int(now.year), int(now.month), int(now.day))
+            delta  = s_date - n_date
+            days_left = delta.days
+        if days_left < 0:
+            continue
+        #End of past due assignment filtering
         aidList.append(assignment.id)
         assignmentlist.append(assignment.assignment_name)
         number = Assigned_question.objects.filter(assignment_id = assignment).count()
