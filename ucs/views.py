@@ -27,6 +27,8 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from collections import defaultdict
 from datetime import datetime, timedelta
+import numpy as np
+
 #from osgeo import gdal
 ErrorA = { 0 : "Insuficcient data for the assessment, missing NumOfPairs, Operator, or DateOfAssessment in row ",
 1 : "Number of choices cannot be equal to 1 (allowed options are 0 or greater than 1) for entry located in row ",
@@ -58,7 +60,7 @@ WarningQ = {0 : "The true value was updated for record in row ",
 #
 # Function for rendering home page. Home page is rendered when someone login successfully.
 def home_page(request):
-	#DJ Home page to do report
+    #DJ Home page to do report
     if "userId" in request.session.keys():
         user_name = request.session.get("userId")
         QA_id   = [] #Queation  or Assignment ID
@@ -88,6 +90,10 @@ def home_page(request):
                         n_date = datetime(int(now.year), int(now.month), int(now.day))
                         delta  = s_date - n_date
                         days_left = delta.days
+                if days_left < 0:
+                    continue
+                if days_left == 0:
+                	days_left = 1
                 QA_id.append(uw.assignment_id.id)
                 QA_type.append("Assignment")
                 names.append(uw.assignment_id.assignment_name)
@@ -114,6 +120,8 @@ def home_page(request):
                         n_date = datetime(int(now.year), int(now.month), int(now.day))
                         delta = s_date - n_date
                         days_left = delta.days
+                if days_left == 0:
+                	days_left = 1
                 QA_id.append(qw.id)
                 QA_type.append("Question")
                 names.append(qw.question_text)
@@ -139,6 +147,10 @@ def home_page(request):
                         n_date = datetime(int(now.year), int(now.month), int(now.day))
                         delta  = s_date - n_date
                         days_left = delta.days
+                if days_left < 0:
+                	continue
+                if days_left == 0:
+                	days_left = 1
                 QA_id.append(uw.assignment_id.id)
                 QA_type.append("Assignment")
                 names.append(uw.assignment_id.assignment_name)
@@ -617,7 +629,25 @@ def show_assignment(request):
     aidList = []
     assignmentlist = []
     qnumber = []
+    #DJ Remove assignments from the manage page that are past the closeing date
+    now = datetime.now()
+    n_date = datetime(int(now.year), int(now.month), int(now.day))
     for assignment in existAssignment:
+    	#Split the date, check for / or - because of format changes
+        time = 'E' #For error checking
+        if '/' in assignment.due_date:
+            time = assignment.due_date.split("/")
+            s_date = datetime(int(time[2]), int(time[0]), int(time[1]))
+        elif '-' in assignment.due_date:
+            time = assignment.due_date.split("-")
+            s_date = datetime(int(time[0]), int(time[1]), int(time[2]))
+        if len(time) >= 3 and time != "E":
+            n_date = datetime(int(now.year), int(now.month), int(now.day))
+            delta  = s_date - n_date
+            days_left = delta.days
+        if days_left < 0:
+            continue
+        #End of past due assignment filtering
         aidList.append(assignment.id)
         assignmentlist.append(assignment.assignment_name)
         number = Assigned_question.objects.filter(assignment_id = assignment).count()
@@ -1263,7 +1293,6 @@ def scoring(request):
 def plotting(request):
     return render(request, "ucs/plotting.html", {})
 
-
 def result(request):
     user_id = request.session.get("userId")
     if not user_id:
@@ -1309,12 +1338,33 @@ def result(request):
              'Details Of Assessment':value['details_of_assessment'], 'Option Text':value['option_text'],'ID':value['id']})
             csvfile.write("\n\n\n");
 
-        summary_results, values, plot, datapoints = computeResults(ASet)
+        summary_results, values, plot, datapoints, WLS_table_data, WLS_X, WLS_Y, WLS_W = computeResults(ASet)
         summary_fieldnames = ['Confidence', 'Calibration','Resolution','Knowledge','Brierscore']
         insert_data_to_debug_file_vertically(summary_fieldnames,values,'a')
 
-    return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot})
+        #DJ-Calculate B = (X^(T)WX)^(-1) * X^(T)WY --> y_i = alpha + Bx_i for weighted least squares
+        WLS_X = np.array(WLS_X)
+        WLS_Y = np.array(WLS_Y)
+        WLS_W = np.array(WLS_W)
 
+        WLS_X_T = WLS_X.transpose()
+        WLS_W_D = np.diag(WLS_W)
+
+        BETA = (1/(np.matmul(np.matmul(WLS_X_T,WLS_W_D),WLS_X)))*(np.matmul(np.matmul(WLS_X_T,WLS_W_D),WLS_Y))
+
+        #Calculate mean indepdent and dependent variable (mi.md) line must cross this point. The x and y value is used to get alpha
+        Y_SUM = WLS_X.sum()
+        X_SUM = WLS_Y.sum()
+        ALPHA = Y_SUM - (BETA*X_SUM)
+
+        wls_datapoints = []
+        for x in WLS_X:
+            temp = {}
+            temp['x'] = round(x,3)
+            temp['y'] = round(ALPHA + (BETA*x),3)
+            wls_datapoints.append(temp)
+
+    return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot, "WLS_DATA":WLS_table_data, "wls_datapoints": wls_datapoints})
 
 def download_log(request):
     #zip("debug\\","debugzip")
@@ -1486,7 +1536,13 @@ def computeResults(ASet):
     knowledge = 0.0
 
     data = processAssessments(ASet)
-
+    #For WLS_table_data info
+    wls_b   = []
+    wls_bc  = []
+    wls_br  = []
+    wls_bp  = []
+    wls_bm  = []
+    wls_bpc = []
     #Write data to file
     with open('/tmp/data.csv', 'a') as csvfile:
         data_fieldnames = ['trueValue', 'operator', 'vAssigned', 'pAssigned','true_false']
@@ -1509,6 +1565,7 @@ def computeResults(ASet):
                     bincorr += p[4]
                     binprob += p[3]
             if bincount > 0:
+                #DJ
                 binmean = binprob/bincount
                 binpercorr = bincorr/bincount
             else:
@@ -1527,6 +1584,13 @@ def computeResults(ASet):
             if binmean > 0 or binpercorr > 0:
                 plot.append([round(binmean,3),round(binpercorr,3),round(bincount,3)])
             bin_data.append([bins[j+1], bincount, bincorr, binprob, binmean, binpercorr]) #For DEBUG
+            #WLS DJ
+            wls_b.append(bins[j+1])
+            wls_bc.append(bincount)
+            wls_br.append(bincorr)
+            wls_bp.append(binprob)
+            wls_bm.append(binmean)
+            wls_bpc.append(binpercorr)
         ######################Dump the bins#########################
         #Create bins Table
         with open('/tmp/data.csv', 'a') as csvfile:
@@ -1560,8 +1624,8 @@ def computeResults(ASet):
 
         for a in plot:
             temp = {}
-            temp['x'] = round(a[0],3)
-            temp['y'] = round(a[1],3)
+            temp['x'] = a[0]
+            temp['y'] = a[1]
             datapoints.append(temp)
 
 
@@ -1579,7 +1643,9 @@ def computeResults(ASet):
     except:
             print "Something Unexpected Happened!!!"
 
-    return summary_results, values, plot, datapoints
+    WLS_table_data = [{"bin":b, "bincount": bc, "bincorr": br, "binprob": bp, "binmean": bm, "binpercorr":bpc} for b, bc, br, bp, bm, bpc in zip(wls_b, wls_bc, wls_br, wls_bp, wls_bm, wls_bpc)]
+    WLS_table_json = json.dumps(WLS_table_data)
+    return summary_results, values, plot, datapoints, WLS_table_json, wls_bm, wls_bpc, wls_bc
 
 
 def processAssessments(ASet):

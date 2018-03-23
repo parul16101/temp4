@@ -48,6 +48,7 @@
 							<input type="date" id="closing_date" name="closing_date" placeholder="When will the true value be revealed?" class="form-control">
 						</div>
 					</div>
+					<input type="hidden" id="datewarn" name="datewarn" value="Invalid Closing Date" style="background-color: #8c9ef3; color: white;" readonly>
 					<div class="table-responsive">
 						<div class="bodycontainer scrollable">
 							<table class="sortable table table-striped table-bordered table-hover table-scrollable dataTables-example" id="QuestionTable">
@@ -188,6 +189,22 @@
 	(function() {
 	    emailjs.init("user_kUHAMtTF8sapnkZ3TT6Jc");
 	})();
+        // DJ On change closing date, check if it is valid (Not before the current time XD)
+        var today_date = new Date();
+	var day = today_date.getDate();
+	var month = today_date.getMonth()+1; // January is 0
+	var year = today_date.getFullYear();
+        today_date = month + "/" + day + "/" + year;
+        var now_date   = new Date(today_date);
+        $("#closing_date").change(function() {
+            var closing_date  = new Date($("#closing_date").val());
+            if( closing_date < now_date ) {
+                $("#closing_date").val("");
+                $("#datewarn").prop("type", "text");
+            } else {
+                $("#datewarn").prop("type", "hidden");
+            }
+        });
 	function submit_assignment() {
 		var member = [];
 		var si = document.getElementById("selectedGroups");
