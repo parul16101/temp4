@@ -1373,7 +1373,7 @@ def result(request):
             temp['y'] = round(ALPHA + (BETA*x),3)
             wls_datapoints.append(temp)
         '''
-        wls_datapoints = [{'y':0.5, 'x':0.0},{'y':0.5, 'x':0.2},{'y':0.5, 'x':0.3},{'y':0.5, 'x':0.4},{'y':0.5, 'x':0.5},{'y':0.5, 'x':0.6},{'y':0.5, 'x':0.7},{'y':0.5, 'x':0.8},{'y':0.5, 'x':0.9},{'y':0.5, 'x':1.0}]
+        wls_datapoints = [{'y': 1.171, 'x': 0.033}, {'y': 1.222, 'x': 0.101}, {'y': 1.295, 'x': 0.2}, {'y': 1.37, 'x': 0.3}, {'y': 1.445, 'x': 0.4}, {'y': 1.519, 'x': 0.5}, {'y': 1.594, 'x': 0.6}, {'y': 1.668, 'x': 0.7}, {'y': 1.743, 'x': 0.8}, {'y': 1.817, 'x': 0.899}, {'y': 1.868, 'x': 0.967}]
     return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot, "WLS_DATA":WLS_table_data, "wls_datapoints": wls_datapoints})
     #return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot,"WLS_DATA":WLS_table_data})
 
