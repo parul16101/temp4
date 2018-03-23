@@ -1342,6 +1342,7 @@ def result(request):
         summary_fieldnames = ['Confidence', 'Calibration','Resolution','Knowledge','Brierscore']
         insert_data_to_debug_file_vertically(summary_fieldnames,values,'a')
 
+        '''
         #DJ-Calculate B = (X^(T)WX)^(-1) * X^(T)WY --> y_i = alpha + Bx_i for weighted least squares
         WLS_X = np.array(WLS_X)
         WLS_Y = np.array(WLS_Y)
@@ -1363,8 +1364,7 @@ def result(request):
             temp['x'] = round(x,3)
             temp['y'] = round(ALPHA + (BETA*x),3)
             wls_datapoints.append(temp)
-    wls_datapoints = []
-    WLS_table_data = []
+        '''
     #return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot, "WLS_DATA":WLS_table_data, "wls_datapoints": wls_datapoints})
     return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot})
 
@@ -1426,12 +1426,12 @@ def processRequests(req,current_user):
         true_or_false = int(true_or_false)
     ###########################################
     category = req.POST.get("category")
-    
+
     if current_user.admin_user==True:
         user_name = req.POST.get("user")
     else:
         user_name = current_user.username
-    
+
     group_name = req.POST.get("group")
     assignment_name = req.POST.get("assignment_name")
     date_submitted = req.POST.get("date_submitted")
@@ -1587,12 +1587,14 @@ def computeResults(ASet):
                 plot.append([round(binmean,3),round(binpercorr,3),round(bincount,3)])
             bin_data.append([bins[j+1], bincount, bincorr, binprob, binmean, binpercorr]) #For DEBUG
             #WLS DJ
+            '''
             wls_b.append(bins[j+1])
             wls_bc.append(bincount)
             wls_br.append(bincorr)
             wls_bp.append(binprob)
             wls_bm.append(binmean)
             wls_bpc.append(binpercorr)
+            '''
         ######################Dump the bins#########################
         #Create bins Table
         with open('/tmp/data.csv', 'a') as csvfile:
@@ -1645,9 +1647,10 @@ def computeResults(ASet):
     except:
             print "Something Unexpected Happened!!!"
 
-    WLS_table_data = [{"bin":b, "bincount": bc, "bincorr": br, "binprob": bp, "binmean": bm, "binpercorr":bpc} for b, bc, br, bp, bm, bpc in zip(wls_b, wls_bc, wls_br, wls_bp, wls_bm, wls_bpc)]
-    WLS_table_json = json.dumps(WLS_table_data)
-    return summary_results, values, plot, datapoints, WLS_table_json, wls_bm, wls_bpc, wls_bc
+    #WLS_table_data = [{"bin":b, "bincount": bc, "bincorr": br, "binprob": bp, "binmean": bm, "binpercorr":bpc} for b, bc, br, bp, bm, bpc in zip(wls_b, wls_bc, wls_br, wls_bp, wls_bm, wls_bpc)]
+    #WLS_table_json = json.dumps(WLS_table_data)
+    #return summary_results, values, plot, datapoints, WLS_table_json, wls_bm, wls_bpc, wls_bc
+    return summary_results, values, plot, datapoints
 
 
 def processAssessments(ASet):
