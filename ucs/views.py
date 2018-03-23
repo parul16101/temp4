@@ -1309,7 +1309,6 @@ def result(request):
 
     datapoints = []
     if request.method == "POST":
-
         #Process request to get answer containing all option selected on scoring page
         answer = processRequests(request,current_user)
         print "answer\n\n\n\n",answer
@@ -1325,7 +1324,7 @@ def result(request):
             writer.writerow({'Question Type': answer[0], 'Forecast': answer[1], 'Question Purpose': answer[2], 'Question Text': answer[3], '# of Choices': answer[4], 'Category': answer[5], 'User': answer[6], 'Group': answer[7], 'Assignment Name': answer[8], 'Date Submitted': answer[9]})
             csvfile.write("\n\n\n");
 
-        #########################IT'S NO LONGER RAUL CODE##############################
+        ##################IT'S NO LONGER RAUL CODE######################
         ASet = returnAssessments(answer)
         temp = ASet.values()
         with open('/tmp/data.csv', 'a') as csvfile:
@@ -1588,14 +1587,12 @@ def computeResults(ASet):
                 plot.append([round(binmean,3),round(binpercorr,3),round(bincount,3)])
             bin_data.append([bins[j+1], bincount, bincorr, binprob, binmean, binpercorr]) #For DEBUG
             #WLS DJ
-            '''
             wls_b.append(bins[j+1])
             wls_bc.append(bincount)
             wls_br.append(bincorr)
             wls_bp.append(binprob)
             wls_bm.append(binmean)
             wls_bpc.append(binpercorr)
-            '''
         ######################Dump the bins#########################
         #Create bins Table
         with open('/tmp/data.csv', 'a') as csvfile:
