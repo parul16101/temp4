@@ -1343,6 +1343,7 @@ def result(request):
         insert_data_to_debug_file_vertically(summary_fieldnames,values,'a')
 
         #DJ-Calculate B = (X^(T)WX)^(-1) * X^(T)WY --> y_i = alpha + Bx_i for weighted least squares
+        '''
         WLS_X = np.array(WLS_X)
         WLS_Y = np.array(WLS_Y)
         WLS_W = np.array(WLS_W)
@@ -1363,8 +1364,10 @@ def result(request):
             temp['x'] = round(x,3)
             temp['y'] = round(ALPHA + (BETA*x),3)
             wls_datapoints.append(temp)
-    #return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot, "WLS_DATA":WLS_table_data, "wls_datapoints": wls_datapoints})
-    return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot,"WLS_DATA":WLS_table_data})
+        '''
+        wls_datapoints = [{'y':0.9, 'x':0.0},{'y':0.8, 'x':0.1},{'y':0.7, 'x':0.2},{'y':0.6, 'x':0.3},{'y':0.5, 'x':0.4},{'y':0.4, 'x':0.5},{'y':0.3, 'x':0.6},{'y':0.2, 'x':0.7},{'y':0.1, 'x':0.8},{'y':0.0, 'x':0.9}]
+    return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot, "WLS_DATA":WLS_table_data, "wls_datapoints": wls_datapoints})
+    #return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot,"WLS_DATA":WLS_table_data})
 
 def download_log(request):
     #zip("debug\\","debugzip")
