@@ -1337,12 +1337,11 @@ def result(request):
              'Details Of Assessment':value['details_of_assessment'], 'Option Text':value['option_text'],'ID':value['id']})
             csvfile.write("\n\n\n");
 
-        #summary_results, values, plot, datapoints, WLS_table_data, WLS_X, WLS_Y, WLS_W = computeResults(ASet)
-        summary_results, values, plot, datapoints, WLS_table_data = computeResults(ASet)
+        summary_results, values, plot, datapoints, WLS_table_data, WLS_X, WLS_Y, WLS_W = computeResults(ASet)
+        #summary_results, values, plot, datapoints, WLS_table_data = computeResults(ASet)
         summary_fieldnames = ['Confidence', 'Calibration','Resolution','Knowledge','Brierscore']
         insert_data_to_debug_file_vertically(summary_fieldnames,values,'a')
 
-        '''
         #DJ-Calculate B = (X^(T)WX)^(-1) * X^(T)WY --> y_i = alpha + Bx_i for weighted least squares
         WLS_X = np.array(WLS_X)
         WLS_Y = np.array(WLS_Y)
@@ -1364,9 +1363,8 @@ def result(request):
             temp['x'] = round(x,3)
             temp['y'] = round(ALPHA + (BETA*x),3)
             wls_datapoints.append(temp)
-        '''
-    #return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot, "WLS_DATA":WLS_table_data, "wls_datapoints": wls_datapoints})
-    return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot,"WLS_DATA":WLS_table_data})
+    return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot, "WLS_DATA":WLS_table_data, "wls_datapoints": wls_datapoints})
+    #return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot,"WLS_DATA":WLS_table_data})
 
 def download_log(request):
     #zip("debug\\","debugzip")
@@ -1587,12 +1585,12 @@ def computeResults(ASet):
                 plot.append([round(binmean,3),round(binpercorr,3),round(bincount,3)])
             bin_data.append([bins[j+1], bincount, bincorr, binprob, binmean, binpercorr]) #For DEBUG
             #WLS DJ
-            wls_b.append(bins[j+1])
-            wls_bc.append(bincount)
-            wls_br.append(bincorr)
-            wls_bp.append(binprob)
-            wls_bm.append(binmean)
-            wls_bpc.append(binpercorr)
+            wls_b.append(round(bins[j+1],3))
+            wls_bc.append(round(bincount,3))
+            wls_br.append(round(bincorr,3))
+            wls_bp.append(round(binprob,3))
+            wls_bm.append(round(binmean,3))
+            wls_bpc.append(round(binpercorr,3))
         ######################Dump the bins#########################
         #Create bins Table
         with open('/tmp/data.csv', 'a') as csvfile:
@@ -1647,8 +1645,8 @@ def computeResults(ASet):
 
     WLS_table_data = [{"bin":b, "bincount": bc, "bincorr": br, "binprob": bp, "binmean": bm, "binpercorr":bpc} for b, bc, br, bp, bm, bpc in zip(wls_b, wls_bc, wls_br, wls_bp, wls_bm, wls_bpc)]
     WLS_table_json = json.dumps(WLS_table_data)
-    #return summary_results, values, plot, datapoints, WLS_table_json, wls_bm, wls_bpc, wls_bc
-    return summary_results, values, plot, datapoints, WLS_table_json
+    return summary_results, values, plot, datapoints, WLS_table_json, wls_bm, wls_bpc, wls_bc
+    #return summary_results, values, plot, datapoints, WLS_table_json
 
 
 def processAssessments(ASet):
