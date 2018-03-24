@@ -630,10 +630,10 @@ def show_assignment(request):
     #DJ Remove assignments from the manage page that are past the closeing date
     now = datetime.now()
     n_date = datetime(int(now.year), int(now.month), int(now.day))
-    days_left = 'E'
     for assignment in existAssignment:
     	#Split the date, check for / or - because of format changes
         time = 'E' #For error checking
+        days_left = 'E'
         if '/' in assignment.due_date:
             time = assignment.due_date.split("/")
             s_date = datetime(int(time[2]), int(time[0]), int(time[1]))
