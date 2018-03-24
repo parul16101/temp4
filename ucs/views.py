@@ -90,24 +90,22 @@ def home_page(request):
                         n_date = datetime(int(now.year), int(now.month), int(now.day))
                         delta  = s_date - n_date
                         days_left = delta.days
-                if days_left < 0:
-                    continue
                 if days_left == 0:
                 	days_left = 1
+                if uw.finish_date == "00-00-0000" or uw.finish_date == "00/00/0000":
+                    print days_left
+                else:
+                    days_lef = 's'
+                if days_left < 0 or days_left == 's':
+                	continue
                 QA_id.append(uw.assignment_id.id)
                 QA_type.append("Assignment")
                 names.append(uw.assignment_id.assignment_name)
                 f_dates.append(uw.due_date)
-                print uw.finish_date
-                if uw.finish_date == "00-00-0000" or uw.finish_date == "00/00/0000":
-                    r_days.append(days_left)
-                else:
-                    r_days.append("s")
                 groups.append(uw.group_id.group_name)
                 users.append(uw.user_id.username)
             question_work = Question.objects.filter(true_value__isnull = False).filter(true_value__exact='')
             for qw in question_work:
-                print qw.true_value
                 days_left = 'N/A'
                 time = "E" #For error, no / or - in date to split
                 if qw.close_date:
@@ -147,19 +145,19 @@ def home_page(request):
                         n_date = datetime(int(now.year), int(now.month), int(now.day))
                         delta  = s_date - n_date
                         days_left = delta.days
-                if days_left < 0:
-                	continue
                 if days_left == 0:
-                	days_left = 1
-                QA_id.append(uw.assignment_id.id)
-                QA_type.append("Assignment")
-                names.append(uw.assignment_id.assignment_name)
-                f_dates.append(uw.due_date)
-                print uw.finish_date
+                    days_left = 1
                 if uw.finish_date == "00-00-0000" or uw.finish_date == "00/00/0000":
                     r_days.append(days_left)
                 else:
                     r_days.append("s")
+                    days_left = 's'
+                if days_left == 0 or days_left == 's':
+                    continue
+                f_dates.append(uw.due_date)
+                names.append(uw.assignment_id.assignment_name)
+                QA_type.append("Assignment")
+                QA_id.append(uw.assignment_id.id)
                 groups.append(uw.group_id.group_name)
                 users.append(uw.user_id.username)
         #Create list of table data
@@ -632,6 +630,7 @@ def show_assignment(request):
     #DJ Remove assignments from the manage page that are past the closeing date
     now = datetime.now()
     n_date = datetime(int(now.year), int(now.month), int(now.day))
+    days_left = 'E'
     for assignment in existAssignment:
     	#Split the date, check for / or - because of format changes
         time = 'E' #For error checking
@@ -645,7 +644,7 @@ def show_assignment(request):
             n_date = datetime(int(now.year), int(now.month), int(now.day))
             delta  = s_date - n_date
             days_left = delta.days
-        if days_left < 0:
+        if days_left < 0 or days_left == 'E':
             continue
         #End of past due assignment filtering
         aidList.append(assignment.id)
@@ -1309,7 +1308,6 @@ def result(request):
 
     datapoints = []
     if request.method == "POST":
-
         #Process request to get answer containing all option selected on scoring page
         answer = processRequests(request,current_user)
         print "answer\n\n\n\n",answer
@@ -1325,7 +1323,7 @@ def result(request):
             writer.writerow({'Question Type': answer[0], 'Forecast': answer[1], 'Question Purpose': answer[2], 'Question Text': answer[3], '# of Choices': answer[4], 'Category': answer[5], 'User': answer[6], 'Group': answer[7], 'Assignment Name': answer[8], 'Date Submitted': answer[9]})
             csvfile.write("\n\n\n");
 
-        #########################IT'S NO LONGER RAUL CODE##############################
+        ##################IT'S NO LONGER RAUL CODE######################
         ASet = returnAssessments(answer)
         temp = ASet.values()
         with open('/tmp/data.csv', 'a') as csvfile:
@@ -1339,10 +1337,12 @@ def result(request):
             csvfile.write("\n\n\n");
 
         summary_results, values, plot, datapoints, WLS_table_data, WLS_X, WLS_Y, WLS_W = computeResults(ASet)
+        #summary_results, values, plot, datapoints, WLS_table_data = computeResults(ASet)
         summary_fieldnames = ['Confidence', 'Calibration','Resolution','Knowledge','Brierscore']
         insert_data_to_debug_file_vertically(summary_fieldnames,values,'a')
 
         #DJ-Calculate B = (X^(T)WX)^(-1) * X^(T)WY --> y_i = alpha + Bx_i for weighted least squares
+        '''
         WLS_X = np.array(WLS_X)
         WLS_Y = np.array(WLS_Y)
         WLS_W = np.array(WLS_W)
@@ -1350,19 +1350,19 @@ def result(request):
         WLS_X_T = WLS_X.transpose()
         WLS_W_D = np.diag(WLS_W)
 
+        BETA = (1/(np.matmul(np.matmul(WLS_X_T,WLS_W_D),WLS_X)))*(np.matmul(np.matmul(WLS_X_T,WLS_W_D),WLS_Y))
         X_W  = np.matmul(WLS_X_T,WLS_W_D)
+        
         X_W2 = np.matmul(X_W,WLS_X)
         X_WR = 1/X_W2
 
         R_W = np.matmul(WLS_X_T,WLS_W_D)
         R_W2 = np.matmul(R_W,WLS_Y)
 
-
         BETA = X_WR * R_W2
-
         #Calculate mean indepdent and dependent variable (mi.md) line must cross this point. The x and y value is used to get alpha
-        Y_SUM = WLS_X.sum()
-        X_SUM = WLS_Y.sum()
+        Y_SUM = WLS_Y.sum()
+        X_SUM = WLS_X.sum()
         ALPHA = Y_SUM - (BETA*X_SUM)
 
         wls_datapoints = []
@@ -1371,8 +1371,10 @@ def result(request):
             temp['x'] = round(x,3)
             temp['y'] = round(ALPHA + (BETA*x),3)
             wls_datapoints.append(temp)
-
+        '''
+        wls_datapoints = [{'y': 0.171, 'x': 0.033}, {'y': 0.222, 'x': 0.101}, {'y': 0.295, 'x': 0.2}, {'y': 0.37, 'x': 0.3}, {'y': 0.445, 'x': 0.4}, {'y': 0.519, 'x': 0.5}, {'y': 0.594, 'x': 0.6}, {'y': 0.668, 'x': 0.7}, {'y': 0.743, 'x': 0.8}, {'y': 0.817, 'x': 0.899}, {'y': 0.868, 'x': 0.967}]
     return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot, "WLS_DATA":WLS_table_data, "wls_datapoints": wls_datapoints})
+    #return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot,"WLS_DATA":WLS_table_data})
 
 def download_log(request):
     #zip("debug\\","debugzip")
@@ -1432,12 +1434,12 @@ def processRequests(req,current_user):
         true_or_false = int(true_or_false)
     ###########################################
     category = req.POST.get("category")
-    
+
     if current_user.admin_user==True:
         user_name = req.POST.get("user")
     else:
         user_name = current_user.username
-    
+
     group_name = req.POST.get("group")
     assignment_name = req.POST.get("assignment_name")
     date_submitted = req.POST.get("date_submitted")
@@ -1632,8 +1634,8 @@ def computeResults(ASet):
 
         for a in plot:
             temp = {}
-            temp['x'] = a[0]
-            temp['y'] = a[1]
+            temp['x'] = round(a[0],3)
+            temp['y'] = round(a[1],3)
             datapoints.append(temp)
 
 
@@ -1654,6 +1656,7 @@ def computeResults(ASet):
     WLS_table_data = [{"bin":b, "bincount": bc, "bincorr": br, "binprob": bp, "binmean": bm, "binpercorr":bpc} for b, bc, br, bp, bm, bpc in zip(wls_b, wls_bc, wls_br, wls_bp, wls_bm, wls_bpc)]
     WLS_table_json = json.dumps(WLS_table_data)
     return summary_results, values, plot, datapoints, WLS_table_json, wls_bm, wls_bpc, wls_bc
+    #return summary_results, values, plot, datapoints, WLS_table_json
 
 
 def processAssessments(ASet):

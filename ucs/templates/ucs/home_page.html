@@ -53,62 +53,62 @@
         // group is group_name 
 	if(datas){
 		datas.forEach(function(name, index) {
-                        var row_cnt = tableRef.rows.length;
+            var row_cnt = tableRef.rows.length;
 			var newRow  = tableRef.insertRow(row_cnt);
-                        var bgCol   = "";
-                        var txtCol  = "";
-                        if( name.days_left == "s" ) {
-                        	bgCol  = "green";
-                                txtCol = "white";
-                        } else if( name.days_left < 7 && name.days_left >= 0 ) {
-                        	bgCol  = "#F4FA58";
-                                txtCol = "black";
-                        } else if( name.days_left < 0 ) {
-                        	bgCol  = "#F08080";
-                                txtCol = "#FFFFFF";
-                        }
-                        //Column 0: id
-                        var newCell = newRow.insertCell(0);
-                        var newText = document.createTextNode(name.id);
-                        newCell.appendChild(newText);
-                        newCell.style.display = 'none';
-                        //Column 1: type                     
-                        newCell = newRow.insertCell(1);
-                        newText = document.createTextNode(name.type);
-                        newCell.style.backgroundColor = bgCol;
-                        newCell.style.color = txtCol;
-                        newCell.appendChild(newText);
-                        //Column 2: name
-                        newCell = newRow.insertCell(2); 
-                        newText = document.createTextNode(name.name);
-                        newCell.style.backgroundColor = bgCol;
-                        newCell.style.color = txtCol;
-                        newCell.appendChild(newText);
-                        //Column 3: due_date
-                        newCell = newRow.insertCell(3);
-                        newText = document.createTextNode(name.due_date);
-                        newCell.style.backgroundColor = bgCol;
-                        newCell.style.color = txtCol;
-                        newCell.appendChild(newText);
-                        //Column 4: days_left
-                        newCell = newRow.insertCell(4);
-                        newText = document.createTextNode(name.days_left);
-                        newCell.style.backgroundColor = bgCol;
-                        newCell.style.color = txtCol;
-                        newCell.appendChild(newText);
-                        //Column 5: group
-                        /*newCell = newRow.insertCell(5);
-                        newText = document.createTextNode(name.group);
-                        newCell.style.backgroundColor = bgCol;
-                        newCell.style.color = txtCol;
-                        newCell.appendChild(newText);
-                        //Column 6: group
-                        newCell = newRow.insertCell(6);
-                        newText = document.createTextNode(name.user);
-                        newCell.style.backgroundColor = bgCol;
-                        newCell.style.color = txtCol;
-                        newCell.appendChild(newText);*/
-                        //Column 7: View Button (Link to question or assignment)
+            var bgCol   = "";
+            var txtCol  = "";
+            if( name.days_left == "s" ) {
+            	bgCol  = "green";
+                txtCol = "white";
+            } else if( name.days_left < 7 && name.days_left >= 0 ) {
+            	bgCol  = "#F4FA58";
+                txtCol = "black";
+            } else if( name.days_left < 0 ) {
+            	bgCol  = "#F08080";
+                txtCol = "#FFFFFF";
+            }
+            //Column 0: id
+            var newCell = newRow.insertCell(0);
+            var newText = document.createTextNode(name.id);
+            newCell.appendChild(newText);
+            newCell.style.display = 'none';
+            //Column 1: type                     
+            newCell = newRow.insertCell(1);
+            newText = document.createTextNode(name.type);
+            newCell.style.backgroundColor = bgCol;
+            newCell.style.color = txtCol;
+            newCell.appendChild(newText);
+            //Column 2: name
+            newCell = newRow.insertCell(2); 
+            newText = document.createTextNode(name.name);
+            newCell.style.backgroundColor = bgCol;
+            newCell.style.color = txtCol;
+            newCell.appendChild(newText);
+            //Column 3: due_date
+            newCell = newRow.insertCell(3);
+            newText = document.createTextNode(name.due_date);
+            newCell.style.backgroundColor = bgCol;
+            newCell.style.color = txtCol;
+            newCell.appendChild(newText);
+            //Column 4: days_left
+            newCell = newRow.insertCell(4);
+            newText = document.createTextNode(name.days_left);
+            newCell.style.backgroundColor = bgCol;
+            newCell.style.color = txtCol;
+            newCell.appendChild(newText);
+            //Column 5: group
+            /*newCell = newRow.insertCell(5);
+            newText = document.createTextNode(name.group);
+            newCell.style.backgroundColor = bgCol;
+            newCell.style.color = txtCol;
+            newCell.appendChild(newText);
+            //Column 6: group
+            newCell = newRow.insertCell(6);
+            newText = document.createTextNode(name.user);
+            newCell.style.backgroundColor = bgCol;
+            newCell.style.color = txtCol;
+            newCell.appendChild(newText);*/
+            //Column 7: View Button (Link to question or assignment)
 			newCell = newRow.insertCell(5);
 			newCell.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="view_type(this)" >'
 			+'<span class="glyphicon glyphicon-pencil"></span> Do</button>';
