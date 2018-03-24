@@ -90,24 +90,22 @@ def home_page(request):
                         n_date = datetime(int(now.year), int(now.month), int(now.day))
                         delta  = s_date - n_date
                         days_left = delta.days
-                if days_left < 0:
-                    continue
                 if days_left == 0:
                 	days_left = 1
+                if uw.finish_date == "00-00-0000" or uw.finish_date == "00/00/0000":
+                    print days_left
+                else:
+                    days_lef = 's'
+                if days_left < 0 or days_left == 's':
+                	continue
                 QA_id.append(uw.assignment_id.id)
                 QA_type.append("Assignment")
                 names.append(uw.assignment_id.assignment_name)
                 f_dates.append(uw.due_date)
-                print uw.finish_date
-                if uw.finish_date == "00-00-0000" or uw.finish_date == "00/00/0000":
-                    r_days.append(days_left)
-                else:
-                    r_days.append("s")
                 groups.append(uw.group_id.group_name)
                 users.append(uw.user_id.username)
             question_work = Question.objects.filter(true_value__isnull = False).filter(true_value__exact='')
             for qw in question_work:
-                print qw.true_value
                 days_left = 'N/A'
                 time = "E" #For error, no / or - in date to split
                 if qw.close_date:
@@ -147,19 +145,19 @@ def home_page(request):
                         n_date = datetime(int(now.year), int(now.month), int(now.day))
                         delta  = s_date - n_date
                         days_left = delta.days
-                if days_left < 0:
-                	continue
                 if days_left == 0:
-                	days_left = 1
-                QA_id.append(uw.assignment_id.id)
-                QA_type.append("Assignment")
-                names.append(uw.assignment_id.assignment_name)
-                f_dates.append(uw.due_date)
-                print uw.finish_date
+                    days_left = 1
                 if uw.finish_date == "00-00-0000" or uw.finish_date == "00/00/0000":
                     r_days.append(days_left)
                 else:
                     r_days.append("s")
+                    days_left = 's'
+                if days_left == 0 or days_left == 's':
+                    continue
+                f_dates.append(uw.due_date)
+                names.append(uw.assignment_id.assignment_name)
+                QA_type.append("Assignment")
+                QA_id.append(uw.assignment_id.id)
                 groups.append(uw.group_id.group_name)
                 users.append(uw.user_id.username)
         #Create list of table data
@@ -635,6 +633,7 @@ def show_assignment(request):
     for assignment in existAssignment:
     	#Split the date, check for / or - because of format changes
         time = 'E' #For error checking
+        days_left = 'E'
         if '/' in assignment.due_date:
             time = assignment.due_date.split("/")
             s_date = datetime(int(time[2]), int(time[0]), int(time[1]))
@@ -645,7 +644,7 @@ def show_assignment(request):
             n_date = datetime(int(now.year), int(now.month), int(now.day))
             delta  = s_date - n_date
             days_left = delta.days
-        if days_left < 0:
+        if days_left < 0 or days_left == 'E':
             continue
         #End of past due assignment filtering
         aidList.append(assignment.id)
