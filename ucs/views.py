@@ -1360,15 +1360,20 @@ def wls_bias_calc(plot):
         sum_w += row[2]
         X_bar += row[2]*row[0]
         Y_bar += row[2]*row[1]
+    if sum_w == 0:
+    	sum_w = 0.01
     X_bar = X_bar / sum_w
     Y_bar = Y_bar / sum_w
 
     for row in plot:
         BETA_1 += row[2]*(row[0]-X_bar)*(row[1]-Y_bar)
         denom += row[2]*(math.pow((row[0]-X_bar),2))
+    if denom == 0:
+    	denom = 0.01
     BETA_1 = BETA_1 / denom
     BETA_0 = Y_bar - BETA_1*X_bar
-
+    if BETA_1 == 0:
+    	BETA_1 = 0.01
     #BETA_1 is WLS slope
     #BETA_0 is WLS intercept
     wls_datapoints = []
