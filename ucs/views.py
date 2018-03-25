@@ -27,7 +27,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from collections import defaultdict
 from datetime import datetime, timedelta
-import numpy as np
+import math
 
 #from osgeo import gdal
 ErrorA = { 0 : "Insuficcient data for the assessment, missing NumOfPairs, Operator, or DateOfAssessment in row ",
@@ -150,9 +150,8 @@ def home_page(request):
                 if uw.finish_date == "00-00-0000" or uw.finish_date == "00/00/0000":
                     r_days.append(days_left)
                 else:
-                    r_days.append("s")
                     days_left = 's'
-                if days_left == 0 or days_left == 's':
+                if days_left < 0 or days_left == 's':
                     continue
                 f_dates.append(uw.due_date)
                 names.append(uw.assignment_id.assignment_name)
@@ -1336,45 +1335,65 @@ def result(request):
              'Details Of Assessment':value['details_of_assessment'], 'Option Text':value['option_text'],'ID':value['id']})
             csvfile.write("\n\n\n");
 
-        summary_results, values, plot, datapoints, WLS_table_data, WLS_X, WLS_Y, WLS_W = computeResults(ASet)
-        #summary_results, values, plot, datapoints, WLS_table_data = computeResults(ASet)
+        summary_results, values, plot, datapoints = computeResults(ASet)
         summary_fieldnames = ['Confidence', 'Calibration','Resolution','Knowledge','Brierscore']
         insert_data_to_debug_file_vertically(summary_fieldnames,values,'a')
 
-        #DJ-Calculate B = (X^(T)WX)^(-1) * X^(T)WY --> y_i = alpha + Bx_i for weighted least squares
-        '''
-        WLS_X = np.array(WLS_X)
-        WLS_Y = np.array(WLS_Y)
-        WLS_W = np.array(WLS_W)
+        #Get WLS line, confidence bias, and directional bias
+        wls_datapoints, wls_c_d_table = wls_bias_calc(plot)
 
-        WLS_X_T = WLS_X.transpose()
-        WLS_W_D = np.diag(WLS_W)
-
-        BETA = (1/(np.matmul(np.matmul(WLS_X_T,WLS_W_D),WLS_X)))*(np.matmul(np.matmul(WLS_X_T,WLS_W_D),WLS_Y))
-        X_W  = np.matmul(WLS_X_T,WLS_W_D)
-        
-        X_W2 = np.matmul(X_W,WLS_X)
-        X_WR = 1/X_W2
-
-        R_W = np.matmul(WLS_X_T,WLS_W_D)
-        R_W2 = np.matmul(R_W,WLS_Y)
-
-        BETA = X_WR * R_W2
-        #Calculate mean indepdent and dependent variable (mi.md) line must cross this point. The x and y value is used to get alpha
-        Y_SUM = WLS_Y.sum()
-        X_SUM = WLS_X.sum()
-        ALPHA = Y_SUM - (BETA*X_SUM)
-
-        wls_datapoints = []
-        for x in WLS_X:
-            temp = {}
-            temp['x'] = round(x,3)
-            temp['y'] = round(ALPHA + (BETA*x),3)
-            wls_datapoints.append(temp)
-        '''
-        wls_datapoints = [{'y': 0.171, 'x': 0.033}, {'y': 0.222, 'x': 0.101}, {'y': 0.295, 'x': 0.2}, {'y': 0.37, 'x': 0.3}, {'y': 0.445, 'x': 0.4}, {'y': 0.519, 'x': 0.5}, {'y': 0.594, 'x': 0.6}, {'y': 0.668, 'x': 0.7}, {'y': 0.743, 'x': 0.8}, {'y': 0.817, 'x': 0.899}, {'y': 0.868, 'x': 0.967}]
-    return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot, "WLS_DATA":WLS_table_data, "wls_datapoints": wls_datapoints})
+    return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_table})
     #return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot,"WLS_DATA":WLS_table_data})
+
+def wls_bias_calc(plot):
+    sum_x = 0
+    sum_y = 0
+    sum_w = 0
+    X_bar = 0
+    Y_bar = 0
+    BETA_1 = 0
+    BETA_0 = 0
+    denom = 0
+    for row in plot:
+        sum_x += row[0]
+        sum_y += row[1]
+        sum_w += row[2]
+        X_bar += row[2]*row[0]
+        Y_bar += row[2]*row[1]
+    X_bar = X_bar / sum_w
+    Y_bar = Y_bar / sum_w
+
+    for row in plot:
+        BETA_1 += row[2]*(row[0]-X_bar)*(row[1]-Y_bar)
+        denom += row[2]*(math.pow((row[0]-X_bar),2))
+    BETA_1 = BETA_1 / denom
+    BETA_0 = Y_bar - BETA_1*X_bar
+
+    #BETA_1 is WLS slope
+    #BETA_0 is WLS intercept
+    wls_datapoints = []
+    CB = 0 #Confident bias
+    DB = 0 #Directional bias
+    xy_points = 0
+    for i in range(11):
+        x = xy_points
+        y = xy_points
+        temp = {}
+        temp['y'] = BETA_1*x+BETA_0
+        temp['x'] = (temp['y']-BETA_0)/BETA_1
+        wls_datapoints.append(temp)
+        xy_points += 0.1
+    if BETA_1 > 1:
+        CB = (1/BETA_1) - 1
+        DB = 1 - (2*BETA_0)/(1-BETA_1)
+    elif BETA_1 < 1:
+        CB = 1- BETA_1
+        DB = (2*BETA_0)/(1-BETA_1)-1
+    wls_c_d_table_data = [{"cbias":round(CB,3), "dbias":round(DB,3), "slope": round(BETA_1,3), "intercept": round(BETA_0,3)}]
+    wls_c_d_table = json.dumps(wls_c_d_table_data)
+
+    return wls_datapoints, wls_c_d_table
+    
 
 def download_log(request):
     #zip("debug\\","debugzip")
@@ -1546,13 +1565,7 @@ def computeResults(ASet):
     knowledge = 0.0
 
     data = processAssessments(ASet)
-    #For WLS_table_data info
-    wls_b   = []
-    wls_bc  = []
-    wls_br  = []
-    wls_bp  = []
-    wls_bm  = []
-    wls_bpc = []
+  
     #Write data to file
     with open('/tmp/data.csv', 'a') as csvfile:
         data_fieldnames = ['trueValue', 'operator', 'vAssigned', 'pAssigned','true_false']
@@ -1594,13 +1607,6 @@ def computeResults(ASet):
             if binmean > 0 or binpercorr > 0:
                 plot.append([round(binmean,3),round(binpercorr,3),round(bincount,3)])
             bin_data.append([bins[j+1], bincount, bincorr, binprob, binmean, binpercorr]) #For DEBUG
-            #WLS DJ
-            wls_b.append(bins[j+1])
-            wls_bc.append(bincount)
-            wls_br.append(bincorr)
-            wls_bp.append(binprob)
-            wls_bm.append(binmean)
-            wls_bpc.append(binpercorr)
         ######################Dump the bins#########################
         #Create bins Table
         with open('/tmp/data.csv', 'a') as csvfile:
@@ -1653,9 +1659,7 @@ def computeResults(ASet):
     except:
             print "Something Unexpected Happened!!!"
 
-    WLS_table_data = [{"bin":b, "bincount": bc, "bincorr": br, "binprob": bp, "binmean": bm, "binpercorr":bpc} for b, bc, br, bp, bm, bpc in zip(wls_b, wls_bc, wls_br, wls_bp, wls_bm, wls_bpc)]
-    WLS_table_json = json.dumps(WLS_table_data)
-    return summary_results, values, plot, datapoints, WLS_table_json, wls_bm, wls_bpc, wls_bc
+    return summary_results, values, plot, datapoints
     #return summary_results, values, plot, datapoints, WLS_table_json
 
 
