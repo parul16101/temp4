@@ -92,12 +92,13 @@ def home_page(request):
                         days_left = delta.days
                 if days_left == 0:
                 	days_left = 1
-                if uw.finish_date == "00-00-0000" or uw.finish_date == "00/00/0000":
-                    print days_left
-                else:
-                    days_lef = 's'
-                if days_left < 0 or days_left == 's':
+                if uw.finish_date != "00-00-0000" and uw.finish_date != "00/00/0000":
                 	continue
+                else:
+                	if days_left < 0:
+                		continue
+                	else:
+                		r_days.append(days_left)
                 QA_id.append(uw.assignment_id.id)
                 QA_type.append("Assignment")
                 names.append(uw.assignment_id.assignment_name)
@@ -147,12 +148,13 @@ def home_page(request):
                         days_left = delta.days
                 if days_left == 0:
                     days_left = 1
-                if uw.finish_date == "00-00-0000" or uw.finish_date == "00/00/0000":
-                    r_days.append(days_left)
-                else:
-                    days_left = 's'
-                if days_left < 0 or days_left == 's':
+                if uw.finish_date != "00-00-0000" and uw.finish_date != "00/00/0000":
                     continue
+                else:
+                	if days_left < 0:
+                		continue
+                	else:
+                		r_days.append(days_left)
                 f_dates.append(uw.due_date)
                 names.append(uw.assignment_id.assignment_name)
                 QA_type.append("Assignment")
