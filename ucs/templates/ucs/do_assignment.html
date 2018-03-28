@@ -81,6 +81,7 @@
 		return true;
 	}
 	var add_button = document.getElementById("add_answer");
+	var auto_button = document.getElementById("auto");
 	var tableRef = document.getElementById("AssessmentTable");
 	var saved_answer = [];
 	var question_title = [];
@@ -171,6 +172,8 @@
 		else{
 			add_button.disabled = false;
 			add_button.style.visibility = "visible";
+            auto_button.disable = true;
+            auto_button.style.visibility = "hidden";
 			$("th").each(function(){
 				$(this).text($(this).text().replace("Choice","Value"));
 				if(!$(this).text().includes("Cumulative")){
