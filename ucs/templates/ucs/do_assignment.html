@@ -42,6 +42,8 @@
 					</table>
 					<button class="btn btn-primary btn-xs my-xs-btn" type="button" style="margin-top:0.5%" id="add_answer" onClick="add_answer()"><span class="fa fa-plus"></span>add a new answer</button>
 				</div>
+				<!-- DJ- added auto fill button -->
+				<button type="button" id="auto"  style="width:auto;margin-top:0.5%" onclick = "autofill()">Auto Fill</button>
 				<div>
 					<button type="button" id="prev" class="btn btn-success" style="width:20%;margin-top:0.5%" onclick = "previous()">Previous</button>
 					<button type="button" id="next" class="btn btn-success" style="width:20%;margin-top:0.5%" onclick = "next()">Next</button>
@@ -427,7 +429,27 @@
 			window.location.replace("/show_assignment/");
 		}
 	}
-	
+	/* DJ- Added Auto fill function */
+	function autofill() {
+        var remainProb = 100;
+        var qt_lef = 0;
+        $('tr').find('td:eq(1)').each(function(i, row) {
+            var currVal = $(this).closest('td').find('input[type="text"]').val();
+            if( currVal != "" ) {
+                remainProb -= currVal;
+            } else {
+                qt_lef++;
+            }
+        }); 
+
+        $('tr').find('td:eq(1)').each(function(i, row) {
+            var currVal = $(this).closest('td').find('input[type="text"]').val();
+            if( currVal == "" ) {
+                $(this).closest('td').find('input[type="text"]').val(remainProb/qt_lef);
+            }
+        });       
+	}
+
 	function next(){
 		var x = save_answer(N_question);
 		if(x==1){
