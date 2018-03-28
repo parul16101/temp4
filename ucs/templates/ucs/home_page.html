@@ -1,6 +1,13 @@
 {% extends "./base.html" %}
 {% load static %}
 {% block content %}
+<!-- DJ editd home page to include a To do list report -->
+<style>
+    table.center {
+        margin-left: auto;
+        margin-right: auto;
+    }
+</style>
 <div class="row">
 	<div class="ibox-title">
 		<h3><strong>Homepage</strong></h3>
@@ -9,14 +16,14 @@
 		<h3 align="center"><strong>To Do List</strong></h3>
 		<div class="table-responsive">
 			<div class="bodycontainer scrollable">
-				<table class="sortable table table-striped table-bordered table-hover dataTables-example table-scrollable" id="home-table">
+				<table class="sortable table table-striped table-bordered table-hover dataTables-example table-scrollable center" style="width: 50%;" id="home-table">
 					<thead>
 						<tr>
-							<th>Type</th>
-							<th>Name</th>
-							<th>Due Date</th>
-							<th>Days Left</th>
-                            <th>View</th>
+							<th style="text-align: center">Type</th>
+							<th style="text-align: center">Name</th>
+							<th style="text-align: center">Due Date</th>
+							<th style="text-align: center">Days Left</th>
+                            <th style="text-align: center">View</th>
 						</tr>
 					</thead>
 					<tbody></tbody>
@@ -89,12 +96,14 @@
             newText = document.createTextNode(name.due_date);
             newCell.style.backgroundColor = bgCol;
             newCell.style.color = txtCol;
+            newCell.style.textAlign = "center";
             newCell.appendChild(newText);
             //Column 4: days_left
             newCell = newRow.insertCell(4);
             newText = document.createTextNode(name.days_left);
             newCell.style.backgroundColor = bgCol;
             newCell.style.color = txtCol;
+            newCell.style.textAlign = "right";
             newCell.appendChild(newText);
             //Column 5: group
             /*newCell = newRow.insertCell(5);
@@ -112,6 +121,7 @@
 			newCell = newRow.insertCell(5);
 			newCell.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="view_type(this)" >'
 			+'<span class="glyphicon glyphicon-pencil"></span> Do</button>';
+            newCell.style.textAlign = "center";
 			
 		});
 	}

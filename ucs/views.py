@@ -631,6 +631,7 @@ def show_assignment(request):
     #DJ Remove assignments from the manage page that are past the closeing date
     now = datetime.now()
     n_date = datetime(int(now.year), int(now.month), int(now.day))
+    daysLeft = []
     for assignment in existAssignment:
     	#Split the date, check for / or - because of format changes
         time = 'E' #For error checking
@@ -645,14 +646,15 @@ def show_assignment(request):
             n_date = datetime(int(now.year), int(now.month), int(now.day))
             delta  = s_date - n_date
             days_left = delta.days
-        if days_left < 0 or days_left == 'E':
-            continue
+        daysLeft.append(days_left)
+        #if days_left < 0 or days_left == 'E':
+        #    continue
         #End of past due assignment filtering
         aidList.append(assignment.id)
         assignmentlist.append(assignment.assignment_name)
         number = Assigned_question.objects.filter(assignment_id = assignment).count()
         qnumber.append(number)
-    at_pair = [{"assignment_id":i, "assignment_name":g, "number":n} for i, g, n in zip(aidList, assignmentlist, qnumber)]
+    at_pair = [{"assignment_id":i, "assignment_name":g, "number":n, "daysleft":d} for i, g, n, d in zip(aidList, assignmentlist, qnumber, daysLeft)]
     json_assignment = json.dumps(at_pair)
     return  render(request, "ucs/show_assignment.html", {"message": message, "username": request.session.get("username"), "dataList": json_assignment})
 
