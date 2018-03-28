@@ -43,7 +43,7 @@
 					<button class="btn btn-primary btn-xs my-xs-btn" type="button" style="margin-top:0.5%" id="add_answer" onClick="add_answer()"><span class="fa fa-plus"></span>add a new answer</button>
 				</div>
 				<!-- DJ- added auto fill button -->
-				<button type="button" id="auto"  style="width:auto;margin-top:0.5%" onclick = "autofill()">Auto Fill</button>
+                <button type="button" id="auto"  style="width:auto;margin-top:0.5%" onclick = "autofill()">Auto Fill</button>
 				<div>
 					<button type="button" id="prev" class="btn btn-success" style="width:20%;margin-top:0.5%" onclick = "previous()">Previous</button>
 					<button type="button" id="next" class="btn btn-success" style="width:20%;margin-top:0.5%" onclick = "next()">Next</button>
@@ -81,6 +81,7 @@
 		return true;
 	}
 	var add_button = document.getElementById("add_answer");
+    var auto_button = document.getElementById("auto");
 	var tableRef = document.getElementById("AssessmentTable");
 	var saved_answer = [];
 	var question_title = [];
@@ -171,6 +172,8 @@
 		else{
 			add_button.disabled = false;
 			add_button.style.visibility = "visible";
+            auto_button.disable = true;
+            auto_button.style.visibility = "hidden";
 			$("th").each(function(){
 				$(this).text($(this).text().replace("Choice","Value"));
 				if(!$(this).text().includes("Cumulative")){
