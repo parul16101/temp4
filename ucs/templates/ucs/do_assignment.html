@@ -135,6 +135,8 @@
 		}
 	    
 		if(question_type == "1"){
+            auto_button.disable = false;
+            auto_button.style.visibility = "visible";
 			$("th").each(function(){
 				$(this).text($(this).text().replace("Value","Choice"));
 				if($(this).text().includes("Cumulative")){
