@@ -91,14 +91,14 @@ def home_page(request):
                         delta  = s_date - n_date
                         days_left = delta.days
                 if days_left == 0:
-                	days_left = 1
+                    days_left = 1
                 if uw.finish_date != "00-00-0000" and uw.finish_date != "00/00/0000":
-                	continue
+                    continue
                 else:
-                	if days_left < 0:
-                		continue
-                	else:
-                		r_days.append(days_left)
+                    if days_left < 0:
+                        continue
+                    else:
+                        r_days.append(days_left)
                 QA_id.append(uw.assignment_id.id)
                 QA_type.append("Assignment")
                 names.append(uw.assignment_id.assignment_name)
@@ -120,7 +120,7 @@ def home_page(request):
                         delta = s_date - n_date
                         days_left = delta.days
                 if days_left == 0:
-                	days_left = 1
+                    days_left = 1
                 QA_id.append(qw.id)
                 QA_type.append("Question")
                 names.append(qw.question_text)
@@ -151,10 +151,10 @@ def home_page(request):
                 if uw.finish_date != "00-00-0000" and uw.finish_date != "00/00/0000":
                     continue
                 else:
-                	if days_left < 0:
-                		continue
-                	else:
-                		r_days.append(days_left)
+                    if days_left < 0:
+                        continue
+                    else:
+                        r_days.append(days_left)
                 f_dates.append(uw.due_date)
                 names.append(uw.assignment_id.assignment_name)
                 QA_type.append("Assignment")
@@ -633,8 +633,8 @@ def show_assignment(request):
     n_date = datetime(int(now.year), int(now.month), int(now.day))
     daysLeft = []
     for assignment in existAssignment:
-    	#Split the date, check for / or - because of format changes
-        time = 'E' #For error checking
+        #Split the date, check for / or - because of format changes
+        time = 'E' #For error checking and empty close dates
         days_left = 'E'
         if '/' in assignment.due_date:
             time = assignment.due_date.split("/")
@@ -646,7 +646,15 @@ def show_assignment(request):
             n_date = datetime(int(now.year), int(now.month), int(now.day))
             delta  = s_date - n_date
             days_left = delta.days
+        #Check to see if a assignment has been solved
+        user_work = Assignment_log.objects.filter(assignment_id = assignment.id).filter(user_id = user_id)
+        for uw in user_work:
+            if uw.finish_date != "00-00-0000" and uw.finish_date != "00/00/0000":
+                days_left = 's'
+            break
         daysLeft.append(days_left)
+        #print assignment.assignment_name
+        #print days_left
         #if days_left < 0 or days_left == 'E':
         #    continue
         #End of past due assignment filtering
