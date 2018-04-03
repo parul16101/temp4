@@ -1251,13 +1251,22 @@ def scoring(request):
 
     current_user = User.objects.get(id= user_id)
     print current_user
-    if current_user.admin_user==True:
+    #####################JASON######################
+    if current_user.admin_user == True:
         assignment_set = Assignment.objects.all()
     else:
         try:
-            assignment_set = Assignment.objects.raw("select * from ucs_assignment natural join ucs_assigned_group where group_id_id = ANY(select group_id_id from ucs_group_member where user_id_id = "+str(user_id)+");")
-        except:
             assignment_set = []
+            #Regular User
+            user_work = Assignment_log.objects.filter(user_id = user_id)
+            #Loop through user assignments
+            for uw in user_work:
+                if uw.finish_date != "00-00-0000" and uw.finish_date != "00/00/0000":
+                    assignment_set.append(uw.assignment_id)
+            #print 'Existing Assignments:', assignment_set
+        except Exception, e:
+            print e
+    #####################JASON######################
     question_list = []
     cata_list = []
     user_list = []
