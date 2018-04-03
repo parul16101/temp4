@@ -8,7 +8,7 @@
 	</div>
 	<div class="ibox-content">
 		<div class="table-responsive">
-			<table class="table table-striped table-bordered" style="width: 25%;" id="AssignmentTable" >
+			<table class="table table-striped table-bordered" style="width: 50%;" id="AssignmentTable" >
 				<thead>
 					<tr>
 						<th style="display:none;">#</th>
@@ -54,7 +54,7 @@
 		// change background color for ones that dont have the do button option
 		var bgCol = "";
 		var txCol = "";
-		if( name.daysleft == 'E' || name.daysleft == 's' || name.daysleft < 0) {
+		if( name.daysleft == 's' || name.daysleft < 0) {
 			bgCol = "#c2bbbb";
 			txCol = "#393535";
 		}
@@ -74,11 +74,12 @@
 		newCell.style.color = txCol;
 		// Status
 		newCell = newRow.insertCell(3);
-		if( name.daysleft == 'E' || name.daysleft == 's' ) {
+		// E stands for empty closing date.
+		if( name.daysleft == 's' ) {
 			newText = document.createTextNode("Solved");
 			newCell.appendChild(newText);
 		} else if ( name.daysleft < 0 ) {
-			newText = document.createTextNode("Paste Due");
+			newText = document.createTextNode("Past Due");
 			newCell.appendChild(newText);
 		} else {
 			newCell.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="do_assignment(this)" >'
