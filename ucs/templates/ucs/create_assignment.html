@@ -55,6 +55,7 @@
 								<thead>
 									<tr>
 										<th><button type="button" name="select-all" id="select-all" value="0" > All</button></th>
+										<th style="display:none;">#</th>
 										<th>Question Text</th>
 										<th>Date True <br>Value Known</th>
 										<th>Upload Date</th>
@@ -191,8 +192,8 @@
 	(function() {
 	    emailjs.init("user_kUHAMtTF8sapnkZ3TT6Jc");
 	})();
-        // DJ On change closing date, check if it is valid (Not before the current time XD)
-        var today_date = new Date();
+    // DJ On change closing date, check if it is valid (Not before the current time XD)
+    var today_date = new Date();
 	var day = today_date.getDate();
 	var month = today_date.getMonth()+1; // January is 0
 	var year = today_date.getFullYear();
@@ -210,19 +211,23 @@
 	function submit_assignment() {
 		var member = [];
 		var si = document.getElementById("selectedGroups");
+		//var names = document.getElementById("QuestionTable").rows[cell].cells[1].innerHTML
 		for(j=0;j<si.options.length;j++) {
 			member.push(si.options[j].value);
 		}
 		var checkedQuestions = [];
 		// Enumerate over each checked checkbox
 		$('.table tr input[type="checkbox"]:checked').each(function() {
-			$(this).closest('tr').find('td:not(:first-child):not(:last-child)').each(function() {
+			//$(this).closest('tr').find('td:not(:first-child):not(:last-child)').each(function() {
+			$(this).closest('tr').find('td:nth-child(2)').each(function() {
 				// Gather the selected question text
 				checkedQuestions.push($(this).text());
 			});
 		});
 		// JSONify for easy display
 		// alert(JSON.stringify(checkedQuestions));
+		
+		//alert(checkedQuestions);
 		
 		$.ajax({
 			type:"POST",
@@ -249,6 +254,7 @@
 				}
 			},
 		});
+		
 		return false; //<---- move it here
 	}
 </script>
@@ -316,21 +322,26 @@
 			newCell_0.appendChild(checkbox);
 			
 			var newCell_1  = newRow.insertCell(1);
-			var newText1  = document.createTextNode(name.question_text);
-			newCell_1.name = "question_text";
+			var newText1  = document.createTextNode(name.question_id);
 			newCell_1.appendChild(newText1);
+			newCell_1.style.display = 'none';
 			
 			var newCell_2  = newRow.insertCell(2);
-			var newText2  = document.createTextNode(name.end_time);
+			var newText2  = document.createTextNode(name.question_text);
+			newCell_2.name = "question_text";
 			newCell_2.appendChild(newText2);
-
-			var newCell_3 = newRow.insertCell(3);
-			var newText3 = document.createTextNode(name.up_date);
+			
+			var newCell_3  = newRow.insertCell(3);
+			var newText3  = document.createTextNode(name.end_time);
 			newCell_3.appendChild(newText3);
 
 			var newCell_4 = newRow.insertCell(4);
-			var newText4 = document.createTextNode(name.category_text);
+			var newText4 = document.createTextNode(name.up_date);
 			newCell_4.appendChild(newText4);
+
+			var newCell_5 = newRow.insertCell(5);
+			var newText5 = document.createTextNode(name.category_text);
+			newCell_5.appendChild(newText5);
 		});
 	}
 </script>

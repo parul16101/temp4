@@ -501,10 +501,11 @@ def create_assignment(request):
                     #group_id = group_info.id;
                     newAssignedGroup = Assigned_group(assignment_id = assignment_info, group_id = group_info)
                     newAssignedGroup.save()
-                for q_text in assigned_question:
-                    q_text = q_text.encode("utf-8")
-                    print(q_text)
-                    question_info = Question.objects.get(question_text = q_text)
+                for q_id in assigned_question:
+                    #q_text = q_text.encode("utf-8")
+                    print(q_id)
+                    q_id = int(q_id)
+                    question_info = Question.objects.get(id = q_id)
                     newAssignedQuestion = Assigned_question(assignment_id = assignment_info, question_id = question_info)
                     newAssignedQuestion.save()
 
@@ -521,6 +522,7 @@ def create_assignment(request):
         return JsonResponse(data)
     ###################################
     questionSet = Question.objects.all()  #complex lookups with Q objects
+    qidList = []
     questionList = []
     categoryList = []
     forecastList = []
@@ -531,6 +533,7 @@ def create_assignment(request):
     uploaderList = []
     #Remove the files that are not accessible (deleted or not mounted)
     for question in questionSet:
+        qidList.append(question.id)
         questionList.append(question.question_text)
         categoryList.append(question.category.category_text)
         forecastList.append(question.forecast)
@@ -538,7 +541,7 @@ def create_assignment(request):
         q_use_List.append(question.corporate_training)
         num_cho_List.append(question.upload_date)
         CloseTimeList.append(question.close_date)
-    question_pair = [{"question_text":a, "category_text":b, "end_time":e, "up_date":u} for a, b, e, u in zip(questionList, categoryList, CloseTimeList, num_cho_List)]
+    question_pair = [{"question_id":i, "question_text":a, "category_text":b, "end_time":e, "up_date":u} for i, a, b, e, u in zip(qidList, questionList, categoryList, CloseTimeList, num_cho_List)]
     json_group = json.dumps(question_pair)
     ###################################
     return render(request, "ucs/create_assignment.html", {"dataList": json_group, "message": message, "group_name": request.session.get("group_name"), "initialItems": json_user})
