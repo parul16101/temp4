@@ -93,7 +93,12 @@ def home_page(request):
                 if days_left == 0:
                     days_left = 1
                 if uw.finish_date != "00-00-0000" and uw.finish_date != "00/00/0000":
-                    continue
+                    #print uw.assignment_id.assignment_name
+                    if uw.due_date != "" and days_left < 0:   
+                        continue
+                    elif uw.due_date == "":
+                        continue
+                    r_days.append(days_left)
                 else:
                     if days_left < 0:
                         continue
@@ -149,7 +154,11 @@ def home_page(request):
                 if days_left == 0:
                     days_left = 1
                 if uw.finish_date != "00-00-0000" and uw.finish_date != "00/00/0000":
-                    continue
+                    if uw.due_date != "" and days_left < 0:   
+                        continue
+                    elif uw.due_date == "":
+                        continue
+                    r_days.append(days_left)
                 else:
                     if days_left < 0:
                         continue
@@ -529,7 +538,7 @@ def create_assignment(request):
         q_use_List.append(question.corporate_training)
         num_cho_List.append(question.upload_date)
         CloseTimeList.append(question.close_date)
-    question_pair = [{"question_text":a, "category_text":b, "end_time":e} for a, b, e in zip(questionList, categoryList, CloseTimeList)]
+    question_pair = [{"question_text":a, "category_text":b, "end_time":e, "up_date":u} for a, b, e, u in zip(questionList, categoryList, CloseTimeList, num_cho_List)]
     json_group = json.dumps(question_pair)
     ###################################
     return render(request, "ucs/create_assignment.html", {"dataList": json_group, "message": message, "group_name": request.session.get("group_name"), "initialItems": json_user})
@@ -632,6 +641,9 @@ def show_assignment(request):
     now = datetime.now()
     n_date = datetime(int(now.year), int(now.month), int(now.day))
     daysLeft = []
+    #DJ show closing date and finish date
+    asgnCD = [] # closing dates
+    asgnFD = [] # Finish dates
     for assignment in existAssignment:
         #Split the date, check for / or - because of format changes
         time = 'E' #For error checking and empty close dates
@@ -648,10 +660,21 @@ def show_assignment(request):
             days_left = delta.days
         #Check to see if a assignment has been solved
         user_work = Assignment_log.objects.filter(assignment_id = assignment.id).filter(user_id = user_id)
+        #print assignment.assignment_name
+        #print "****"
+        finish_date = ""
         for uw in user_work:
+            finish_date = uw.finish_date
             if uw.finish_date != "00-00-0000" and uw.finish_date != "00/00/0000":
-                days_left = 's'
+                if uw.due_date != "" and days_left < 0:
+                    days_left = 's'
+                    break
+                elif uw.due_date == "":
+                    days_left = 's'
+                    break
             break
+        asgnCD.append(assignment.due_date)
+        asgnFD.append(finish_date)
         daysLeft.append(days_left)
         #print assignment.assignment_name
         #print days_left
@@ -662,7 +685,7 @@ def show_assignment(request):
         assignmentlist.append(assignment.assignment_name)
         number = Assigned_question.objects.filter(assignment_id = assignment).count()
         qnumber.append(number)
-    at_pair = [{"assignment_id":i, "assignment_name":g, "number":n, "daysleft":d} for i, g, n, d in zip(aidList, assignmentlist, qnumber, daysLeft)]
+    at_pair = [{"assignment_id":i, "assignment_name":g, "number":n, "daysleft":d, "cdate":c, "fdate":f } for i, g, n, d, c, f in zip(aidList, assignmentlist, qnumber, daysLeft, asgnCD, asgnFD)]
     json_assignment = json.dumps(at_pair)
     return  render(request, "ucs/show_assignment.html", {"message": message, "username": request.session.get("username"), "dataList": json_assignment})
 
@@ -675,19 +698,52 @@ def edit_assignment(request):
     if request.method == 'POST':
         a_id = request.POST['assignment_id']
         a_id = int(a_id)
-        print 'Assignment id: ', a_id
+        #print 'Assignment id: ', a_id
         target_assignment = Assignment.objects.get(id = a_id)
+        close_date = Assignment.objects.filter(id = a_id)
+        due_date = ""
+        for cw in close_date:
+            due_date = cw.due_date
+            break
         a_name = target_assignment.assignment_name
-        print 'Assignment name: ', a_name
+        #print 'Assignment name: ', a_name
+        #DJ - Make sure new users or delted users update the assignment_log table
         if request.POST['action'] == "delete":
             g_name = request.POST['gp_name']
+            # target_group is the group that needs to be added
             target_group = Group.objects.filter(group_name = g_name)
+            get_groups = Assigned_group.objects.filter(assignment_id = target_assignment)
+            usrList = []
+            for grp in get_groups:
+                if grp.group_id != target_group.first():
+                    get_usrList = Group_member.objects.filter(group_id = grp.group_id)
+                    for g_uL in get_usrList:
+                        usrList.append(g_uL.user_id)
+            get_users = Group_member.objects.filter(group_id = target_group)
+            for duser in get_users:
+                if duser.user_id not in usrList:
+                    Assignment_log.objects.filter(user_id = duser.user_id, assignment_id = target_assignment).delete()
             Assigned_group.objects.filter(assignment_id = target_assignment, group_id = target_group).delete()
+            #delete_users = Group_member.objects.filter(group_id = target_group)
         if request.POST['action'] == "add":
             add_group = request.POST.getlist('gp_name[]')
+            curr_users_list = []
+            user_list = Assignment_log.objects.filter(assignment_id = target_assignment)
+            for curr_user in user_list:
+                curr_users_list.append(curr_user.user_id)
             for item in add_group:
                 item = item.encode("utf-8")
                 target_group = Group.objects.get(group_name = item)
+                
+                user_new = Group_member.objects.filter(group_id = target_group)
+                for newuser in user_new:
+                    if newuser.user_id not in curr_users_list:
+                        print "adding user"
+                        print newuser
+                        insertIntoAssignmentLog = Assignment_log(assignment_id = target_assignment, user_id = newuser.user_id, due_date = due_date,
+                        finish_date = "00/00/0000", group_id = target_group)
+                        insertIntoAssignmentLog.save()                
+                    #all_users.append(ul.user_id)
                 newAssignedGroup = Assigned_group(assignment_id = target_assignment, group_id = target_group)
                 newAssignedGroup.save()
     else:

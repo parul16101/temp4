@@ -56,6 +56,8 @@
 									<tr>
 										<th><button type="button" name="select-all" id="select-all" value="0" > All</button></th>
 										<th>Question Text</th>
+										<th>Date True <br>Value Known</th>
+										<th>Upload Date</th>
 										<th>Category</th>
 									</tr>
 								</thead>
@@ -319,8 +321,16 @@
 			newCell_1.appendChild(newText1);
 			
 			var newCell_2  = newRow.insertCell(2);
-			var newText2  = document.createTextNode(name.category_text);
+			var newText2  = document.createTextNode(name.end_time);
 			newCell_2.appendChild(newText2);
+
+			var newCell_3 = newRow.insertCell(3);
+			var newText3 = document.createTextNode(name.up_date);
+			newCell_3.appendChild(newText3);
+
+			var newCell_4 = newRow.insertCell(4);
+			var newText4 = document.createTextNode(name.category_text);
+			newCell_4.appendChild(newText4);
 		});
 	}
 </script>
