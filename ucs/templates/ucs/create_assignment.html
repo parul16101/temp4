@@ -213,24 +213,36 @@
 	function submit_assignment() {
 		var member = [];
 		var si = document.getElementById("selectedGroups");
-		//var names = document.getElementById("QuestionTable").rows[cell].cells[1].innerHTML
 		for(j=0;j<si.options.length;j++) {
 			member.push(si.options[j].value);
 		}
-		var checkedQuestions = [];
-		// Enumerate over each checked checkbox
-		$('.table tr input[type="checkbox"]:checked').each(function() {
+		/*$('.table tr input[type="checkbox"]:checked').each(function() {
 			//$(this).closest('tr').find('td:not(:first-child):not(:last-child)').each(function() {
 			$(this).closest('tr').find('td:nth-child(2)').each(function() {
 				// Gather the selected question text
 				checkedQuestions.push($(this).text());
 			});
 		});
+		alert(checkedQuestions);*/
+		// Enumerate over each checked checkbox
+		var checkedQuestions = [];
+		var table = $('#QuestionTable').DataTable();
+		var counter = 0;
+		table.rows().eq(0).each( function(index) {
+			var row = table.row(index);
+			var data = row.data();
+			var $tr = $(row.node());
+			var $checkbox = $tr.find("td:first-child input[type='checkbox']");
+			if( $checkbox.is(":checked") ) {
+			    checkedQuestions.push(data[1]);
+			}
+			//counter = counter + 1;
+		});
+		// alert(counter);
 		// JSONify for easy display
 		// alert(JSON.stringify(checkedQuestions));
 		
 		//alert(checkedQuestions);
-		
 		$.ajax({
 			type:"POST",
 			url:"/create_assignment/",
@@ -256,7 +268,6 @@
 				}
 			},
 		});
-		
 		return false; //<---- move it here
 	}
 </script>
@@ -318,9 +329,9 @@
 			var newRow = tableRef.insertRow(num);
 			var newCell_0  = newRow.insertCell(0);
 			var checkbox = document.createElement('input');
-			checkbox.type = "checkbox";
-			checkbox.name = "Foo";
-			//checkbox.id = "Foo";
+			checkbox.type = 'checkbox';
+			checkbox.name = 'Foo';
+			//checkbox.id = 'Foo';
 			newCell_0.appendChild(checkbox);
 			
 			var newCell_1  = newRow.insertCell(1);
