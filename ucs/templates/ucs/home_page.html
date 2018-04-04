@@ -16,9 +16,10 @@
 		<h3 align="center"><strong>To Do List</strong></h3>
 		<div class="table-responsive">
 			<div class="bodycontainer scrollable">
-				<table class="sortable table table-striped table-bordered table-hover dataTables-example table-scrollable center" style="width: 50%;" id="home-table">
+				<table class="sortable table table-striped table-bordered table-hover dataTables-example table-scrollable center" style="width: 75%;" id="home-table">
 					<thead>
 						<tr>
+                            <th> ID </th>
 							<th style="text-align: center">Type</th>
 							<th style="text-align: center">Name</th>
 							<th style="text-align: center">Due Date</th>
@@ -61,7 +62,7 @@
 	if(datas){
 		datas.forEach(function(name, index) {
             var row_cnt = tableRef.rows.length;
-			var newRow  = tableRef.insertRow(row_cnt);
+            var newRow  = tableRef.insertRow(row_cnt);
             var bgCol   = "";
             var txtCol  = "";
             if( name.days_left == "s" ) {
@@ -80,7 +81,7 @@
             var newCell = newRow.insertCell(0);
             var newText = document.createTextNode(name.id);
             newCell.appendChild(newText);
-            newCell.style.display = 'none';
+
             //Column 1: type                     
             newCell = newRow.insertCell(1);
             newText = document.createTextNode(name.type);
