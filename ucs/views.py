@@ -455,10 +455,11 @@ def create_assignment(request):
             group_info = Group.objects.filter(group_name = ag)
             user_list = Group_member.objects.filter(group_id = group_info)
             for ul in user_list:
-                all_users.append(ul.user_id)
-                get_email = User.objects.get(username=ul.user_id)
-                if get_email.email not in email_list:
-                    email_list.append(get_email.email)
+                if ul.user_id not in all_users:
+                    all_users.append(ul.user_id)
+                    get_email = User.objects.get(username=ul.user_id)
+                    if get_email.email not in email_list:
+                        email_list.append(get_email.email)
         exsitAssignment = Assignment.objects.filter(assignment_name = assignment_name)
         print exsitAssignment
         print exsitAssignment.exists()
@@ -604,6 +605,8 @@ def search_assignment(request):
     aidList = []
     assignmentlist = []
     qnumber = []
+    #DJ show closing date and finish date
+    asgnCD = [] # closing dates
     for assignment in existAssignment:
         aidList.append(assignment.id)
         number = Assigned_question.objects.filter(assignment_id = assignment).count()
@@ -612,7 +615,8 @@ def search_assignment(request):
         else:
             assignmentlist.append(assignment.assignment_name)
             qnumber.append(number)
-    at_pair = [{"assignment_id":i, "assignment_name":g, "number":n} for i, g, n in zip(aidList, assignmentlist, qnumber)]
+            asgnCD.append(assignment.due_date)
+    at_pair = [{"assignment_id":i, "assignment_name":g, "number":n, "cdate":c} for i, g, n, c in zip(aidList, assignmentlist, qnumber, asgnCD)]
     json_assignment = json.dumps(at_pair)
     if request.method == 'POST':
         if request.POST['action'] == "delete":

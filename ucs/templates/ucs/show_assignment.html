@@ -1,6 +1,13 @@
 {% extends "./base.html" %}
 {% load static %}
 {% block content %}
+<!-- DJ editd home page to include a To do list report -->
+<style>
+    table.center {
+        margin-left: auto;
+        margin-right: auto;
+    }
+</style>
 <div class="row">
 	<div class="ibox-title">
 		<h3><strong>Assignments</strong></h3>
@@ -122,5 +129,28 @@
 		var names = document.getElementById("AssignmentTable").rows[cell].cells[0].innerHTML
 		window.location = '/do_assignment?assignment_id=' + names;
 	}
+</script>
+<!-- This block is to integrate the dataTable plugin with table_id = home-table -->
+<script>
+	$(document).ready(function(){
+		$('.dataTables-example').DataTable({
+			dom: '<"html5buttons"B>lTfgitp',
+			buttons: [
+				{extend: 'copy'},
+				{extend: 'csv'},
+				{extend: 'excel', title: 'ExampleFile'},
+				{extend: 'pdf', title: 'ExampleFile'},
+				{extend: 'print',
+					customize: function (win){
+						$(win.document.body).addClass('white-bg');
+						$(win.document.body).css('font-size', '10px');
+						$(win.document.body).find('table')
+						.addClass('compact')
+						.css('font-size', 'inherit');
+					}
+				}
+			]
+		});
+	});
 </script>
 {%endblock%}
