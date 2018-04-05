@@ -1,31 +1,41 @@
 {% extends "./base.html" %}
 {% load static %}
 {% block content %}
+<!-- DJ editd home page to include a To do list report -->
+<style>
+    table.center {
+        margin-left: auto;
+        margin-right: auto;
+    }
+</style>
 <div class="row">
 	<div class="ibox-title">
 		<h3><strong>Assignments</strong></h3>
 	</div>
+    <!-- DJ fix the table cc and layout to properly used the ks and css scripts -->
 	<div class="ibox-content">
 		<div class="table-responsive">
-			<table class="table table-striped table-bordered " id="AssignmentTable" >
-				<thead>
-					<tr>
-						<th style="display:none;">#</th>
-						<th>Assignment Name</th>
-						<th>Number of Questions</th>
-						<th> </th>
-						<!--- {% if request.session.admin_user %} --->
-						<th> </th>
-						<th> </th>
-						<!--- {% endif %} --->
-					</tr>
-				</thead>
-			</table>
-		</div>
-		<div class="btn-toolbar">
-			<input style="width:20%;float:left;margin-top:0.5%;margin-left:2%"type="button" class="btn btn-success" value="+ Create Assignment" onclick="add_assignment();" />
+            <div class="bodycontainer scrollable">
+    			<table class="sortable table table-striped table-bordered table-hover dataTables-example table-scrollable center" style="width:75%;" id="AssignmentTable" >
+    				<thead>
+    					<tr>
+    						<th style="display:none;">#</th>
+    						<th style="text-align: center;">Assignment Name</th>
+    						<th style="text-align: center; width:20%">Number of Questions</th>
+                            <th style="text-align: center;"> Close Date </th>
+    						<th style="text-align: center;"> Do </th>
+                            <th style="text-align: center;"> Edit </th>
+                            <th style="text-align: center;"> Delete </th>
+    					</tr>
+    				</thead>
+                    <tbody></tbody>
+    			</table>
+            </div>
 		</div>
 	</div>
+    <div class="btn-toolbar">
+        <input style="width:20%;float:left;margin-top:0.5%;margin-left:2%"type="button" class="btn btn-success" value="+ Create Assignment" onclick="add_assignment();" />
+    </div>
 </div>
 {% endblock %}
 
@@ -39,40 +49,53 @@
 <!-- Custom and plugin javascript -->
 <script src="{% static 'ucs/js/inspinia.js' %}"></script>
 <script src="{% static 'ucs/js/plugins/pace/pace.min.js' %}"></script>
+<script src="{% static 'ucs/js/sorttable.js' %}"></script>
+<script src="{% static 'ucs/js/plugins/dataTables/datatables.min.js' %}"></script>
 
 <!-- iCheck -->
 <script src="{% static 'ucs/js/plugins/iCheck/icheck.min.js' %}"></script>
 <script type="text/javascript">
 	var datas = {{dataList | safe}};
-	var tableRef = document.getElementById("AssignmentTable");
+    // DJ Modify -All tables need to follow the format of tableRef below to properly use datatables, css, and min.js
+	var tableRef = document.getElementById("AssignmentTable").getElementsByTagName('tbody')[0];
+
 	datas.forEach(function(name, index) {
+        // DJ - No need to defined n variables for n data types. Waste memory and makes code non-scale
 		var num = tableRef.rows.length;
 		var newRow   = tableRef.insertRow(num);
-		var newCell_0  = newRow.insertCell(0);
-		var newText0  = document.createTextNode(name.assignment_id);
-		newCell_0.appendChild(newText0);
-		newCell_0.style.display = 'none';
+		var newCell  = newRow.insertCell(0);
+		var newText  = document.createTextNode(name.assignment_id);
+		newCell.appendChild(newText);
+		newCell.style.display = 'none';
 		
-		var newCell_1  = newRow.insertCell(1);
-		var newText1  = document.createTextNode(name.assignment_name);
-		newCell_1.appendChild(newText1);
+		newCell  = newRow.insertCell(1);
+		newText  = document.createTextNode(name.assignment_name);
+		newCell.appendChild(newText);
 		
-		var newCell_2  = newRow.insertCell(2);
-		var newText2  = document.createTextNode(name.number);
-		newCell_2.appendChild(newText2);
+		newCell  = newRow.insertCell(2);
+		newText  = document.createTextNode(name.number);
+		newCell.appendChild(newText);
+        newCell.style.textAlign = "center";
+
+        newCell = newRow.insertCell(3);
+        newText = document.createTextNode(name.cdate);
+        newCell.appendChild(newText);
+        newCell.style.textAlign = "center";
 		
-		var newCell_3  = newRow.insertCell(3);
-		newCell_3.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="do_assignment(this)" >'
+		newCell  = newRow.insertCell(4);
+		newCell.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="do_assignment(this)" >'
 		+'<span class="glyphicon glyphicon-pencil"></span> Do </button>';
-		
+		newCell.style.textAlign = "center";
 		//{% if request.session.admin_user %}
-		var newCell_4  = newRow.insertCell(4);
-		newCell_4.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="edit_assignment(this)" >'
+		newCell  = newRow.insertCell(5);
+		newCell.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="edit_assignment(this)" >'
 		+'<span class="glyphicon glyphicon-pencil"></span> Edit </button>';
+        newCell.style.textAlign = "center";
 		
-		var newCell_5  = newRow.insertCell(5);
-		newCell_5.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="delete_assignment(this)" >'
+		newCell  = newRow.insertCell(6);
+		newCell.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="delete_assignment(this)" >'
 		+'<span class="fa fa-times"></span> Delete </button>';
+        newCell.style.textAlign = "center";
 		//{% endif %}
 	});
 </script>
@@ -118,5 +141,28 @@
 		var action = "edit";
 		window.location = '/edit_assignment?assignment_id=' + names;
 	}
+</script>
+<!-- This block is to integrate the dataTable plugin with table_id = home-table -->
+<script>
+    $(document).ready(function(){
+        $('.dataTables-example').DataTable({
+            dom: '<"html5buttons"B>lTfgitp',
+            buttons: [
+                {extend: 'copy'},
+                {extend: 'csv'},
+                {extend: 'excel', title: 'ExampleFile'},
+                {extend: 'pdf', title: 'ExampleFile'},
+                {extend: 'print',
+                    customize: function (win){
+                        $(win.document.body).addClass('white-bg');
+                        $(win.document.body).css('font-size', '10px');
+                        $(win.document.body).find('table')
+                        .addClass('compact')
+                        .css('font-size', 'inherit');
+                    }
+                }
+            ]
+        });
+    });
 </script>
 {% endblock %}
