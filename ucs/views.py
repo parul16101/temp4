@@ -455,10 +455,11 @@ def create_assignment(request):
             group_info = Group.objects.filter(group_name = ag)
             user_list = Group_member.objects.filter(group_id = group_info)
             for ul in user_list:
-                all_users.append(ul.user_id)
-                get_email = User.objects.get(username=ul.user_id)
-                if get_email.email not in email_list:
-                    email_list.append(get_email.email)
+                if ul.user_id not in all_users:
+                    all_users.append(ul.user_id)
+                    get_email = User.objects.get(username=ul.user_id)
+                    if get_email.email not in email_list:
+                        email_list.append(get_email.email)
         exsitAssignment = Assignment.objects.filter(assignment_name = assignment_name)
         print exsitAssignment
         print exsitAssignment.exists()
