@@ -605,6 +605,8 @@ def search_assignment(request):
     aidList = []
     assignmentlist = []
     qnumber = []
+    #DJ show closing date and finish date
+    asgnCD = [] # closing dates
     for assignment in existAssignment:
         aidList.append(assignment.id)
         number = Assigned_question.objects.filter(assignment_id = assignment).count()
@@ -613,7 +615,8 @@ def search_assignment(request):
         else:
             assignmentlist.append(assignment.assignment_name)
             qnumber.append(number)
-    at_pair = [{"assignment_id":i, "assignment_name":g, "number":n} for i, g, n in zip(aidList, assignmentlist, qnumber)]
+            asgnCD.append(assignment.due_date)
+    at_pair = [{"assignment_id":i, "assignment_name":g, "number":n, "cdate":c} for i, g, n, c in zip(aidList, assignmentlist, qnumber, asgnCD)]
     json_assignment = json.dumps(at_pair)
     if request.method == 'POST':
         if request.POST['action'] == "delete":
