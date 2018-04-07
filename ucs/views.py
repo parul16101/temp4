@@ -1754,7 +1754,78 @@ def computeResults(ASet):
     return summary_results, values, plot, datapoints
     #return summary_results, values, plot, datapoints, WLS_table_json
 
+def scoring_test(request):
+    user_id = request.session.get("userId")
+    if not user_id:
+        return redirect(reverse("login"))
+    message = None
 
+    question_set = Question.objects.all()
+    cata_set = Category.objects.all()
+    user_set = User.objects.all()
+    group_set = Group.objects.all()
+
+    current_user = User.objects.get(id= user_id)
+    print current_user
+    #####################JASON######################
+    if current_user.admin_user == True:
+        assignment_set = Assignment.objects.all()
+    else:
+        try:
+            assignment_set = []
+            #Regular User
+            user_work = Assignment_log.objects.filter(user_id = user_id)
+            #Loop through user assignments
+            for uw in user_work:
+                if uw.finish_date != "00-00-0000" and uw.finish_date != "00/00/0000":
+                    assignment_set.append(uw.assignment_id)
+            #print 'Existing Assignments:', assignment_set
+        except Exception, e:
+            print e
+    #####################JASON######################
+    question_list = []
+    cata_list = []
+    user_list = []
+    group_list = []
+    assignment_list = []
+    for qn in question_set:
+        question_list.append(qn.question_text)
+    for cn in cata_set:
+        cata_list.append(cn.category_text)
+    for un in user_set:
+        user_list.append(un.username)
+    for gn in group_set:
+        group_list.append(gn.group_name)
+    for an in assignment_set:
+        assignment_list.append(an.assignment_name)
+    question_data = [{"question":q} for q in question_list]
+    cata_data = [{"category":c} for c in cata_list]
+    user_data = [{"user":u} for u in user_list]
+    group_data = [{"group":g} for g in group_list]
+    assignment_data = [{"assignment":a} for a in assignment_list]
+    #print question_data
+    #print cata_data
+    #print user_data
+    #print group_data
+    #print assignment_data
+    json_question = json.dumps(question_data)
+    json_cata = json.dumps(cata_data)
+    if current_user.admin_user==True:
+        json_user = json.dumps(user_data)
+        json_group = json.dumps(group_data)
+    else:
+        json_user = json.dumps([])
+        json_group = json.dumps([])
+    json_assignment = json.dumps(assignment_data)
+    if request.method == "POST":
+            data['rep_message'] = 'Success'
+            data['status'] = True
+            return JsonResponse(data)
+    return render(request, "ucs/scoring.html",{"message": message, "username": request.session.get("username"), "questionList": json_question,
+        "cataList": json_cata, "userList": json_user, "groupList": json_group, "assignmentList": json_assignment})
+
+
+    return
 def processAssessments(ASet):
     data = []
     for assessment in ASet:
