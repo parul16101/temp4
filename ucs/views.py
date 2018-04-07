@@ -1821,11 +1821,9 @@ def scoring_test(request):
             data['rep_message'] = 'Success'
             data['status'] = True
             return JsonResponse(data)
-    return render(request, "ucs/scoring.html",{"message": message, "username": request.session.get("username"), "questionList": json_question,
+    return render(request, "ucs/scoring_test.html",{"message": message, "username": request.session.get("username"), "questionList": json_question,
         "cataList": json_cata, "userList": json_user, "groupList": json_group, "assignmentList": json_assignment})
 
-
-    return
 def processAssessments(ASet):
     data = []
     for assessment in ASet:
