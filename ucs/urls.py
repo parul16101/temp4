@@ -40,8 +40,7 @@ urlpatterns = [
     #Group part
     url(r'^create_group/$', views.create_group, name="create_group"),
     url(r'^search_group/$', views.search_group, name="search_group"),
-    url(r'^edit_group/$', views.edit_group, name="edit_group"),
-    
+    url(r'^edit_group/$', views.edit_group, name="edit_group"),  
     #Category part
     url(r'^manage_category/$', views.manage_category, name="manage_category"),
     
@@ -49,6 +48,7 @@ urlpatterns = [
     url(r'^plotting/$', views.plotting, name="plotting"),
     url(r'^result/$', views.result, name="result"),
     url(r'^scoring/$', views.scoring, name="scoring"),
+    url(r'^scoring_test/$', views.scoring_test, name="scoring_test"),
     url(r'^batch_import/$', views.batch_import, name="batch_import"),
     url(r'^download_log/$',views.download_log, name="download_log")
 ]# + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
