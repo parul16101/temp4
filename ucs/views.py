@@ -626,6 +626,8 @@ def search_assignment(request):
             Assigned_question.objects.filter(assignment_id = assignment).delete()
             Assigned_group.objects.filter(assignment_id = assignment).delete()
             assignment.delete()
+            Assignment_log.objects.filter(assignment_id = assignment).delete()
+
     return  render(request, "ucs/search_assignment.html", {"message": message, "username": request.session.get("username"), "dataList": json_assignment})
 
 
