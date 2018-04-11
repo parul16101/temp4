@@ -1378,12 +1378,12 @@ def scoring(request):
 def plotting(request):
     return render(request, "ucs/plotting.html", {})
 
+
 def result(request):
     user_id = request.session.get("userId")
     if not user_id:
         return redirect(reverse("login"))
     current_user = User.objects.get(id= user_id)
-    data = {}
     summary_results = {}
     plot = []
     summary_results['confidence'] = "Not Calculated"
@@ -1396,13 +1396,15 @@ def result(request):
     if request.method == "POST":
         #Process request to get answer containing all option selected on scoring page
         answer = processRequests(request,current_user)
-        print "answer\n\n\n\n",answer
+        print "answer\n\n\n\n", answer
         #answer = [question_type, forecast, question_purpose, question_text, true_or_false, category, user_name, group_name, assignment_name, date_submitted]
 
         #write answer in the file
         #if not os.path.isdir('debug\\'):
-            #os.makedirs('debug\\')
-        with open('/tmp/data.csv', 'wb') as csvfile:
+        #    os.makedirs('debug\\')
+
+        #Log File
+        with open('/tmp/log.csv', 'wb') as csvfile:
             para_fieldnames = ['Question Type', 'Forecast', 'Question Purpose', 'Question Text', '# of Choices', 'Category', 'User', 'Group', 'Assignment Name', 'Date Submitted']
             writer = csv.DictWriter(csvfile, fieldnames=para_fieldnames)
             writer.writeheader()
@@ -1410,17 +1412,25 @@ def result(request):
             csvfile.write("\n\n\n");
 
         ##################IT'S NO LONGER RAUL CODE######################
-        ASet = returnAssessments(answer)
+        QSet, ASet = returnAssessments(answer)
+        QA_map = {} #Mapping of questions to assessments
         temp = ASet.values()
-        with open('/tmp/data.csv', 'a') as csvfile:
+        with open('/tmp/log.csv', 'a') as csvfile:
             assessment_fieldnames = ['Question ID', 'Date of assessment','User Name','Operator','Answer Text','Details Of Assessment','Option Text','ID']
             writer = csv.DictWriter(csvfile, fieldnames=assessment_fieldnames,lineterminator='\n')
             writer.writeheader()
             for value in temp:
+                print "value: ", value
                 writer.writerow({'Question ID':value['question_id_id'], 'Date of assessment':value['date_of_assessment'],
              'User Name':User.objects.get(pk=value['user_id_id']).username, 'Operator':value['operator'],'Answer Text':value['answer_text'],
              'Details Of Assessment':value['details_of_assessment'], 'Option Text':value['option_text'],'ID':value['id']})
+                if value['question_id_id'] not in QA_map.keys():
+                    QA_map[value['question_id_id']] = []
+                else:
+                    pass
+                QA_map[value['question_id_id']].append(value)
             csvfile.write("\n\n\n");
+
 
         summary_results, values, plot, datapoints = computeResults(ASet)
         summary_fieldnames = ['Confidence', 'Calibration','Resolution','Knowledge','Brierscore']
@@ -1428,9 +1438,46 @@ def result(request):
 
         #Get WLS line, confidence bias, and directional bias
         wls_datapoints, wls_c_d_table = wls_bias_calc(plot)
+        ################################################################
+
+        #Data File
+        data = {}
+        max_assessment_size = max([len(QA_map[e]) for e in QA_map])
+
+        with open('/tmp/data.csv', 'wb') as csvfile:
+            data_fieldnames = ['QUESTIONID', 'TRAINING', 'FORECAST', 'DISCRETE', 'NO OF CHOICES', 'CATEGORY', 'QUESTION TEXT', 'DATE TRUE VALUE KNOWN', 'TRUE VALUE', 'UNITS', 'ANSWER SOURCE', 'ALLOW ASSESSMENT', 'DATE OF ASSESSMENT', 'OPERATOR', 'ASSESSMENT DETAILS', 'NUMBER OF PAIRS']
+            for i in range(max_assessment_size):
+                data_fieldnames.append('PROB '+str(i+1))
+                data_fieldnames.append('VALUE '+str(i+1))
+            writer = csv.DictWriter(csvfile, fieldnames=data_fieldnames)
+            writer.writeheader()
+
+            for qn in QSet:
+                data['QUESTIONID'] = qn.id
+                data['TRAINING'] = str(qn.corporate_training)
+                data['FORECAST'] = str(qn.forecast)
+                data['DISCRETE'] = str(qn.question_type)
+                data['NO OF CHOICES'] = qn.num_of_choices
+                data['CATEGORY'] = str(qn.category).encode('utf-8')
+                data['QUESTION TEXT'] = qn.question_text.encode('utf-8')
+                data['DATE TRUE VALUE KNOWN'] = str(qn.upload_date)
+                data['TRUE VALUE'] = qn.true_value
+                data['UNITS'] = str(qn.unit).encode('utf-8')
+                data['ANSWER SOURCE'] = str(qn.question_source).encode('utf-8')
+                data['ALLOW ASSESSMENT'] = str(qn.allow_assessment)
+                data['DATE OF ASSESSMENT'] = str(QA_map[qn.id][0]['date_of_assessment'])
+                data['OPERATOR'] = str(QA_map[qn.id][0]['operator'])
+                data['ASSESSMENT DETAILS'] = str(QA_map[qn.id][0]['details_of_assessment']).encode('utf-8')
+                data['NUMBER OF PAIRS'] = len(QA_map[qn.id])
+                for j in range(data['NUMBER OF PAIRS']):
+                    data['PROB '+str(j+1)]  = QA_map[qn.id][j]['answer_text']
+                    data['VALUE '+str(j+1)] = QA_map[qn.id][j]['option_text']
+                writer.writerow(data)
+            csvfile.write("\n\n\n");
 
     return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_table})
     #return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot,"WLS_DATA":WLS_table_data})
+
 
 def wls_bias_calc(plot):
     sum_x = 0
@@ -1490,6 +1537,17 @@ def wls_bias_calc(plot):
 def download_log(request):
     #zip("debug\\","debugzip")
     #file_path = "debugzip.zip"
+    file_path = "/tmp/log.csv"
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as fh:
+            response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+            return response
+    else:
+        return HttpResponse("<h1>File not found.</h1>")
+
+
+def batch_export(request):
     file_path = "/tmp/data.csv"
     if os.path.exists(file_path):
         with open(file_path, 'rb') as fh:
@@ -1502,7 +1560,7 @@ def download_log(request):
 
 ## Function to insert data into debug.csv
 def insert_data_to_debug_file_vertically(fieldnames,values,file_mode):
-    with open('/tmp/data.csv', file_mode) as csvfile:
+    with open('/tmp/log.csv', file_mode) as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=['Parameter','Value'],lineterminator='\n')
         writer.writeheader()
         for key in fieldnames:
@@ -1659,7 +1717,7 @@ def computeResults(ASet):
     data = processAssessments(ASet)
   
     #Write data to file
-    with open('/tmp/data.csv', 'a') as csvfile:
+    with open('/tmp/log.csv', 'a') as csvfile:
         data_fieldnames = ['trueValue', 'operator', 'vAssigned', 'pAssigned','true_false']
         writer = csv.DictWriter(csvfile, fieldnames=data_fieldnames,lineterminator='\n')
         writer.writeheader()
@@ -1701,7 +1759,7 @@ def computeResults(ASet):
             bin_data.append([bins[j+1], bincount, bincorr, binprob, binmean, binpercorr]) #For DEBUG
         ######################Dump the bins#########################
         #Create bins Table
-        with open('/tmp/data.csv', 'a') as csvfile:
+        with open('/tmp/log.csv', 'a') as csvfile:
             bin_fieldnames = ['bin', 'bincount', 'bincorr', 'binprob', 'binmean', 'binpercorr']
             writer = csv.DictWriter(csvfile, fieldnames=bin_fieldnames,lineterminator='\n')
             writer.writeheader()

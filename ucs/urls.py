@@ -50,5 +50,6 @@ urlpatterns = [
     url(r'^scoring/$', views.scoring, name="scoring"),
     url(r'^scoring_test/$', views.scoring_test, name="scoring_test"),
     url(r'^batch_import/$', views.batch_import, name="batch_import"),
+    url(r'^batch_export/$', views.batch_export, name="batch_export"),
     url(r'^download_log/$',views.download_log, name="download_log")
 ]# + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
