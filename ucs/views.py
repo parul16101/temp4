@@ -1465,9 +1465,14 @@ def result(request):
                 data['UNITS'] = str(qn.unit).encode('utf-8')
                 data['ANSWER SOURCE'] = str(qn.question_source).encode('utf-8')
                 data['ALLOW ASSESSMENT'] = str(qn.allow_assessment)
-                data['DATE OF ASSESSMENT'] = str(QA_map[qn.id][0]['date_of_assessment'])
-                data['OPERATOR'] = str(QA_map[qn.id][0]['operator'])
-                data['ASSESSMENT DETAILS'] = str(QA_map[qn.id][0]['details_of_assessment']).encode('utf-8')
+                if len(QA_map[qn.id]) == 0:
+                    data['DATE OF ASSESSMENT'] = '00/00/0000'
+                    data['OPERATOR'] = 'EQ'
+                    data['ASSESSMENT DETAILS'] = ''
+                else:
+                    data['DATE OF ASSESSMENT'] = str(QA_map[qn.id][0]['date_of_assessment'])
+                    data['OPERATOR'] = str(QA_map[qn.id][0]['operator'])
+                    data['ASSESSMENT DETAILS'] = str(QA_map[qn.id][0]['details_of_assessment']).encode('utf-8')
                 data['NUMBER OF PAIRS'] = len(QA_map[qn.id])
                 for j in range(data['NUMBER OF PAIRS']):
                     data['PROB '+str(j+1)]  = QA_map[qn.id][j]['answer_text']
