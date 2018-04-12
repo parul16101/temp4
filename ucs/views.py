@@ -1687,7 +1687,7 @@ def returnAssessments(answer):
         ASet = Assessment.objects.filter(id__in=ASet, date_of_assessment=answer[9])
     else:
         print 'The date of assessment is not specified'
-    return ASet
+    return (QSet, ASet)
 
 
 def computeResults(ASet):
