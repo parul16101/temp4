@@ -1453,34 +1453,34 @@ def result(request):
 
             for qn in QSet:
                 data = {}
-                data['QUESTIONID'] = qn.id
-                data['TRAINING'] = str(qn.corporate_training)
-                data['FORECAST'] = str(qn.forecast)
-                data['DISCRETE'] = str(qn.question_type)
-                data['NO OF CHOICES'] = qn.num_of_choices
-                data['CATEGORY'] = str(qn.category).encode('utf-8')
-                data['QUESTION TEXT'] = qn.question_text.encode('utf-8')
-                data['DATE TRUE VALUE KNOWN'] = str(qn.upload_date)
-                data['TRUE VALUE'] = qn.true_value
-                data['UNITS'] = str(qn.unit).encode('utf-8')
-                data['ANSWER SOURCE'] = str(qn.question_source).encode('utf-8')
-                data['ALLOW ASSESSMENT'] = str(qn.allow_assessment)
                 if qn.id not in QA_map.keys():
                     pass
-                elif len(QA_map[qn.id]) == 0:
-                    data['DATE OF ASSESSMENT'] = '00/00/0000'
-                    data['OPERATOR'] = 'EQ'
-                    data['ASSESSMENT DETAILS'] = ''
-                    data['NUMBER OF PAIRS'] = 0
                 else:
-                    data['DATE OF ASSESSMENT'] = str(QA_map[qn.id][0]['date_of_assessment'])
-                    data['OPERATOR'] = str(QA_map[qn.id][0]['operator'])
-                    data['ASSESSMENT DETAILS'] = str(QA_map[qn.id][0]['details_of_assessment']).encode('utf-8')
+                    data['QUESTIONID'] = qn.id
+                    data['TRAINING'] = str(qn.corporate_training)
+                    data['FORECAST'] = str(qn.forecast)
+                    data['DISCRETE'] = str(qn.question_type)
+                    data['NO OF CHOICES'] = qn.num_of_choices
+                    data['CATEGORY'] = str(qn.category).encode('utf-8')
+                    data['QUESTION TEXT'] = qn.question_text.encode('utf-8')
+                    data['DATE TRUE VALUE KNOWN'] = str(qn.upload_date)
+                    data['TRUE VALUE'] = qn.true_value
+                    data['UNITS'] = str(qn.unit).encode('utf-8')
+                    data['ANSWER SOURCE'] = str(qn.question_source).encode('utf-8')
+                    data['ALLOW ASSESSMENT'] = str(qn.allow_assessment)
+                    if len(QA_map[qn.id]) == 0:
+                        data['DATE OF ASSESSMENT'] = '00/00/0000'
+                        data['OPERATOR'] = 'EQ'
+                        data['ASSESSMENT DETAILS'] = ''
+                    else:
+                        data['DATE OF ASSESSMENT'] = str(QA_map[qn.id][0]['date_of_assessment'])
+                        data['OPERATOR'] = str(QA_map[qn.id][0]['operator'])
+                        data['ASSESSMENT DETAILS'] = str(QA_map[qn.id][0]['details_of_assessment']).encode('utf-8')
                     data['NUMBER OF PAIRS'] = len(QA_map[qn.id])
                     for j in range(data['NUMBER OF PAIRS']):
                         data['PROB '+str(j+1)]  = QA_map[qn.id][j]['answer_text']
                         data['VALUE '+str(j+1)] = QA_map[qn.id][j]['option_text']
-                writer.writerow(data)
+                    writer.writerow(data)
             csvfile.write("\n\n\n");
 
     return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_table})
