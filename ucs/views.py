@@ -1400,8 +1400,8 @@ def result(request):
         #answer = [question_type, forecast, question_purpose, question_text, true_or_false, category, user_name, group_name, assignment_name, date_submitted]
 
         #write answer in the file
-        #if not os.path.isdir('debug\\'):
-        #    os.makedirs('debug\\')
+        #if not os.path.isdir('tmp/'):
+        #    os.makedirs('tmp/')
 
         #Log File
         with open('/tmp/log.csv', 'wb') as csvfile:
@@ -1425,10 +1425,15 @@ def result(request):
              'User Name':User.objects.get(pk=value['user_id_id']).username, 'Operator':value['operator'],'Answer Text':value['answer_text'],
              'Details Of Assessment':value['details_of_assessment'], 'Option Text':value['option_text'],'ID':value['id']})
                 if value['question_id_id'] not in QA_map.keys():
-                    QA_map[value['question_id_id']] = []
+                    QA_map[value['question_id_id']] = {}
                 else:
                     pass
-                QA_map[value['question_id_id']].append(value)
+                AKey = str(value['user_id_id'])+'_'+value['date_of_assessment']
+                if AKey not in QA_map[value['question_id_id']].keys():
+                    QA_map[value['question_id_id']][AKey] = []
+                else:
+                    pass
+                QA_map[value['question_id_id']][AKey].append(value)
             csvfile.write("\n\n\n");
 
 
@@ -1440,11 +1445,14 @@ def result(request):
         wls_datapoints, wls_c_d_table = wls_bias_calc(plot)
         ################################################################
 
-        #Data File
-        max_assessment_size = max([len(QA_map[e]) for e in QA_map])
+        A_len_list = [len(QA_map[i][j]) for i in QA_map for j in QA_map[i]]
+        if not A_len_list:
+            max_assessment_size = 0
+        else:
+            max_assessment_size = max(A_len_list)
 
         with open('/tmp/data.csv', 'wb') as csvfile:
-            data_fieldnames = ['QUESTIONID', 'TRAINING', 'FORECAST', 'DISCRETE', 'NO OF CHOICES', 'CATEGORY', 'QUESTION TEXT', 'DATE TRUE VALUE KNOWN', 'TRUE VALUE', 'UNITS', 'ANSWER SOURCE', 'ALLOW ASSESSMENT', 'DATE OF ASSESSMENT', 'OPERATOR', 'ASSESSMENT DETAILS', 'NUMBER OF PAIRS']
+            data_fieldnames = ['USER', 'QUESTIONID', 'TRAINING', 'FORECAST', 'DISCRETE', 'NO OF CHOICES', 'CATEGORY', 'QUESTION TEXT', 'DATE TRUE VALUE KNOWN', 'TRUE VALUE', 'UNITS', 'ANSWER SOURCE', 'ALLOW ASSESSMENT', 'DATE OF ASSESSMENT', 'OPERATOR', 'ASSESSMENT DETAILS', 'NUMBER OF PAIRS']
             for i in range(max_assessment_size):
                 data_fieldnames.append('PROB '+str(i+1))
                 data_fieldnames.append('VALUE '+str(i+1))
@@ -1452,35 +1460,40 @@ def result(request):
             writer.writeheader()
 
             for qn in QSet:
-                data = {}
                 if qn.id not in QA_map.keys():
                     pass
                 else:
-                    data['QUESTIONID'] = qn.id
-                    data['TRAINING'] = str(qn.corporate_training)
-                    data['FORECAST'] = str(qn.forecast)
-                    data['DISCRETE'] = str(qn.question_type)
-                    data['NO OF CHOICES'] = qn.num_of_choices
-                    data['CATEGORY'] = str(qn.category).encode('utf-8')
-                    data['QUESTION TEXT'] = qn.question_text.encode('utf-8')
-                    data['DATE TRUE VALUE KNOWN'] = str(qn.upload_date)
-                    data['TRUE VALUE'] = qn.true_value
-                    data['UNITS'] = str(qn.unit).encode('utf-8')
-                    data['ANSWER SOURCE'] = str(qn.question_source).encode('utf-8')
-                    data['ALLOW ASSESSMENT'] = str(qn.allow_assessment)
-                    if len(QA_map[qn.id]) == 0:
-                        data['DATE OF ASSESSMENT'] = '00/00/0000'
-                        data['OPERATOR'] = 'EQ'
-                        data['ASSESSMENT DETAILS'] = ''
-                    else:
-                        data['DATE OF ASSESSMENT'] = str(QA_map[qn.id][0]['date_of_assessment'])
-                        data['OPERATOR'] = str(QA_map[qn.id][0]['operator'])
-                        data['ASSESSMENT DETAILS'] = str(QA_map[qn.id][0]['details_of_assessment']).encode('utf-8')
-                    data['NUMBER OF PAIRS'] = len(QA_map[qn.id])
-                    for j in range(data['NUMBER OF PAIRS']):
-                        data['PROB '+str(j+1)]  = QA_map[qn.id][j]['answer_text']
-                        data['VALUE '+str(j+1)] = QA_map[qn.id][j]['option_text']
-                    writer.writerow(data)
+                    for AKey in QA_map[qn.id]:
+                        #Data File
+                        data = {}
+                        data['QUESTIONID'] = qn.id
+                        data['TRAINING'] = str(qn.corporate_training)
+                        data['FORECAST'] = str(qn.forecast)
+                        data['DISCRETE'] = str(qn.question_type)
+                        data['NO OF CHOICES'] = qn.num_of_choices
+                        data['CATEGORY'] = str(qn.category).encode('utf-8')
+                        data['QUESTION TEXT'] = qn.question_text.encode('utf-8')
+                        data['DATE TRUE VALUE KNOWN'] = str(qn.upload_date)
+                        data['TRUE VALUE'] = qn.true_value
+                        data['UNITS'] = str(qn.unit).encode('utf-8')
+                        data['ANSWER SOURCE'] = str(qn.question_source).encode('utf-8')
+                        data['ALLOW ASSESSMENT'] = str(qn.allow_assessment)
+                        if len(QA_map[qn.id][AKey]) == 0:
+                            data['USER'] = ''
+                            data['DATE OF ASSESSMENT'] = '00/00/0000'
+                            data['OPERATOR'] = 'EQ'
+                            data['ASSESSMENT DETAILS'] = ''
+                        else:
+                            assessor = User.objects.get(id= QA_map[qn.id][AKey][0]['user_id_id'])
+                            data['USER'] = assessor
+                            data['DATE OF ASSESSMENT'] = str(QA_map[qn.id][AKey][0]['date_of_assessment'])
+                            data['OPERATOR'] = str(QA_map[qn.id][AKey][0]['operator'])
+                            data['ASSESSMENT DETAILS'] = str(QA_map[qn.id][AKey][0]['details_of_assessment']).encode('utf-8')
+                        data['NUMBER OF PAIRS'] = len(QA_map[qn.id][AKey])
+                        for j in range(data['NUMBER OF PAIRS']):
+                            data['PROB '+str(j+1)]  = QA_map[qn.id][AKey][j]['answer_text']
+                            data['VALUE '+str(j+1)] = QA_map[qn.id][AKey][j]['option_text']
+                        writer.writerow(data)
             csvfile.write("\n\n\n");
 
     return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_table})
