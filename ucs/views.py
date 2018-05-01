@@ -1258,7 +1258,7 @@ def batch_import(request):
                                 ## Check if Assessment exists in database
                                 A = Assessment.objects.filter(user_id = upload_user
                                     ).filter(question_id = QuestionID).filter(answer_text = prob[i]
-                                    ).filter(option_text = val[i]).filter(date_of_assessment = DateOfAssessment
+                                    ).filter(date_of_assessment = DateOfAssessment
                                     ).filter(details_of_assessment = DetailsOfAssessment)
                                 if len(A) == 0:
                                     #Assessment does not exist in the database add question
