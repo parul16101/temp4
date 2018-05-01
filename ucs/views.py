@@ -855,7 +855,7 @@ def do_assignment(request):
                 new_assessment = Assessment(question_id = filtered_question, user_id = target_user, option_text = option, answer_text = answer, operator = operator, date_of_assessment = upload_date)
                 new_assessment.save()
         #now = datetime.now()
-        f_date = datetime.today().strftime("%Y-%m-%d")
+        f_date = datetime.today().strftime("%Y/%m/%d")
         print 'f_date: ', f_date
         #DJ
         print 'assignment_name: ', assignment_name
@@ -1396,94 +1396,176 @@ def result(request):
     if request.method == "POST":
         #Process request to get answer containing all option selected on scoring page
         answer = processRequests(request,current_user)
-        print "answer\n\n\n\n", answer
+        #print "answer\n\n\n\n", answer
         #answer = [question_type, forecast, question_purpose, question_text, true_or_false, category, user_name, group_name, assignment_name, date_submitted]
 
         #write answer in the file
         #if not os.path.isdir('debug\\'):
         #    os.makedirs('debug\\')
-
         #Log File
-        with open('/tmp/log.csv', 'wb') as csvfile:
-            para_fieldnames = ['Question Type', 'Forecast', 'Question Purpose', 'Question Text', '# of Choices', 'Category', 'User', 'Group', 'Assignment Name', 'Date Submitted']
-            writer = csv.DictWriter(csvfile, fieldnames=para_fieldnames)
-            writer.writeheader()
-            writer.writerow({'Question Type': answer[0], 'Forecast': answer[1], 'Question Purpose': answer[2], 'Question Text': answer[3], '# of Choices': answer[4], 'Category': answer[5], 'User': answer[6], 'Group': answer[7], 'Assignment Name': answer[8], 'Date Submitted': answer[9]})
-            csvfile.write("\n\n\n");
-
-        ##################IT'S NO LONGER RAUL CODE######################
-        QSet, ASet = returnAssessments(answer)
-        QA_map = {} #Mapping of questions to assessments
-        temp = ASet.values()
-        with open('/tmp/log.csv', 'a') as csvfile:
-            assessment_fieldnames = ['Question ID', 'Date of assessment','User Name','Operator','Answer Text','Details Of Assessment','Option Text','ID']
-            writer = csv.DictWriter(csvfile, fieldnames=assessment_fieldnames,lineterminator='\n')
-            writer.writeheader()
-            for value in temp:
-                print "value: ", value
-                writer.writerow({'Question ID':value['question_id_id'], 'Date of assessment':value['date_of_assessment'],
-             'User Name':User.objects.get(pk=value['user_id_id']).username, 'Operator':value['operator'],'Answer Text':value['answer_text'],
-             'Details Of Assessment':value['details_of_assessment'], 'Option Text':value['option_text'],'ID':value['id']})
-                if value['question_id_id'] not in QA_map.keys():
-                    QA_map[value['question_id_id']] = []
-                else:
-                    pass
-                QA_map[value['question_id_id']].append(value)
-            csvfile.write("\n\n\n");
-
-
-        summary_results, values, plot, datapoints = computeResults(ASet)
-        summary_fieldnames = ['Confidence', 'Calibration','Resolution','Knowledge','Brierscore']
-        insert_data_to_debug_file_vertically(summary_fieldnames,values,'a')
-
-        #Get WLS line, confidence bias, and directional bias
-        wls_datapoints, wls_c_d_table = wls_bias_calc(plot)
-        ################################################################
-
-        #Data File
-        max_assessment_size = max([len(QA_map[e]) for e in QA_map])
-
-        with open('/tmp/data.csv', 'wb') as csvfile:
-            data_fieldnames = ['QUESTIONID', 'TRAINING', 'FORECAST', 'DISCRETE', 'NO OF CHOICES', 'CATEGORY', 'QUESTION TEXT', 'DATE TRUE VALUE KNOWN', 'TRUE VALUE', 'UNITS', 'ANSWER SOURCE', 'ALLOW ASSESSMENT', 'DATE OF ASSESSMENT', 'OPERATOR', 'ASSESSMENT DETAILS', 'NUMBER OF PAIRS']
-            for i in range(max_assessment_size):
-                data_fieldnames.append('PROB '+str(i+1))
-                data_fieldnames.append('VALUE '+str(i+1))
-            writer = csv.DictWriter(csvfile, fieldnames=data_fieldnames)
-            writer.writeheader()
-
-            for qn in QSet:
-                data = {}
-                if qn.id not in QA_map.keys():
-                    pass
-                else:
-                    data['QUESTIONID'] = qn.id
-                    data['TRAINING'] = str(qn.corporate_training)
-                    data['FORECAST'] = str(qn.forecast)
-                    data['DISCRETE'] = str(qn.question_type)
-                    data['NO OF CHOICES'] = qn.num_of_choices
-                    data['CATEGORY'] = str(qn.category).encode('utf-8')
-                    data['QUESTION TEXT'] = qn.question_text.encode('utf-8')
-                    data['DATE TRUE VALUE KNOWN'] = str(qn.upload_date)
-                    data['TRUE VALUE'] = qn.true_value
-                    data['UNITS'] = str(qn.unit).encode('utf-8')
-                    data['ANSWER SOURCE'] = str(qn.question_source).encode('utf-8')
-                    data['ALLOW ASSESSMENT'] = str(qn.allow_assessment)
-                    if len(QA_map[qn.id]) == 0:
-                        data['DATE OF ASSESSMENT'] = '00/00/0000'
-                        data['OPERATOR'] = 'EQ'
-                        data['ASSESSMENT DETAILS'] = ''
+        sumresult_list = {}
+        values_list = []
+        plot_list = []
+        datapoints_list = []
+        wls_dp_list = []
+        wls_c_d_list = {}
+        if answer[17] == 1:
+            with open('/tmp/log.csv', 'wb') as csvfile:
+                para_fieldnames = ['Question Type', 'Forecast', 'Question Purpose', 'Question Text', '# of Choices', 'Category', 'User', 'Group', 'Assignment Name', 'Date Submitted']
+                writer = csv.DictWriter(csvfile, fieldnames=para_fieldnames)
+                writer.writeheader()
+                writer.writerow({'Question Type': answer[0], 'Forecast': answer[1], 'Question Purpose': answer[2], 'Question Text': answer[3], '# of Choices': answer[4], 'Category': answer[5], 'User': answer[6], 'Group': answer[7], 'Assignment Name': answer[8], 'Date Submitted': answer[9]})
+                csvfile.write("\n\n\n");
+            ##################IT'S NO LONGER RAUL CODE######################
+            QSet, ASet = returnAssessments(answer)
+            QA_map = {} #Mapping of questions to assessments
+            temp = ASet.values()
+            with open('/tmp/log.csv', 'a') as csvfile:
+                assessment_fieldnames = ['Question ID', 'Date of assessment','User Name','Operator','Answer Text','Details Of Assessment','Option Text','ID']
+                writer = csv.DictWriter(csvfile, fieldnames=assessment_fieldnames,lineterminator='\n')
+                writer.writeheader()
+                for value in temp:
+                    #print "value: ", value
+                    writer.writerow({'Question ID':value['question_id_id'], 'Date of assessment':value['date_of_assessment'],
+                 'User Name':User.objects.get(pk=value['user_id_id']).username, 'Operator':value['operator'],'Answer Text':value['answer_text'],
+                 'Details Of Assessment':value['details_of_assessment'], 'Option Text':value['option_text'],'ID':value['id']})
+                    if value['question_id_id'] not in QA_map.keys():
+                        QA_map[value['question_id_id']] = []
                     else:
-                        data['DATE OF ASSESSMENT'] = str(QA_map[qn.id][0]['date_of_assessment'])
-                        data['OPERATOR'] = str(QA_map[qn.id][0]['operator'])
-                        data['ASSESSMENT DETAILS'] = str(QA_map[qn.id][0]['details_of_assessment']).encode('utf-8')
-                    data['NUMBER OF PAIRS'] = len(QA_map[qn.id])
-                    for j in range(data['NUMBER OF PAIRS']):
-                        data['PROB '+str(j+1)]  = QA_map[qn.id][j]['answer_text']
-                        data['VALUE '+str(j+1)] = QA_map[qn.id][j]['option_text']
-                    writer.writerow(data)
-            csvfile.write("\n\n\n");
+                        pass
+                    QA_map[value['question_id_id']].append(value)
+                csvfile.write("\n\n\n");
 
-    return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_table})
+            ## Split into loop field sets
+            if answer[15] is not None:
+                print "WOOT"
+                get_assessments = ASet.values()
+                loop_set = {}
+                for val in get_assessments:
+                    usr = User.objects.get(pk=val['user_id_id']).username 
+                    if usr not in loop_set:
+                        loop_set[usr] = []
+                    loop_set[usr].append(val)
+                for key in loop_set:
+                    srt, vt, pt, dpt = computeResults(ASet)
+                    sumresult_list[key] = srt
+                    values_list.append(vt)
+                    plot_list.append(pt)
+                    datapoints_list.append(dpt)
+
+                    wdt, wcdt = wls_bias_calc(pt)
+                    wls_dp_list.append(wdt)
+                    wls_c_d_list[key] = wcdt
+                wls_c_d_list = json.dumps(wls_c_d_list)
+                sumresult_list = json.dumps(sumresult_list)
+                ##
+                summary_results, values, plot, datapoints = computeResults(ASet)
+                
+                summary_fieldnames = ['Confidence', 'Calibration','Resolution','Knowledge','Brierscore']
+                insert_data_to_debug_file_vertically(summary_fieldnames,values,'a')
+
+                #Get WLS line, confidence bias, and directional bias
+                wls_datapoints, wls_c_d_table = wls_bias_calc(plot)
+                print datapoints_list
+                print datapoints
+                return render(request, "ucs/result.html", {"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list})
+            
+            summary_results, values, plot, datapoints = computeResults(ASet)
+            summary_fieldnames = ['Confidence', 'Calibration','Resolution','Knowledge','Brierscore']
+            insert_data_to_debug_file_vertically(summary_fieldnames,values,'a')
+
+            #Get WLS line, confidence bias, and directional bias
+            wls_datapoints, wls_c_d_table = wls_bias_calc(plot)
+            ################################################################
+            return render(request, "ucs/result.html", {"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list})
+
+        else:
+            with open('/tmp/log.csv', 'wb') as csvfile:
+                para_fieldnames = ['Question Type', 'Forecast', 'Question Purpose', 'Question Text', '# of Choices', 'Category', 'User', 'Group', 'Assignment Name', 'Date Submitted']
+                writer = csv.DictWriter(csvfile, fieldnames=para_fieldnames)
+                writer.writeheader()
+                writer.writerow({'Question Type': answer[0], 'Forecast': answer[1], 'Question Purpose': answer[2], 'Question Text': answer[3], '# of Choices': answer[4], 'Category': answer[5], 'User': answer[6], 'Group': answer[7], 'Assignment Name': answer[8], 'Date Submitted': answer[9]})
+                csvfile.write("\n\n\n");
+            ##################IT'S NO LONGER RAUL CODE######################
+            QSet, ASet = returnAssessments(answer)
+            QA_map = {} #Mapping of questions to assessments
+            temp = ASet.values()
+            with open('/tmp/log.csv', 'a') as csvfile:
+                assessment_fieldnames = ['Question ID', 'Date of assessment','User Name','Operator','Answer Text','Details Of Assessment','Option Text','ID']
+                writer = csv.DictWriter(csvfile, fieldnames=assessment_fieldnames,lineterminator='\n')
+                writer.writeheader()
+                for value in temp:
+                    #print "value: ", value
+                    writer.writerow({'Question ID':value['question_id_id'], 'Date of assessment':value['date_of_assessment'],
+                 'User Name':User.objects.get(pk=value['user_id_id']).username, 'Operator':value['operator'],'Answer Text':value['answer_text'],
+                 'Details Of Assessment':value['details_of_assessment'], 'Option Text':value['option_text'],'ID':value['id']})
+                    if value['question_id_id'] not in QA_map.keys():
+                        QA_map[value['question_id_id']] = []
+                    else:
+                        pass
+                    QA_map[value['question_id_id']].append(value)
+                csvfile.write("\n\n\n");
+
+
+            summary_results, values, plot, datapoints = computeResults(ASet)
+            summary_fieldnames = ['Confidence', 'Calibration','Resolution','Knowledge','Brierscore']
+            insert_data_to_debug_file_vertically(summary_fieldnames,values,'a')
+
+            #Get WLS line, confidence bias, and directional bias
+            wls_datapoints, wls_c_d_table = wls_bias_calc(plot)
+            ################################################################
+
+            #Data File
+            # DJ changed to len(ASet)
+            max_assessment_size = len(ASet)
+            #max_assessment_size = max([len(QA_map[e]) for e in QA_map])
+
+            with open('/tmp/data.csv', 'wb') as csvfile:
+                data_fieldnames = ['QUESTIONID', 'TRAINING', 'FORECAST', 'DISCRETE', 'NO OF CHOICES', 'CATEGORY', 'QUESTION TEXT', 'DATE TRUE VALUE KNOWN', 'TRUE VALUE', 'UNITS', 'ANSWER SOURCE', 'ALLOW ASSESSMENT', 'DATE OF ASSESSMENT', 'OPERATOR', 'ASSESSMENT DETAILS', 'NUMBER OF PAIRS']
+                for i in range(max_assessment_size):
+                    data_fieldnames.append('PROB '+str(i+1))
+                    data_fieldnames.append('VALUE '+str(i+1))
+                writer = csv.DictWriter(csvfile, fieldnames=data_fieldnames)
+                writer.writeheader()
+
+                for qn in QSet:
+                    data = {}
+                    if qn.id not in QA_map.keys():
+                        pass
+                    else:
+                        data['QUESTIONID'] = qn.id
+                        data['TRAINING'] = str(qn.corporate_training)
+                        data['FORECAST'] = str(qn.forecast)
+                        data['DISCRETE'] = str(qn.question_type)
+                        data['NO OF CHOICES'] = qn.num_of_choices
+                        data['CATEGORY'] = str(qn.category).encode('utf-8')
+                        data['QUESTION TEXT'] = qn.question_text.encode('utf-8')
+                        data['DATE TRUE VALUE KNOWN'] = str(qn.upload_date)
+                        data['TRUE VALUE'] = qn.true_value
+                        data['UNITS'] = str(qn.unit).encode('utf-8')
+                        data['ANSWER SOURCE'] = str(qn.question_source).encode('utf-8')
+                        data['ALLOW ASSESSMENT'] = str(qn.allow_assessment)
+                        if len(QA_map[qn.id]) == 0:
+                            data['DATE OF ASSESSMENT'] = '00/00/0000'
+                            data['OPERATOR'] = 'EQ'
+                            data['ASSESSMENT DETAILS'] = ''
+                        else:
+                            data['DATE OF ASSESSMENT'] = str(QA_map[qn.id][0]['date_of_assessment'])
+                            data['OPERATOR'] = str(QA_map[qn.id][0]['operator'])
+                            data['ASSESSMENT DETAILS'] = str(QA_map[qn.id][0]['details_of_assessment']).encode('utf-8')
+                        data['NUMBER OF PAIRS'] = len(QA_map[qn.id])
+                        for j in range(data['NUMBER OF PAIRS']):
+                            data['PROB '+str(j+1)]  = QA_map[qn.id][j]['answer_text']
+                            data['VALUE '+str(j+1)] = QA_map[qn.id][j]['option_text']
+                        writer.writerow(data)
+                csvfile.write("\n\n\n");
+            wls_datapoints, wls_c_d_table = wls_bias_calc(plot)
+            usr_key = User.objects.get(pk=user_id).username
+            sumresult_list[usr_key] = summary_results
+            wls_c_d_list[usr_key] = wls_c_d_table
+            sumresult_list = json.dumps(sumresult_list)
+            wls_c_d_list = json.dumps(wls_c_d_list)
+            return render(request, "ucs/result.html", {"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list})
 
 
 def wls_bias_calc(plot):
@@ -1535,10 +1617,10 @@ def wls_bias_calc(plot):
     elif BETA_1 < 1:
         CB = 1- BETA_1
         DB = (2*BETA_0)/(1-BETA_1)-1
-    wls_c_d_table_data = [{"cbias":round(CB,3), "dbias":round(DB,3), "slope": round(BETA_1,3), "intercept": round(BETA_0,3)}]
-    wls_c_d_table = json.dumps(wls_c_d_table_data)
+    wls_c_d_table_data = {"cbias":round(CB,3), "dbias":round(DB,3), "slope": round(BETA_1,3), "intercept": round(BETA_0,3)}
+    #wls_c_d_table = json.dumps(wls_c_d_table_data)
 
-    return wls_datapoints, wls_c_d_table
+    return wls_datapoints, wls_c_d_table_data
     
 
 def download_log(request):
@@ -1618,82 +1700,188 @@ def processRequests(req,current_user):
 
     group_name = req.POST.get("group")
     assignment_name = req.POST.get("assignment_name")
-    date_submitted = req.POST.get("date_submitted")
-    answer = [question_type, forecast, question_use, question_text, true_or_false, category, user_name, group_name, assignment_name, date_submitted]
+    #DJ-Check for Looping call - T for true
+    loop_check = req.POST.get("loop_call")
+    # edate means ending date and sdate means start date
+    # [sdate, edate] closed interval
+    if loop_check == "T":
+        edate_submitted = req.POST.get("sub_edate")
+        sdate_submitted = req.POST.get("sub_sdate")
+        # Assignment Finish Dates
+        edate_f_assign = req.POST.get("f_edate")
+        sdate_f_assign= req.POST.get("f_sdate")  
+        # Question close date
+        edate_c_question = req.POST.get("q_edate")
+        sdate_c_question= req.POST.get("q_sdate") 
+        # loop option
+        user_loop = req.POST.get("userloop")
+        group_loop = req.POST.get("grouploop")
+        loop_request = 1;           
+    else:
+        edate_submitted = req.POST.get("date_submitted")
+        sdate_submitted = "E"
+        # Assignment Finish Dates
+        edate_f_assign = "E"
+        sdate_f_assign= "E"
+        # Question close date
+        edate_c_question = "E"
+        sdate_c_question= "E"  
+        user_loop = "E"
+        group_loop = "E"
+        loop_request = 0;
+    
+    answer = [question_type, forecast, question_use, question_text, true_or_false, category, user_name, group_name, assignment_name, edate_submitted
+        , sdate_submitted, edate_f_assign, sdate_f_assign, edate_c_question, sdate_c_question, user_loop, group_loop, loop_request]
     print "answer \n\n",answer
     return answer
 
 
 def returnAssessments(answer):
-    QSet = Question.objects.all()
-    #print "Question Object: ", QSet.all()
-    if answer[8]:
-        Q_text = []
-        A_id = Assignment.objects.get(assignment_name=answer[8])
-        AQ_objs = Assigned_question.objects.filter(assignment_id=A_id)
-        for obj in AQ_objs:
-            Q_text.append(obj.question_id)
-        #print 'QText: ', QText
-        QSet = Question.objects.filter(question_text__in=Q_text)
-        #print 'QSet: ', QSet
-        print answer[8]
+    if answer[17] == 0:
+        QSet = Question.objects.all()
+        #print "Question Object: ", QSet.all()
+        if answer[8]:
+            Q_text = []
+            A_id = Assignment.objects.get(assignment_name=answer[8])
+            AQ_objs = Assigned_question.objects.filter(assignment_id=A_id)
+            for obj in AQ_objs:
+                Q_text.append(obj.question_id)
+            #print 'QText: ', QText
+            QSet = Question.objects.filter(question_text__in=Q_text)
+            #print 'QSet: ', QSet
+            print answer[8]
+        else:
+            print 'The assignment name is not specified'
+        if answer[0] is not None:
+            QSet = Question.objects.filter(id__in=QSet, question_type=answer[0])
+            #print 'GOT VALUE'
+        else:
+            print 'The question type is not specified'
+        if answer[1] is not None:
+            QSet = Question.objects.filter(id__in=QSet, forecast=answer[1])
+            #print 'GOT VALUE'
+        else:
+            print 'The forecast permission is not specified'
+        if answer[2] is not None:
+            QSet = Question.objects.filter(id__in=QSet, corporate_training=answer[2])
+            #print 'GOT VALUE'
+        else:
+            print 'The coporate training is not specified'
+        if answer[3]:
+            QSet = Question.objects.filter(id__in=QSet, question_text=answer[3])
+            #print 'GOT VALUE'
+        else:
+            print 'The question text is not specified'
+        if answer[4]:
+            QSet = Question.objects.filter(id__in=QSet, num_of_choices=answer[4])
+            #print 'GOT VALUE'
+        else:
+            print 'The number of choices is not specified'
+        if answer[5]:
+            tmp = Category.objects.get(category_text=answer[5])
+            QSet = Question.objects.filter(id__in=QSet, category=tmp)
+            #print 'GOT VALUE'
+            print tmp
+        else:
+            print 'The category is not specified'
+        #Query on question_set, user_name, and ...
+        ASet = Assessment.objects.filter(question_id__in=QSet)
+        if answer[7]:
+            G_user = []
+            G_id = Group.objects.get(group_name=answer[7])
+            GM_objs = Group_member.objects.filter(group_id=G_id)
+            for obj in GM_objs:
+                G_user.append(obj.user_id)
+            ASet = Assessment.objects.filter(id__in=ASet, user_id__in=G_user)
+        else:
+            print 'The group is not specified'
+        if answer[6]:
+            upload_user = User.objects.get(username=answer[6])#no need to change
+            #print "User Object: ", upload_user
+            ASet = Assessment.objects.filter(id__in=ASet, user_id=upload_user)
+            #print len(ASet)
+            #print "username ",answer[6]
+        else:
+            print 'The user name is not specified'
+        if answer[9]:
+            ASet = Assessment.objects.filter(id__in=ASet, date_of_assessment=answer[9])
+        else:
+            print 'The date of assessment is not specified'
     else:
-        print 'The assignment name is not specified'
-    if answer[0] is not None:
-        QSet = Question.objects.filter(id__in=QSet, question_type=answer[0])
-        #print 'GOT VALUE'
-    else:
-        print 'The question type is not specified'
-    if answer[1] is not None:
-        QSet = Question.objects.filter(id__in=QSet, forecast=answer[1])
-        #print 'GOT VALUE'
-    else:
-        print 'The forecast permission is not specified'
-    if answer[2] is not None:
-        QSet = Question.objects.filter(id__in=QSet, corporate_training=answer[2])
-        #print 'GOT VALUE'
-    else:
-        print 'The coporate training is not specified'
-    if answer[3]:
-        QSet = Question.objects.filter(id__in=QSet, question_text=answer[3])
-        #print 'GOT VALUE'
-    else:
-        print 'The question text is not specified'
-    if answer[4]:
-        QSet = Question.objects.filter(id__in=QSet, num_of_choices=answer[4])
-        #print 'GOT VALUE'
-    else:
-        print 'The number of choices is not specified'
-    if answer[5]:
-        tmp = Category.objects.get(category_text=answer[5])
-        QSet = Question.objects.filter(id__in=QSet, category=tmp)
-        #print 'GOT VALUE'
-        print tmp
-    else:
-        print 'The category is not specified'
-    #Query on question_set, user_name, and ...
-    ASet = Assessment.objects.filter(question_id__in=QSet)
-    if answer[7]:
-        G_user = []
-        G_id = Group.objects.get(group_name=answer[7])
-        GM_objs = Group_member.objects.filter(group_id=G_id)
-        for obj in GM_objs:
-            G_user.append(obj.user_id)
-        ASet = Assessment.objects.filter(id__in=ASet, user_id__in=G_user)
-    else:
-        print 'The group is not specified'
-    if answer[6]:
-        upload_user = User.objects.get(username=answer[6])#no need to change
-        #print "User Object: ", upload_user
-        ASet = Assessment.objects.filter(id__in=ASet, user_id=upload_user)
-        #print len(ASet)
-        #print "username ",answer[6]
-    else:
-        print 'The user name is not specified'
-    if answer[9]:
-        ASet = Assessment.objects.filter(id__in=ASet, date_of_assessment=answer[9])
-    else:
-        print 'The date of assessment is not specified'
+        
+        ''' 
+        answer = [question_type, forecast, question_use, question_text, true_or_false, category, user_name, group_name, assignment_name, edate_submitted
+        sdate_submitted, edate_f_assign, sdate_f_assign, edate_c_question, sdate_c_question, loop_request]
+        answer[9-10] := assessment Date submitted
+        answer[11-12] := assignment finish date
+        answer[13-14] := question upload date
+        answer[15] := loop_request
+        '''
+        if answer[9] == "":
+            answer[9] = "99/99/9999"
+        if answer[10] == "":
+            answer[10] = "00/00/0000"
+        if answer[11] == "":
+            answer[11] = "9999/99/99"
+        else:
+            answer[11] = answer[11][6:10] + "/" + answer[11][0:5]
+        if answer[12] == "":
+            answer[12] = "0000/00/00"
+        else:
+            answer[12] = answer[12][6:10] + "/" + answer[12][0:5]
+        if answer[13] == "":
+            answer[13] = "99/99/9999"
+        if answer[14] == "":
+            answer[14] = "00/00/0000"
+        target_assignments = []
+        question_set = []
+        get_assign_list = Assignment_log.objects.filter(finish_date__lte=answer[11], finish_date__gte=answer[12])
+        for asn in get_assign_list:
+            if answer[8]:
+                if asn.assignment_id.assignment_name == answer[8]:
+                    target_assignments.append(asn.assignment_id)
+            else:
+                target_assignments.append(asn.assignment_id)
+        qs_list = Assigned_question.objects.filter(assignment_id__in=target_assignments)
+        for ql in qs_list:
+            ql = Question.objects.filter(question_text=ql.question_id.question_text)
+            for q in ql:
+                question_set.append(q)
+                print q.upload_date
+        if answer[0] is not None:
+            question_set = [qs for qs in question_set if qs.question_type == answer[0]]
+        if answer[1] is not None:
+            question_set = [qs for qs in question_set if qs.forecast == answer[1]]
+        if answer[2] is not None:
+            question_set = [qs for qs in question_set if qs.corporate_training == answer[2]]
+        if answer[3]:  
+            question_set = [qs for qs in question_set if qs.question_text == answer[3]]
+        if answer[4]:
+            question_set = [qs for qs in question_set if qs.num_of_choices == answer[4]]
+        if answer[5]:
+            cond_val = Category.objects.get(category_text=answer[5])
+            question_set = [qs for qs in question_set if qs.category == cond_val]
+        #print question_set
+        a_set = []
+        get_assessments = Assessment.objects.filter(question_id__in=question_set).filter(date_of_assessment__lte=answer[9], date_of_assessment__gte=answer[10])
+        for ga in get_assessments:
+            a_set.append(ga)
+        if answer[6]:
+            user = User.objects.get(username = answer[6])
+            a_set = [a for a in a_set if a.user_id == user]
+        if answer[7]:
+            G_user = []
+            G_id = Group.objects.get(group_name=answer[7])
+            GM_objs = Group_member.objects.filter(group_id=G_id)
+            for obj in GM_objs:
+                G_user.append(obj.user_id)
+            a_set = [a for a in a_set if a.user_id in G_user]
+        a_set_qid = []
+        for a in a_set:
+            a_set_qid.append(a.question_id)
+        #print a_set
+        QSet = Question.objects.filter(question_text__in=question_set)
+        ASet = Assessment.objects.filter(question_id__in=a_set_qid)
     return (QSet, ASet)
 
 
