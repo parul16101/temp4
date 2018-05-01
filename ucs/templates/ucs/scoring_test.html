@@ -16,15 +16,81 @@
 </head>
 <div class="row">
 	<div class="ibox-title">
-		<h3><strong>Loop Scoring Options</strong></h3>
-		<br><text> NOTE: This page is in development.</text>
+		<h3 align='center'><strong>User Evaluation</strong></h3>
+		<text> NOTE: This page is in development.</text>
+		
 	</div>
 	<div class="ibox-content">
 	<form method="post" action="/result/">
-		{% csrf_token %}
+        {% csrf_token %}
+        <input type='hidden' id='loop_call' name='loop_call' value='T'>
 		<div class="row divBackground">
 			<div class="qn 1st">
+                <div class="form-group">
+                    <h4><strong> Loop Options </strong></h4>
+                    <h5> This will split the results in individual rows based on option. Only one can be selected</h5>
+                    <div class="col-sm-4" id="date1">
+                        <label class="control-label" for="userloop">User Name</label>
+                        <fieldset>
+                            <label class="">
+                                <input type="radio" value="1" name="userloop" id="rad" > Yes
+                            </label>
+                        </fieldset>
+                    </div>
+                    <div class="col-sm-4" id="date1">
+                        <label class="control-label" for="grouploop"> Group</label>
+                        <fieldset>
+                            <label class="">
+                                <input type="radio" value="1" name="grouploop" id="rad" > Yes
+                            </label>
+                        </fieldset>
+                    </div>
+                </div>
+                <br><br><br>
+                <div class="form-group">
+                    <h4><strong> Date Filter Options</strong></h4>
+                    <h5>Select a start and end date for a field or leave blank for all</h5><br>
+                    <div class="col-sm-4" id="date1">
+                        <label class="control-label" for="submitted_date">Assignment Finish Start Date </label>
+                        <div class="input-group date" style = "margin-bottom:1%;">
+                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input style="width:55%;" type="text" id="f_sdate" name="f_sdate" placeholder="Date assessment was submitted?" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-sm-8" id="date1">
+                        <label class="control-label" for="submitted_date">Assignment Finish End Date </label>
+                        <div class="input-group date" style = "margin-bottom:1%;">
+                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input style="width:22%;" type="text" id="f_edate" name="f_edate" placeholder="Date assessment was submitted?" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-sm-4" id="date1">
+                        <label class="control-label" for="submitted_date">Date Submitted Start Date </label>
+                        <div class="input-group date" style = "margin-bottom:1%;">
+                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input style="width:55%;" type="text" id="sub_sdate" name="sub_sdate" placeholder="Date assessment was submitted?" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-sm-8" id="date1">
+                        <label class="control-label" for="submitted_date">Date Submitted End Date </label>
+                        <div class="input-group date" style = "margin-bottom:1%;">
+                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input style="width:22%;" type="text" id="sub_edate" name="sub_edate" placeholder="Date assessment was submitted?" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-sm-4" id="date1">
+                        <label class="control-label" for="submitted_date">Question Upload Start Date </label>
+                        <div class="input-group date" style = "margin-bottom:1%;">
+                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input style="width:55%;" type="text" id="q_sdate" name="q_sdate" placeholder="Date assessment was submitted?" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-sm-8" id="date1">
+                        <label class="control-label" for="submitted_date">Question Upload End Date </label>
+                        <div class="input-group date" style = "margin-bottom:1%;">
+                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input style="width:22%;" type="text" id="q_edate" name="q_edate" placeholder="Date assessment was submitted?" class="form-control">
+                        </div>
+                    </div>
+                </div>           
 				<div class="form-group">
+                <br><br><br><br><br><br><br><br><br><br><br>
+                    <h4><strong>Unique Filter Options</strong></h4>
+                    <h5>The following fields will act as logical 'and' conditions. Blank for all choices.</h5><br>
 					<label class="control-label" for="question_type">Question Type</label>
 					<fieldset>
 						<label class="">
@@ -65,7 +131,7 @@
 				</div>
 				<div  class="form-group">
 					<label id="txt_lab" class="control-label" for="question_text">Question Text</label> <br>
-					<select id="question_text" name="question_text" class="js-example-basic-single" style ="Width:100%">
+					<select id="question_text" name="question_text" class="js-example-basic-single" >
 						<option selected="selected"></option>
 					</select>
 				</div>
@@ -97,12 +163,12 @@
 						<option selected="selected"></option>
 					</select>
 				</div>
-				<div class="col-sm-8" id="date1">
+				<!-- <div class="col-sm-8" id="date1">
 					<label class="control-label" for="submitted_date">Date Submitted</label>
 					<div class="input-group date" style = "margin-bottom:1%;">
 						<span class="input-group-addon"><i class="fa fa-calendar"></i></span><input style="width:40%;" type="text" id="date_submitted" name="date_submitted" placeholder="Date assessment was submitted?" class="form-control">
 					</div>
-				</div>
+				</div> -->
 			</div>
 		</div>
 		<div class="btn-toolbar">
