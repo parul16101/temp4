@@ -47,6 +47,7 @@ urlpatterns = [
     #Evaluation part
     url(r'^plotting/$', views.plotting, name="plotting"),
     url(r'^result/$', views.result, name="result"),
+    url(r'^result_test/$', views.result_test, name="result_test"),
     url(r'^scoring/$', views.scoring, name="scoring"),
     url(r'^scoring_test/$', views.scoring_test, name="scoring_test"),
     url(r'^batch_import/$', views.batch_import, name="batch_import"),
