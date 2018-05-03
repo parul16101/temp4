@@ -1396,7 +1396,7 @@ def result(request):
     if request.method == "POST":
         #Process request to get answer containing all option selected on scoring page
         answer = processRequests(request,current_user)
-        #print "answer\n\n\n\n", answer
+        print "answer\n\n\n\n", answer
         #answer = [question_type, forecast, question_purpose, question_text, true_or_false, category, user_name, group_name, assignment_name, date_submitted]
 
         #write answer in the file
@@ -1420,7 +1420,7 @@ def result(request):
             writer = csv.DictWriter(csvfile, fieldnames=assessment_fieldnames,lineterminator='\n')
             writer.writeheader()
             for value in temp:
-                #print "value: ", value
+                print "value: ", value
                 writer.writerow({'Question ID':value['question_id_id'], 'Date of assessment':value['date_of_assessment'],
              'User Name':User.objects.get(pk=value['user_id_id']).username, 'Operator':value['operator'],'Answer Text':value['answer_text'],
              'Details Of Assessment':value['details_of_assessment'], 'Option Text':value['option_text'],'ID':value['id']})
@@ -1495,6 +1495,7 @@ def result(request):
                             data['VALUE '+str(j+1)] = QA_map[qn.id][AKey][j]['option_text']
                         writer.writerow(data)
             csvfile.write("\n\n\n");
+
     return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_table})
 
 def result_test(request):
