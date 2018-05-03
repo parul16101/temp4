@@ -1034,6 +1034,7 @@ def batch_import(request):
     message = ""
     #print 'The user id is ', user_id
     if request.method == "POST":
+        shift = 1 #The input file format change
         #Write the uploaded file to the Uploads folder on Terra
         fileData = request.FILES.get("file_data")
         file_name = fileData.name
@@ -1066,7 +1067,7 @@ def batch_import(request):
         data = []
         try:
             print header
-            if "NUMBER OF PAIRS" in header and header.index("NUMBER OF PAIRS") == 15:
+            if "NUMBER OF PAIRS" in header and header.index("NUMBER OF PAIRS") == shift+15:
                 for row in reader:
                     ErrorQv = 0
                     WarningQv = 0
@@ -1077,31 +1078,31 @@ def batch_import(request):
                     # still be able to store data in the database
                     #@
                     if ErrorQv == 0:
-                        if row[4] and row[5] and row[6]:
+                        if row[shift+4] and row[shift+5] and row[shift+6]:
                             # VARIABLE NAME IN PYTHON  VARIABLE NAME IN DJANGO
                             # ADD A VALIDATION FOR QUESTIONS THAT ARE FORECAST
                             # [TODO] NEED TO CHANGE FINALIZE THE HEADING FORMAT
-                            QuestionUse = str(row[1])											## training *
+                            QuestionUse = str(row[shift+1])											## training *
                             #print 'QuestionUse:', QuestionUse
-                            QForecast = str(row[2]).title()										## forecast *
+                            QForecast = str(row[shift+2]).title()										## forecast *
                             #print 'QForecast: ', QForecast
-                            QuestionType = str(row[3]).title()									## question_type *
+                            QuestionType = str(row[shift+3]).title()									## question_type *
                             #print 'QuestionType: ', QuestionType
-                            NoOfChoices = int(row[4])											## num_of_choices *
+                            NoOfChoices = int(row[shift+4])											## num_of_choices *
                             #print 'NoOfChoices: ', NoOfChoices
-                            QCategory = unicode(str(row[5]).strip(), errors='replace')			## category *
+                            QCategory = unicode(str(row[shift+5]).strip(), errors='replace')			## category *
                             #print 'QCategory: ', QCategory
-                            QuestionText = unicode(str(row[6]).strip(), errors='replace')		## question_text *
+                            QuestionText = unicode(str(row[shift+6]).strip(), errors='replace')		## question_text *
                             #print 'QuestionText: ', QuestionText
-                            DateTrueValueKnown = str(row[7])									## close_date *
+                            DateTrueValueKnown = str(row[shift+7])									## close_date *
                             #print "DateTrueValueKnown: ", DateTrueValueKnown;
-                            TrueValue = unicode(str(row[8]).strip(), errors='replace')			## true_value *
+                            TrueValue = unicode(str(row[shift+8]).strip(), errors='replace')			## true_value *
                             #print 'TrueValue: ', TrueValue
-                            Units = unicode(str(row[9]).strip(), errors='replace')				## unit *
+                            Units = unicode(str(row[shift+9]).strip(), errors='replace')				## unit *
                             #print 'Units: ', Units
-                            QuestionSource = unicode(str(row[10]).strip(), errors='replace')	## question_source
+                            QuestionSource = unicode(str(row[shift+10]).strip(), errors='replace')	## question_source
                             #print 'QuestionSource: ', QuestionSource
-                            AllowAssessment = str(row[11]).title()								## allow_assessment
+                            AllowAssessment = str(row[shift+11]).title()								## allow_assessment
                             #print 'AllowAssessment: ', AllowAssessment
                         else:
                             ErrorQv+=1
@@ -1160,20 +1161,20 @@ def batch_import(request):
                     #Make a comment regarding how this cant be empty
                     ImportAssessment = False
                     for i in range (12, 15):
-                        if row[i]:
+                        if row[shift+i]:
                             ImportAssessment = True
                     if ImportAssessment == True:
-                        DateOfAssessment = str(row[12])
-                        Operator = str(row[13])
-                        DetailsOfAssessment = str(row[14])
+                        DateOfAssessment = str(row[shift+12])
+                        Operator = str(row[shift+13])
+                        DetailsOfAssessment = str(row[shift+14])
                         #VALIDATION OF ASSESSMENT INPUT/OPTIONS
                         # Validate that NumOfPairs, Operator, or DateOfAssessment are not missing
-                        if row[15] == '' or Operator == '' or DateOfAssessment == '' or row[4] == '':
+                        if row[shift+15] == '' or Operator == '' or DateOfAssessment == '' or row[shift+4] == '':
                             ErrorAv += 1
                             ErrorLogA.insert(reader.line_num, ErrorA[0] + str(reader.line_num))
                         else:
-                            NumOfPairs=int(row[15])
-                            NumOfChoices=float(row[4])
+                            NumOfPairs=int(row[shift+15])
+                            NumOfChoices=float(row[shift+4])
                         if ErrorAv == 0:
                             # Validate that NumOfChoices can only be 0 or greater than 1
                             if NumOfChoices < 0 or NumOfChoices == 1:
@@ -1196,12 +1197,12 @@ def batch_import(request):
                             prob = []
                             val = []
                             for i in range (0,NumOfPairs):
-                                if not row[16+2*i] or not row[17+2*i]:
+                                if not row[shift+16+2*i] or not row[shift+17+2*i]:
                                     ErrorAv +=1
                                     ErrorLogA.insert(reader.line_num, ErrorA[3] + str(reader.line_num))
                                 else:
-                                    prob.insert(reader.line_num,float(row[16+2*i]))
-                                    val.insert(reader.line_num,float(row[17+2*i]))
+                                    prob.insert(reader.line_num,float(row[shift+16+2*i]))
+                                    val.insert(reader.line_num,float(row[shift+17+2*i]))
                         #VALIDATION OF AVAILABLE ASSESSMENT DATA
                         # Sort both Probabilities and Values for further validation if there are more than
                         # 2 pairs of assessments
@@ -1257,7 +1258,7 @@ def batch_import(request):
                                 ## Check if Assessment exists in database
                                 A = Assessment.objects.filter(user_id = upload_user
                                     ).filter(question_id = QuestionID).filter(answer_text = prob[i]
-                                    ).filter(option_text = val[i]).filter(date_of_assessment = DateOfAssessment
+                                    ).filter(date_of_assessment = DateOfAssessment
                                     ).filter(details_of_assessment = DetailsOfAssessment)
                                 if len(A) == 0:
                                     #Assessment does not exist in the database add question
@@ -1265,6 +1266,8 @@ def batch_import(request):
                                         option_text = val[i], operator = Operator, date_of_assessment = DateOfAssessment,
                                         details_of_assessment = DetailsOfAssessment)
                                     newAssessment.save()
+                                else:
+                                    A.update(option_text = val[i])
                 for warning in WarningLogQ:
                     message = message + warning + '\n'
                 if message != "":
