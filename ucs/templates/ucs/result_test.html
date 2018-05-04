@@ -58,7 +58,7 @@
       </div>
       <br><br><br>
       !-->
-      <div class="table-responsive">
+      <!--<div class="table-responsive">
         <table class="table table-striped table-bordered align-right" style="width: auto;" id="ValueTable" >
           <thead>
             <tr>
@@ -74,6 +74,15 @@
             </tr>
             {% endfor %}
           </thead>
+        </table>
+      </div> -->
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered align-right" style="width: 53%;" id="valTable2">
+          <thead>
+            <tr>
+            </tr>
+          </thead>
+          <tbody></tbody>
         </table>
       </div>
 	  </div>
@@ -209,7 +218,56 @@
       newCell.style.textAlign = "right";
     };
 </script>
+<!-- get data points for each loop value -->
 
+<script>
+    var dp_data = {{dp_list | safe}};
+    var p_list = [];
+    var count = 0;
+    var flag = 0;
+    var tableRef = document.getElementById("valTable2").getElementsByTagName('tbody')[0];
+    for( key in dp_data ) {
+      var num = tableRef.rows.length;
+      var newRow = tableRef.insertRow(num);
+
+      dp_data[key].forEach(function(name, index) {
+        
+        if( !p_list.includes(name.x) ) {
+          
+          newCell = newRow.insertCell(0);
+          var th = document.createElement('th');
+          th.innerHTML = name.x;
+          //var text = document.createTextNode(name.x);
+          newCell.appendChild(th);
+          p_list.push(name.x); 
+          count = count + 1;
+        }
+        if( count == dp_data[key].length && flag == 0) {
+          newCell = newRow.insertCell(0);
+          var th = document.createElement('th');
+          th.innerHTML = "User";
+          //var text = document.createTextNode(name.x);
+          newCell.appendChild(th)
+          flag = 1;
+        }
+        
+      });
+    }  
+    for( key in dp_data ) {
+      var num = tableRef.rows.length;
+      var newRow = tableRef.insertRow(num);
+      //User
+      var newCell = newRow.insertCell(0);
+      var newText = document.createTextNode(key);
+      newCell.appendChild(newText);
+      dp_data[key].forEach(function(name, index) {
+        newCell = newRow.insertCell(index+1);
+        newText = document.createTextNode(name.y);
+        newCell.appendChild(newText);
+        
+      });
+    }
+</script>
 <script type="text/javascript">
 	function redo(){
 		window.location.replace("/scoring/");
