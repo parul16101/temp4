@@ -1379,6 +1379,9 @@ def plotting(request):
     return render(request, "ucs/plotting.html", {})
 
 
+
+
+
 def result(request):
     user_id = request.session.get("userId")
     if not user_id:
@@ -1569,7 +1572,7 @@ def result_test(request):
             wls_datapoints, wls_c_d_table = wls_bias_calc(plot)
             ## Split into loop field sets
             if answer[15] is not None:
-                
+                answer_copy = answer
                 get_assessments = ASet.values()
                 loop_set = {}
                 for val in get_assessments:
@@ -1578,7 +1581,9 @@ def result_test(request):
                         loop_set[usr] = []
                     loop_set[usr].append(val)
                 for key in loop_set:
-                    srt, vt, pt, dpt = computeResults(ASet)
+                    answer_copy[6] = key
+                    temp_QSet, temp_ASet = returnAssessments(answer_copy,1)
+                    srt, vt, pt, dpt = computeResults(temp_ASet)
                     sumresult_list[key] = srt
                     values_list.append(vt)
                     plot_list.append(pt)
@@ -1589,8 +1594,6 @@ def result_test(request):
                     wls_c_d_list[key] = wcdt
                 wls_c_d_list = json.dumps(wls_c_d_list)
                 sumresult_list = json.dumps(sumresult_list)    
-
-                       
                 return render(request, "ucs/result_test.html", {"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list})
             usr_key = User.objects.get(pk=user_id).username
             sumresult_list[usr_key] = summary_results
