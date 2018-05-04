@@ -1532,7 +1532,7 @@ def result_test(request):
         sumresult_list = {}
         values_list = []
         plot_list = []
-        datapoints_list = []
+        datapoints_list = {}
         wls_dp_list = []
         wls_c_d_list = {}
         if answer[17] == 1:
@@ -1590,14 +1590,19 @@ def result_test(request):
                     sumresult_list[key] = srt
                     values_list.append(vt)
                     plot_list.append(pt)
-                    datapoints_list.append(dpt)
+                    datapoints_list[key] = dpt
 
                     wdt, wcdt = wls_bias_calc(pt)
                     wls_dp_list.append(wdt)
                     wls_c_d_list[key] = wcdt
                 wls_c_d_list = json.dumps(wls_c_d_list)
-                sumresult_list = json.dumps(sumresult_list)    
-                return render(request, "ucs/result_test.html", {"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list})
+                sumresult_list = json.dumps(sumresult_list)
+                datapoints_list = json.dumps(datapoints_list)
+
+                 
+                
+
+                return render(request, "ucs/result_test.html", {"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list, "dp_list": datapoints_list})
             usr_key = User.objects.get(pk=user_id).username
             sumresult_list[usr_key] = summary_results
             wls_c_d_list[usr_key] = wls_c_d_table
@@ -1606,100 +1611,7 @@ def result_test(request):
             ################################################################
             return render(request, "ucs/result_test.html", {"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list})
 
-        else:
-            with open('/tmp/log.csv', 'wb') as csvfile:
-                para_fieldnames = ['Question Type', 'Forecast', 'Question Purpose', 'Question Text', '# of Choices', 'Category', 'User', 'Group', 'Assignment Name', 'Date Submitted']
-                writer = csv.DictWriter(csvfile, fieldnames=para_fieldnames)
-                writer.writeheader()
-                writer.writerow({'Question Type': answer[0], 'Forecast': answer[1], 'Question Purpose': answer[2], 'Question Text': answer[3], '# of Choices': answer[4], 'Category': answer[5], 'User': answer[6], 'Group': answer[7], 'Assignment Name': answer[8], 'Date Submitted': answer[9]})
-                csvfile.write("\n\n\n");
-            ##################IT'S NO LONGER RAUL CODE######################
-            QSet, ASet = returnAssessments(answer,1)
-            QA_map = {} #Mapping of questions to assessments
-            temp = ASet.values()
-            with open('/tmp/log.csv', 'a') as csvfile:
-                assessment_fieldnames = ['Question ID', 'Date of assessment','User Name','Operator','Answer Text','Details Of Assessment','Option Text','ID']
-                writer = csv.DictWriter(csvfile, fieldnames=assessment_fieldnames,lineterminator='\n')
-                writer.writeheader()
-                for value in temp:
-                    #print "value: ", value
-                    writer.writerow({'Question ID':value['question_id_id'], 'Date of assessment':value['date_of_assessment'],
-                 'User Name':User.objects.get(pk=value['user_id_id']).username, 'Operator':value['operator'],'Answer Text':value['answer_text'],
-                 'Details Of Assessment':value['details_of_assessment'], 'Option Text':value['option_text'],'ID':value['id']})
-                    if value['question_id_id'] not in QA_map.keys():
-                        QA_map[value['question_id_id']] = []
-                    else:
-                        pass
-                    AKey = str(value['user_id_id'])+'_'+value['date_of_assessment']
-                    if AKey not in QA_map[value['question_id_id']].keys():
-                        QA_map[value['question_id_id']][AKey] = []
-                    else:
-                        pass
-                    QA_map[value['question_id_id']].append(value)
-                csvfile.write("\n\n\n");
-
-
-            summary_results, values, plot, datapoints = computeResults(ASet)
-            summary_fieldnames = ['Confidence', 'Calibration','Resolution','Knowledge','Brierscore']
-            insert_data_to_debug_file_vertically(summary_fieldnames,values,'a')
-
-            #Get WLS line, confidence bias, and directional bias
-            wls_datapoints, wls_c_d_table = wls_bias_calc(plot)
-            ################################################################
-
-            #Data File
-            # DJ changed to len(ASet)
-            max_assessment_size = len(ASet)
-            #max_assessment_size = max([len(QA_map[e]) for e in QA_map])
-
-            with open('/tmp/data.csv', 'wb') as csvfile:
-                data_fieldnames = ['QUESTIONID', 'TRAINING', 'FORECAST', 'DISCRETE', 'NO OF CHOICES', 'CATEGORY', 'QUESTION TEXT', 'DATE TRUE VALUE KNOWN', 'TRUE VALUE', 'UNITS', 'ANSWER SOURCE', 'ALLOW ASSESSMENT', 'DATE OF ASSESSMENT', 'OPERATOR', 'ASSESSMENT DETAILS', 'NUMBER OF PAIRS']
-                for i in range(max_assessment_size):
-                    data_fieldnames.append('PROB '+str(i+1))
-                    data_fieldnames.append('VALUE '+str(i+1))
-                writer = csv.DictWriter(csvfile, fieldnames=data_fieldnames)
-                writer.writeheader()
-
-                for qn in QSet:
-                    data = {}
-                    if qn.id not in QA_map.keys():
-                        pass
-                    else:
-                        data['QUESTIONID'] = qn.id
-                        data['TRAINING'] = str(qn.corporate_training)
-                        data['FORECAST'] = str(qn.forecast)
-                        data['DISCRETE'] = str(qn.question_type)
-                        data['NO OF CHOICES'] = qn.num_of_choices
-                        data['CATEGORY'] = str(qn.category).encode('utf-8')
-                        data['QUESTION TEXT'] = qn.question_text.encode('utf-8')
-                        data['DATE TRUE VALUE KNOWN'] = str(qn.upload_date)
-                        data['TRUE VALUE'] = qn.true_value
-                        data['UNITS'] = str(qn.unit).encode('utf-8')
-                        data['ANSWER SOURCE'] = str(qn.question_source).encode('utf-8')
-                        data['ALLOW ASSESSMENT'] = str(qn.allow_assessment)
-                        if len(QA_map[qn.id]) == 0:
-                            data['DATE OF ASSESSMENT'] = '00/00/0000'
-                            data['OPERATOR'] = 'EQ'
-                            data['ASSESSMENT DETAILS'] = ''
-                        else:
-                            data['DATE OF ASSESSMENT'] = str(QA_map[qn.id][0]['date_of_assessment'])
-                            data['OPERATOR'] = str(QA_map[qn.id][0]['operator'])
-                            data['ASSESSMENT DETAILS'] = str(QA_map[qn.id][0]['details_of_assessment']).encode('utf-8')
-                        data['NUMBER OF PAIRS'] = len(QA_map[qn.id])
-                        for j in range(data['NUMBER OF PAIRS']):
-                            data['PROB '+str(j+1)]  = QA_map[qn.id][j]['answer_text']
-                            data['VALUE '+str(j+1)] = QA_map[qn.id][j]['option_text']
-                        writer.writerow(data)
-                csvfile.write("\n\n\n");
-            wls_datapoints, wls_c_d_table = wls_bias_calc(plot)
-            usr_key = User.objects.get(pk=user_id).username
-            sumresult_list[usr_key] = summary_results
-            wls_c_d_list[usr_key] = wls_c_d_table
-            sumresult_list = json.dumps(sumresult_list)
-            wls_c_d_list = json.dumps(wls_c_d_list)
-            return render(request, "ucs/result_test.html", {"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list})
-
-
+        
 
 def wls_bias_calc(plot):
     sum_x = 0
