@@ -223,36 +223,25 @@
 <script>
     var dp_data = {{dp_list | safe}};
     var p_list = [];
-    var count = 0;
-    var flag = 0;
     var tableRef = document.getElementById("valTable2").getElementsByTagName('tbody')[0];
     for( key in dp_data ) {
       var num = tableRef.rows.length;
       var newRow = tableRef.insertRow(num);
-
-      dp_data[key].forEach(function(name, index) {
-        
+      dp_data[key].forEach(function(name, index) { 
         if( !p_list.includes(name.x) ) {
-          
-          newCell = newRow.insertCell(0);
-          var th = document.createElement('th');
-          th.innerHTML = name.x;
-          //var text = document.createTextNode(name.x);
-          newCell.appendChild(th);
-          p_list.push(name.x); 
-          count = count + 1;
+          p_list.push(name.x)
         }
-        if( count == dp_data[key].length && flag == 0) {
-          newCell = newRow.insertCell(0);
-          var th = document.createElement('th');
-          th.innerHTML = "User";
-          //var text = document.createTextNode(name.x);
-          newCell.appendChild(th)
-          flag = 1;
-        }
-        
       });
-    }  
+    }
+    p_list.push("User");  
+    for( key in p_list ) {
+      newCell = newRow.insertCell(0);
+      var th = document.createElement('th');
+      th.innerHTML = p_list[key]
+      //var text = document.createTextNode(name.x);
+      newCell.appendChild(th);
+     
+    }
     for( key in dp_data ) {
       var num = tableRef.rows.length;
       var newRow = tableRef.insertRow(num);
@@ -261,6 +250,9 @@
       var newText = document.createTextNode(key);
       newCell.appendChild(newText);
       dp_data[key].forEach(function(name, index) {
+        if( name.y == "" ) {
+          name.y = 0;
+        }
         newCell = newRow.insertCell(index+1);
         newText = document.createTextNode(name.y);
         newCell.appendChild(newText);
