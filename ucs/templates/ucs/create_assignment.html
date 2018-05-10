@@ -43,13 +43,9 @@
 						<input type="text" name="AssignmentName" id="AssignmentName" placeholder="The name of your assignment" onfocus="this.placeholder = ''" onblur="this.placeholder = 'The name of your assignment'" class="form-control">
 					</div>
 					<div class="form-group" id="date1">
-						<label class="control-label" for="due_date">Closing Date</label> 
-						<br>
-						<text>Assignments without a closing date are a non-forecast</text>
-						<br>
-						<text>Assignments with a closing date are a forecast</text>
+						<label class="control-label" for="due_date">Closing Date</label>
 						<div class="input-group">
-							<input type="date" id="closing_date" name="closing_date" placeholder="When will the true value be revealed?" class="form-control">
+							<span class="input-group-addon"><i class="fa fa-calendar"></i></span><input type="date" id="closing_date" name="closing_date" placeholder="When will the true value be revealed?" class="form-control" style ="Width:20%">
 						</div>
 					</div>
 					<input type="hidden" id="datewarn" name="datewarn" value="Invalid Closing Date" style="background-color: #8c9ef3; color: white;" readonly>

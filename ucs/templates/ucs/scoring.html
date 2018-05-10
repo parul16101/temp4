@@ -97,9 +97,9 @@
 					</select>
 				</div>
 				<div class="col-sm-8" id="date1">
-					<label class="control-label" for="submitted_date">Date Submitted</label>
-					<div class="input-group date" style = "margin-bottom:1%;">
-						<span class="input-group-addon"><i class="fa fa-calendar"></i></span><input style="width:40%;" type="text" id="date_submitted" name="date_submitted" placeholder="Date assessment was submitted?" class="form-control">
+					<label class="control-label" for="submitted_date">Date Assessment was Submitted</label>
+					<div class="input-group" style="margin-bottom:1%;">
+						<span class="input-group-addon"><i class="fa fa-calendar"></i></span><input type="date" id="date_submitted" name="date_submitted" placeholder="" class="form-control" style="width:40%;">
 					</div>
 				</div>
 			</div>
@@ -199,113 +199,6 @@
 		select_assignment.options[select_assignment.options.length] = new Option(name.assignment);
 	});
 	
-	/*
-	function submit_query(){
-		get_value();
-	// 	//pass_value();
-	// 	//window.location.replace("/result/");
-	// 	//things to do on click
-	}
-	
-	function get_value(){
-		var selected_question = document.querySelector('input[name = "question_type"]:checked');
-		if (selected_question === null) {
-			question_type = "";
-		}
-		else {
-			question_type = selected_question.value;
-		}
-		
-		var selected_forcast = document.querySelector('input[name = "forecast"]:checked');
-		if (selected_forcast === null) {
-			forecast = "";
-		}
-		else {
-			forecast = selected_forcast.value;
-		}
-		
-		var selected_purpose = document.querySelector('input[name = "corporate_training"]:checked');
-		if (selected_purpose === null) {
-			question_purpose = "";
-		}
-		else {
-			question_purpose = selected_purpose.value;
-		}
-		
-		question_text = document.getElementById("question_text").value;
-		true_or_false = document.getElementById("numberofchoice").value;
-		category = document.getElementById("category").value;
-		user_name = document.getElementById("user_name").value;
-		group_name = document.getElementById("group_name").value;
-		assignment_name = document.getElementById("assignment_name").value;
-		date_submitted = document.getElementById("date_submitted").value;
-		
-		var answer = [question_type, forecast, question_purpose, question_text, true_or_false, category, user_name, group_name, assignment_name, date_submitted];
-		//console.log(answer);
-		
-		var url = "/result/";
-		var params = {
-				csrfmiddlewaretoken: "{{ csrf_token }}",
-	 			'question_type':question_type,
-	 			'forecast':forecast,
-	 			'question_purpose':question_purpose,
-	 			'question_text':question_text, // from form
-	 			'true_or_false':true_or_false,
-	 			'category':category,
-	 			'user_name':user_name,
-	 			'group_name':group_name,
-	 			'assignment_name':assignment_name,
-	 			'date_submitted':date_submitted
-	 		};
-	 	var xhr = new XMLHttpRequest();
-	 	xhr.open("POST", url, true);
-	 	xhr.send(params);
-	}
-	*/
-	// $.extend({
-	// 	    redirectPost: function(location, args)
-	// 	    {
-	// 	        var form = '';
-	// 	        $.each( args, function( key, value ) {
-	// 	            form += '<input type="hidden" name="'+key+'" value="'+value+'">';
-	// 	        });
-	// 	        $('<form action="'+location+'" method="POST">'+form+'</form>').appendTo('body').submit();
-	// 	    }
-	// 	});
-	// //TODO
-	/*
-	function pass_value(){
-		$.ajax({
-			type:"POST",
-			url:"/result/",
-			data: {
-				csrfmiddlewaretoken: "{{ csrf_token }}",
-				'question_type':question_type,
-	 			'forecast':forecast,
-	 			'question_purpose':question_purpose,
-	 			'question_text':question_text, // from form
-	 			'true_or_false':true_or_false,
-	 			'category':category,
-	 			'user_name':user_name,
-	 			'group_name':group_name,
-	 			'assignment_name':assignment_name,
-	 			'date_submitted':date_submitted
-	 		},
-	 		success: function(data) {
-	 			if (data.status){
-	 				//alert(data.rep_message);
-	 			 	window.location.replace("/result/");
-	 			}
-	 			else if (!data.status){
-	 			 	alert(data.rep_message);
-	 			 	location.reload();
-	 			 }
-	 			$.redirectPost("/result/",{csrfmiddlewaretoken: "{{ csrf_token }}",summary:data});
-	 		},
-	 	});
-	 	return false;
-	}
-	*/
 	$(document).ready(function() {
 		//Selector
 		$('.js-example-basic-single').select2();
@@ -331,11 +224,6 @@
 			// remove was checked from other radios
 			$radio.siblings('input[name="rad"]').data('waschecked', false);
 		});
-	});
-</script>
-<script>
-	$(function(){
-
 	});
 </script>
 {% endblock %}
