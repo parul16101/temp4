@@ -1535,7 +1535,7 @@ def result_test(request):
         datapoints_list = {}
         wls_dp_list = []
         wls_c_d_list = {}
-        if answer[17] == 1:
+        if answer[13] == 1:
             with open('/tmp/log.csv', 'wb') as csvfile:
                 para_fieldnames = ['Question Type', 'Forecast', 'Question Purpose', 'Question Text', '# of Choices', 'Category', 'User', 'Group', 'Assignment Name', 'Date Submitted']
                 writer = csv.DictWriter(csvfile, fieldnames=para_fieldnames)
@@ -1574,7 +1574,7 @@ def result_test(request):
             #Get WLS line, confidence bias, and directional bias
             wls_datapoints, wls_c_d_table = wls_bias_calc(plot)
             ## Split into loop field sets
-            if answer[15] is not None:
+            if answer[11] is not None:
                 answer_copy = answer
                 get_assessments = ASet.values()
                 loop_set = {}
@@ -1591,17 +1591,12 @@ def result_test(request):
                     values_list.append(vt)
                     plot_list.append(pt)
                     datapoints_list[key] = dpt
-
                     wdt, wcdt = wls_bias_calc(pt)
                     wls_dp_list.append(wdt)
                     wls_c_d_list[key] = wcdt
                 wls_c_d_list = json.dumps(wls_c_d_list)
                 sumresult_list = json.dumps(sumresult_list)
                 datapoints_list = json.dumps(datapoints_list)
-
-                 
-                
-
                 return render(request, "ucs/result_test.html", {"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list, "dp_list": datapoints_list})
             usr_key = User.objects.get(pk=user_id).username
             sumresult_list[usr_key] = summary_results
@@ -1610,8 +1605,6 @@ def result_test(request):
             wls_c_d_list = json.dumps(wls_c_d_list)
             ################################################################
             return render(request, "ucs/result_test.html", {"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list})
-
-        
 
 def wls_bias_calc(plot):
     sum_x = 0
@@ -1763,9 +1756,9 @@ def processRequests(req,current_user):
         group_loop = req.POST.get("grouploop")
         loop_request = 1;           
         answer = [question_type, forecast, question_use, question_text, true_or_false, category, user_name, group_name, assignment_name, edate_submitted
-        , sdate_submitted, edate_f_assign, sdate_f_assign, edate_c_question, sdate_c_question, user_loop, group_loop, loop_request]
+        , sdate_submitted, user_loop, group_loop, loop_request]
         return answer
-    
+    print req.POS.get("date_submitted")
     answer = [question_type, forecast, question_use, question_text, true_or_false, category, user_name, group_name, assignment_name, req.POST.get("date_submitted")]
     print "answer \n\n",answer
     return answer
@@ -1852,25 +1845,9 @@ def returnAssessments(answer, check):
         answer[13-14] := question upload date
         answer[15] := loop_request
         '''
-        if answer[9] == "":
-            answer[9] = "99/99/9999"
-        if answer[10] == "":
-            answer[10] = "00/00/0000"
-        if answer[11] == "":
-            answer[11] = "9999/99/99"
-        else:
-            answer[11] = answer[11][6:10] + "/" + answer[11][0:5]
-        if answer[12] == "":
-            answer[12] = "0000/00/00"
-        else:
-            answer[12] = answer[12][6:10] + "/" + answer[12][0:5]
-        if answer[13] == "":
-            answer[13] = "99/99/9999"
-        if answer[14] == "":
-            answer[14] = "00/00/0000"
         target_assignments = []
         question_set = []
-        get_assign_list = Assignment_log.objects.filter(finish_date__lte=answer[11], finish_date__gte=answer[12])
+        get_assign_list = Assignment_log.objects.filter(finish_date__gte="0000/00/00")
         for asn in get_assign_list:
             if answer[8]:
                 if asn.assignment_id.assignment_name == answer[8]:
@@ -1882,7 +1859,6 @@ def returnAssessments(answer, check):
             ql = Question.objects.filter(question_text=ql.question_id.question_text)
             for q in ql:
                 question_set.append(q)
-                print q.upload_date
         if answer[0] is not None:
             question_set = [qs for qs in question_set if qs.question_type == answer[0]]
         if answer[1] is not None:
@@ -1898,9 +1874,21 @@ def returnAssessments(answer, check):
             question_set = [qs for qs in question_set if qs.category == cond_val]
         #print question_set
         a_set = []
-        get_assessments = Assessment.objects.filter(question_id__in=question_set).filter(date_of_assessment__lte=answer[9], date_of_assessment__gte=answer[10])
+        if answer[9] != "" and answer[10] != "":
+            get_assessments = Assessment.objects.filter(question_id__in=question_set, date_of_assessment__range=[answer[10], answer[9]])
+        elif answer[9] == "" and answer[10] != "":
+            get_assessments = Assessment.objects.filter(question_id__in=question_set, date_of_assessment__range=[answer[10], "01/01/2100"])
+        elif answer[10] ==  "" and answer[9] != "":
+            get_assessments = Assessment.objects.filter(question_id__in=question_set, date_of_assessment__range=["00/00/0000", answer[9]])
+        else:
+            get_assessments = Assessment.objects.filter(question_id__in=question_set)
+        #startDate = answer[10].split("/")
+        #endDate   = answer[9].split("/")
+        
+        #get_assessments = Assessment.objects.filter(question_id__in=question_set)
         for ga in get_assessments:
             a_set.append(ga)
+            print ga.date_of_assessment
         if answer[6]:
             user = User.objects.get(username = answer[6])
             a_set = [a for a in a_set if a.user_id == user]
