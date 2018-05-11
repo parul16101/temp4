@@ -1598,6 +1598,36 @@ def result_test(request):
                 sumresult_list = json.dumps(sumresult_list)
                 datapoints_list = json.dumps(datapoints_list)
                 return render(request, "ucs/result_test.html", {"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list, "dp_list": datapoints_list})
+            if answer[12] is not None:
+                answer_copy = answer
+                get_assessments = ASet.values()
+                loop_set = {}
+                '''for val in get_assessments:
+                    usr = User.objects.get(pk=val['user_id_id']).username 
+                    if usr not in loop_set:
+                        loop_set[usr] = []
+                    loop_set[usr].append(val)'''
+                get_grps = Assigned_group.objects.all()
+                for val in get_grps:
+                    if val.group_id not in loop_set:
+                        loop_set[val.group_id.group_name] = []
+                    loop_set[val.group_id.group_name]
+                for key in loop_set:
+                    answer_copy[7] = key
+                    temp_QSet, temp_ASet = returnAssessments(answer_copy,1)
+                    srt, vt, pt, dpt = computeResults(temp_ASet)
+                    sumresult_list[key] = srt
+                    values_list.append(vt)
+                    plot_list.append(pt)
+                    datapoints_list[key] = dpt
+                    wdt, wcdt = wls_bias_calc(pt)
+                    wls_dp_list.append(wdt)
+                    wls_c_d_list[key] = wcdt
+                wls_c_d_list = json.dumps(wls_c_d_list)
+                sumresult_list = json.dumps(sumresult_list)
+                datapoints_list = json.dumps(datapoints_list)
+                return render(request, "ucs/result_test.html", {"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list, "dp_list": datapoints_list})
+                print "AA"
             usr_key = User.objects.get(pk=user_id).username
             sumresult_list[usr_key] = summary_results
             wls_c_d_list[usr_key] = wls_c_d_table
