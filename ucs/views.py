@@ -1758,7 +1758,6 @@ def processRequests(req,current_user):
         answer = [question_type, forecast, question_use, question_text, true_or_false, category, user_name, group_name, assignment_name, edate_submitted
         , sdate_submitted, user_loop, group_loop, loop_request]
         return answer
-    print req.POS.get("date_submitted")
     answer = [question_type, forecast, question_use, question_text, true_or_false, category, user_name, group_name, assignment_name, req.POST.get("date_submitted")]
     print "answer \n\n",answer
     return answer
