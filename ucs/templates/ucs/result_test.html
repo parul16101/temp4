@@ -227,18 +227,19 @@
     for( key in dp_data ) {
       var num = tableRef.rows.length;
       var newRow = tableRef.insertRow(num);
-      dp_data[key].forEach(function(name, index) { 
-        if( !p_list.includes(name.x) ) {
-          p_list.push(name.x)
-        }
-      });
+    }
+    var count = 100;
+    while( count >= 0 ) {
+      var column_ttl = "P"+ count.toString();
+      p_list.push(column_ttl);
+      count = count - 10;
     }
     p_list.push("User");  
+    
     for( key in p_list ) {
       newCell = newRow.insertCell(0);
       var th = document.createElement('th');
       th.innerHTML = p_list[key]
-      //var text = document.createTextNode(name.x);
       newCell.appendChild(th);
      
     }
@@ -249,14 +250,59 @@
       var newCell = newRow.insertCell(0);
       var newText = document.createTextNode(key);
       newCell.appendChild(newText);
+      var check_list = [];
+      var cnt = 0;
+      var inst_cnt = 0;
       dp_data[key].forEach(function(name, index) {
         if( name.y == "" ) {
           name.y = 0;
         }
-        newCell = newRow.insertCell(index+1);
-        newText = document.createTextNode(name.y);
-        newCell.appendChild(newText);
-        
+
+        var position = index+1;
+        if( name.x < 0.1 ) {
+          position = 1
+        } else if( name.x >= 0.1 && name.x < 0.2 ) {
+          position = 2;
+        } else if( name.x >= 0.2 && name.x < 0.3 ) {
+          position = 3; 
+        } else if( name.x >= 0.3 && name.x < 0.4 ) {
+          position = 4;
+        } else if( name.x >= 0.4 && name.x < 0.5 ) {
+          position = 5;
+        } else if( name.x >= 0.5 && name.x < 0.6 ) {
+          position = 6;
+        } else if( name.x >= 0.6 && name.x < 0.7 ) {
+          position = 7;
+        } else if( name.x >= 0.7 && name.x < 0.8 ) {
+          position = 8;
+        } else if( name.x >= 0.8 && name.x < 0.9 ) {
+          position = 9;
+        } else if( name.x >= 0.9 && name.x < 1 ) {
+          position = 10;
+        } else if( name.x >= 1 ) {
+          position = 11;
+        } 
+        check_list.push(position);
+        if( position > 1 ) {
+          if( check_list[cnt-1] != position-1 ) {
+            var loop_cnt = check_list[cnt-1];
+            alert(check_list[cnt-1]);
+            while( loop_cnt >= check_list[cnt-1] ) {
+              newCell = newRow.insertCell(loop_cnt+1);
+              newText = document.createTextNode("0");
+              newCell.appendChild(newText);
+              loop_cnt = loop_cnt - 1;
+              inst_cnt = inst_cnt + 1;
+            }
+          }
+        }
+        if( inst_cnt < 11 ) {
+          newCell = newRow.insertCell(position);
+          newText = document.createTextNode(name.y);
+          newCell.appendChild(newText);
+        }
+        inst_cnt = inst_cnt + 1;
+        cnt = cnt + 1;        
       });
     }
 </script>
