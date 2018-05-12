@@ -356,14 +356,14 @@
 	}
 	
 	function save_database(){
-		var today = new Date();
+		var url_string = window.location.href;
+        var url = new URL(url_string);
+		var param = url.searchParams.get("assignment_id");
+		/*var today = new Date();
 		var tomorrow = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
 		var dd = today.getDate();
 		var mm = today.getMonth()+1; //January is 0!
 		var yyyy = today.getFullYear();
-		var url_string = window.location.href;
-        var url = new URL(url_string);
-		var param = url.searchParams.get("assignment_id");
 		if(dd<10){
 			dd='0'+dd
 		} 
@@ -372,7 +372,7 @@
 		} 
 		today = mm+'/'+dd+'/'+yyyy;
 		//**********************
-		var upload_date = today;
+		var upload_date = today;*/
 		var uploader = "{{request.session.username}}";
 		
 		
@@ -383,7 +383,6 @@
 				csrfmiddlewaretoken: "{{ csrf_token }}",
 				'question_text[]': question_title, // from form
 				'uploader':uploader,
-				'upload_date':upload_date,
 				'answer[]':saved_answer,
 				'assignment_id':param
 			},

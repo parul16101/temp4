@@ -1,17 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 Django views for ucs project.
-
 This contains various function which process HTTP requests and render corrosponding html pages.
 """
-
-import sys
-import time
-import zipfile
-
-#reload(sys)
-#sys.setdefaultencoding('utf-8')
-import os, shutil, base64, json, hashlib, csv
+import os, sys, time, zipfile, urllib, shutil, base64, json, hashlib, csv, math
+from time import strftime
 from django.shortcuts import render, redirect
 from django.template import RequestContext
 from django.http import HttpResponse
@@ -19,15 +12,13 @@ from django.core.mail import send_mail
 from django.urls import reverse
 from django.db.models import Q
 from django.db import transaction, IntegrityError
-from time import strftime
-from .models import User, Question, Group_member, Group, Category, Dataset, Assignment, Assigned_group, Assigned_question, Assessment, Assignment_log
-#from .tools import readConfiguration, kwGenerator
 from django.http import JsonResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
+from .models import User, Question, Group_member, Group, Category, Dataset, Assignment, Assigned_group, Assigned_question, Assessment, Assignment_log
+from .tools import time_norm
 from collections import defaultdict
 from datetime import datetime, timedelta
-import math
 
 #from osgeo import gdal
 ErrorA = { 0 : "Insuficcient data for the assessment, missing NumOfPairs, Operator, or DateOfAssessment in row ",
@@ -56,10 +47,54 @@ WarningQ = {0 : "The true value was updated for record in row ",
 4 : "A new category was created for record in row "}
 
 
+def refresh_database():
+    #####################SCRIPT TO CLEAN DATE###########################
+    print "Start refreshing..."
+    qid_list = Question.objects.all().values_list('id', flat=True)
+    for qid in qid_list:
+        close_date  = time_norm(Question.objects.get(id=qid).close_date)
+        print close_date
+        upload_date = time_norm(Question.objects.get(id=qid).upload_date)
+        print upload_date
+        Question.objects.filter(id=qid).update(close_date=close_date)
+        Question.objects.filter(id=qid).update(upload_date=upload_date)
+    aid_list = Assessment.objects.all().values_list('id', flat=True)
+    for aid in aid_list:
+        date_of_assessment = time_norm(Assessment.objects.get(id=aid).date_of_assessment)
+        print date_of_assessment
+        Assessment.objects.filter(id=aid).update(date_of_assessment=date_of_assessment)
+    sid_list = Assignment.objects.all().values_list('id', flat=True)
+    for sid in sid_list:
+        due_date = time_norm(Assignment.objects.get(id=sid).due_date)
+        print due_date
+        Assignment.objects.filter(id=sid).update(due_date=due_date)
+    lid_list = Assignment_log.objects.all().values_list('id', flat=True)
+    for lid in lid_list:
+        due_date = time_norm(Assignment_log.objects.get(id=lid).due_date)
+        print due_date
+        if "0000" in due_date:
+            Assignment_log.objects.filter(id=lid).update(due_date="0000-00-00")
+        else:
+            Assignment_log.objects.filter(id=lid).update(due_date=due_date)
+        finish_date = time_norm(Assignment_log.objects.get(id=lid).finish_date)
+        print finish_date
+        if "0000" in finish_date:
+            Assignment_log.objects.filter(id=lid).update(finish_date="0000-00-00")
+        else:
+            Assignment_log.objects.filter(id=lid).update(finish_date=finish_date)
+    bid_list = Dataset.objects.all().values_list('id', flat=True)
+    for bid in bid_list:
+        upload_date = time_norm(Dataset.objects.get(id=bid).upload_date)
+        print upload_date
+        Dataset.objects.filter(id=bid).update(upload_date=upload_date)
+    print "End refreshing..."
+    ####################################################################
+
+
 ## Function to render home-page.
-#
 # Function for rendering home page. Home page is rendered when someone login successfully.
 def home_page(request):
+    refresh_database()
     #DJ Home page to do report
     if "userId" in request.session.keys():
         user_name = request.session.get("userId")
@@ -92,7 +127,7 @@ def home_page(request):
                         days_left = delta.days
                 if days_left == 0:
                     days_left = 1
-                if uw.finish_date != "00-00-0000" and uw.finish_date != "00/00/0000":
+                if uw.finish_date != "0000-00-00":
                     #print uw.assignment_id.assignment_name
                     if uw.due_date != "" and days_left < 0:   
                         continue
@@ -153,7 +188,7 @@ def home_page(request):
                         days_left = delta.days
                 if days_left == 0:
                     days_left = 1
-                if uw.finish_date != "00-00-0000" and uw.finish_date != "00/00/0000":
+                if uw.finish_date != "0000-00-00":
                     if uw.due_date != "" and days_left < 0:   
                         continue
                     elif uw.due_date == "":
@@ -306,7 +341,7 @@ def create_question(request):
             T_or_F = request.POST.get("true_or_false")
             allow_assessment = request.POST.get("allow_assessment")
             unit = request.POST.get("unit", "NA")
-            upload_date = request.POST.get("upload_date")
+            upload_date = time_norm(request.POST.get("upload_date"))
             closing_date = request.POST.get("closing_date")
             print("question_type: "+question_type)
             print("forecast: "+forecast)
@@ -430,7 +465,7 @@ def save_question(request):
         question.unit = unit
         question.true_value = true_value
         question.category_id = category_info.id
-        question.close_date = date_true_value_known
+        question.close_date = time_norm(date_true_value_known)
         question.question_text = question_text
         question.save()
     return HttpResponse("success")
@@ -513,7 +548,7 @@ def create_assignment(request):
             #Insert into assignment list table without the finish_date
             for uid in all_users:
                 insertIntoAssignmentLog = Assignment_log(assignment_id = assignment_info, user_id = uid, due_date = assigned_date,
-                        finish_date = "00/00/0000", group_id = group_info)
+                        finish_date = "0000-00-00", group_id = group_info)
                 insertIntoAssignmentLog.save()
         return JsonResponse(data)
     else:
@@ -675,7 +710,7 @@ def show_assignment(request):
         finish_date = ""
         for uw in user_work:
             finish_date = uw.finish_date
-            if uw.finish_date != "00-00-0000" and uw.finish_date != "00/00/0000":
+            if uw.finish_date != "0000-00-00":
                 if uw.due_date != "" and days_left < 0:
                     days_left = 's'
                     break
@@ -751,7 +786,7 @@ def edit_assignment(request):
                         print "adding user"
                         print newuser
                         insertIntoAssignmentLog = Assignment_log(assignment_id = target_assignment, user_id = newuser.user_id, due_date = due_date,
-                        finish_date = "00/00/0000", group_id = target_group)
+                        finish_date = "0000-00-00", group_id = target_group)
                         insertIntoAssignmentLog.save()                
                     #all_users.append(ul.user_id)
                 newAssignedGroup = Assigned_group(assignment_id = target_assignment, group_id = target_group)
@@ -812,7 +847,7 @@ def do_assignment(request):
         print 'HERE '
         uploader = request.POST['uploader']
         target_user = User.objects.get(username = uploader)
-        upload_date = request.POST['upload_date']
+        upload_date = datetime.today().strftime("%Y-%m-%d")
         answered_text = request.POST.getlist('question_text[]')
         answered_question = request.POST.getlist('answer[]')
         a_id = request.POST['assignment_id']
@@ -854,8 +889,7 @@ def do_assignment(request):
                 #print operator
                 new_assessment = Assessment(question_id = filtered_question, user_id = target_user, option_text = option, answer_text = answer, operator = operator, date_of_assessment = upload_date)
                 new_assessment.save()
-        #now = datetime.now()
-        f_date = datetime.today().strftime("%Y/%m/%d")
+        f_date = upload_date
         print 'f_date: ', f_date
         #DJ
         print 'assignment_name: ', assignment_name
@@ -1048,7 +1082,7 @@ def batch_import(request):
             for chunk in fileData.chunks():
                 destination.write(chunk)
         upload_user = User.objects.get(id = user_id)
-        upload_date = strftime("%m/%d/%Y")
+        upload_date = strftime("%Y-%m-%d")
 
         print 'The file name is: ', file_name
         ds_obj = Dataset.objects.filter(file_name=file_name)
@@ -1094,7 +1128,7 @@ def batch_import(request):
                             #print 'QCategory: ', QCategory
                             QuestionText = unicode(str(row[shift+6]).strip(), errors='replace')		## question_text *
                             #print 'QuestionText: ', QuestionText
-                            DateTrueValueKnown = str(row[shift+7])									## close_date *
+                            DateTrueValueKnown = time_norm(str(row[shift+7]))									## close_date *
                             #print "DateTrueValueKnown: ", DateTrueValueKnown;
                             TrueValue = unicode(str(row[shift+8]).strip(), errors='replace')			## true_value *
                             #print 'TrueValue: ', TrueValue
@@ -1164,7 +1198,7 @@ def batch_import(request):
                         if row[shift+i]:
                             ImportAssessment = True
                     if ImportAssessment == True:
-                        DateOfAssessment = str(row[shift+12])
+                        DateOfAssessment = time_norm(str(row[shift+12]))
                         Operator = str(row[shift+13])
                         DetailsOfAssessment = str(row[shift+14])
                         #VALIDATION OF ASSESSMENT INPUT/OPTIONS
@@ -1330,7 +1364,7 @@ def scoring(request):
             user_work = Assignment_log.objects.filter(user_id = user_id)
             #Loop through user assignments
             for uw in user_work:
-                if uw.finish_date != "00-00-0000" and uw.finish_date != "00/00/0000":
+                if uw.finish_date != "0000-00-00":
                     assignment_set.append(uw.assignment_id)
             #print 'Existing Assignments:', assignment_set
         except Exception, e:
@@ -1486,7 +1520,7 @@ def result(request):
                         data['ALLOW ASSESSMENT'] = str(qn.allow_assessment)
                         if len(QA_map[qn.id][AKey]) == 0:
                             data['USER'] = ''
-                            data['DATE OF ASSESSMENT'] = '00/00/0000'
+                            data['DATE OF ASSESSMENT'] = '0000-00-00'
                             data['OPERATOR'] = 'EQ'
                             data['ASSESSMENT DETAILS'] = ''
                         else:
@@ -1877,7 +1911,7 @@ def returnAssessments(answer, check):
         '''
         target_assignments = []
         question_set = []
-        get_assign_list = Assignment_log.objects.filter(finish_date__gte="0000/00/00")
+        get_assign_list = Assignment_log.objects.filter(finish_date__gte="0000-00-00")
         for asn in get_assign_list:
             if answer[8]:
                 if asn.assignment_id.assignment_name == answer[8]:
@@ -1907,9 +1941,9 @@ def returnAssessments(answer, check):
         if answer[9] != "" and answer[10] != "":
             get_assessments = Assessment.objects.filter(question_id__in=question_set, date_of_assessment__range=[answer[10], answer[9]])
         elif answer[9] == "" and answer[10] != "":
-            get_assessments = Assessment.objects.filter(question_id__in=question_set, date_of_assessment__range=[answer[10], "01/01/2100"])
+            get_assessments = Assessment.objects.filter(question_id__in=question_set, date_of_assessment__range=[answer[10], "2100-01-01"])
         elif answer[10] ==  "" and answer[9] != "":
-            get_assessments = Assessment.objects.filter(question_id__in=question_set, date_of_assessment__range=["00/00/0000", answer[9]])
+            get_assessments = Assessment.objects.filter(question_id__in=question_set, date_of_assessment__range=["0000-00-00", answer[9]])
         else:
             get_assessments = Assessment.objects.filter(question_id__in=question_set)
         #startDate = answer[10].split("/")
@@ -2083,7 +2117,7 @@ def scoring_test(request):
             user_work = Assignment_log.objects.filter(user_id = user_id)
             #Loop through user assignments
             for uw in user_work:
-                if uw.finish_date != "00-00-0000" and uw.finish_date != "00/00/0000":
+                if uw.finish_date != "0000-00-00":
                     assignment_set.append(uw.assignment_id)
             #print 'Existing Assignments:', assignment_set
         except Exception, e:
