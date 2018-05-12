@@ -72,13 +72,10 @@ def refresh_database():
     for lid in lid_list:
         due_date = time_norm(Assignment_log.objects.get(id=lid).due_date)
         print due_date
-        if "0000" in due_date:
-            Assignment_log.objects.filter(id=lid).update(due_date="0000-00-00")
-        else:
-            Assignment_log.objects.filter(id=lid).update(due_date=due_date)
+        Assignment_log.objects.filter(id=lid).update(due_date=due_date)
         finish_date = time_norm(Assignment_log.objects.get(id=lid).finish_date)
         print finish_date
-        if "0000" in finish_date:
+        if not finish_date:
             Assignment_log.objects.filter(id=lid).update(finish_date="0000-00-00")
         else:
             Assignment_log.objects.filter(id=lid).update(finish_date=finish_date)
@@ -155,7 +152,7 @@ def home_page(request):
                     elif '-' in qw.close_date:
                         time = qw.close_date.split("-")
                     if len(time) >= 3 and time != "E":
-                        s_date = datetime(int(time[2]), int(time[0]), int(time[1]))
+                        s_date = datetime(int(time[0]), int(time[1]), int(time[2]))
                         n_date = datetime(int(now.year), int(now.month), int(now.day))
                         delta = s_date - n_date
                         days_left = delta.days
