@@ -91,7 +91,7 @@ def refresh_database():
 ## Function to render home-page.
 # Function for rendering home page. Home page is rendered when someone login successfully.
 def home_page(request):
-    refresh_database()
+    #####refresh_database()
     #DJ Home page to do report
     if "userId" in request.session.keys():
         user_name = request.session.get("userId")
