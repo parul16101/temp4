@@ -1628,7 +1628,7 @@ def result_test(request):
                 wls_c_d_list = json.dumps(wls_c_d_list)
                 sumresult_list = json.dumps(sumresult_list)
                 datapoints_list = json.dumps(datapoints_list)
-                return render(request, "ucs/result_test.html", {"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list, "dp_list": datapoints_list})
+                return render(request, "ucs/result_test.html", {"wcd_table_org": wls_c_d_table, "summary_org": summary_results, "summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list, "dp_list": datapoints_list})
             if answer[12] is not None:
                 answer_copy = answer
                 get_assessments = ASet.values()
@@ -1657,8 +1657,7 @@ def result_test(request):
                 wls_c_d_list = json.dumps(wls_c_d_list)
                 sumresult_list = json.dumps(sumresult_list)
                 datapoints_list = json.dumps(datapoints_list)
-                return render(request, "ucs/result_test.html", {"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list, "dp_list": datapoints_list})
-                print "AA"
+                return render(request, "ucs/result_test.html", {"wcd_table_org": wls_c_d_table, "summary_org": summary_results,"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list, "dp_list": datapoints_list})
             usr_key = User.objects.get(pk=user_id).username
             sumresult_list[usr_key] = summary_results
             wls_c_d_list[usr_key] = wls_c_d_table
