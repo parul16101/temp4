@@ -33,7 +33,7 @@
                         <label class="control-label" for="userloop">User Name</label>
                         <fieldset>
                             <label class="">
-                                <input type="radio" value="1" name="userloop" id="rad" > Yes
+                                <input type="checkbox" value="1" name="userloop" id="rad1" > Yes
                             </label>
                         </fieldset>
                     </div>
@@ -41,7 +41,7 @@
                         <label class="control-label" for="grouploop"> Group</label>
                         <fieldset>
                             <label class="">
-                                <input type="radio" value="1" name="grouploop" id="rad" > Yes
+                                <input type="checkbox" value="1" name="grouploop" id="rad2" > Yes
                             </label>
                         </fieldset>
                     </div>
@@ -123,7 +123,7 @@
 				</div>
 				<div class="col-sm-4">
 					<label id="usr_lab" class="control-label" for="user">User</label>
-					<select id="user" name="user" class="form-control" style ="Width:50%">
+					<select id="user" name="user" class="form-control" style ="Width:50%" hidden>
 						<option selected="selected"></option>
 					</select>
 				</div>
@@ -176,6 +176,21 @@
 			checkboxClass: 'icheckbox_square-green',
 			radioClass: 'iradio_square-green',
 		});
+
+        $('#rad1').change(function() {
+            if( $('#rad1').is(':checked') ) {
+                $('#user').prop('disabled', true);
+            } else {
+                $('#user').prop('disabled', false);
+            }
+        });
+        $('#rad2').change(function() {
+            if( $('#rad2').is(':checked') ) {
+                $('#group').prop('disabled', true);
+            } else {
+                $('#group').prop('disabled', false);
+            }
+        });
 	});
 </script>
 

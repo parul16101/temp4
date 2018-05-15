@@ -26,6 +26,8 @@
       <div>
         <canvas id="myChart" style="width:450px;height:450px;"></canvas>
       </div>
+      <hr>
+      <h3><strong>Looping Summary of Assessment</strong></h3>
 		<!-- <img src="{% static 'ucs/img/sample.png'%}" alt="Plot Sample" style="width:264px;height:244px;"> -->
 		<div>
       <div class="table-responsive">
@@ -391,7 +393,6 @@
           } else {
             if( check_list[cnt-1] != position-1 ) {
               var loop_cnt = check_list[cnt-1];
-              alert(check_list[cnt]);
               while( loop_cnt < check_list[cnt] ) {
                 newCell = newRow.insertCell(loop_cnt+1);
                 newText = document.createTextNode("0");
@@ -773,7 +774,7 @@ for( var i = 0; i < 3; i++ ) {
     backgroundColor: 'transparent',
     pointBorderColor: color,
     pointBackgroundColor: color,
-    showLine: true,
+    borderDash: [5, 5],
     pointRadius: 5,
     pointHoverRadius: 10,
     pointHitRadius: 30,
