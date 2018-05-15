@@ -1,45 +1,19 @@
 {% extends "./base.html" %}
 {% load static %}
 {% block content %}
-<style>
-
-  .vl {
-    border-left: 6px solid black;
-    height:500px;
-  }
-
-</style>
 <div class="row">
 	<div class="ibox-title">
 		<h3><strong>Summary of Assessment</strong></h3>
 	</div>
 	<div class="ibox-content">
-		<!-- DJ-Removed to be merged into the WLS results table 
     <div class="table-responsive">
-			<table class="table table-striped table-bordered align-right" style="width: auto;" id="ResultTable" >
-				<thead>
-					<tr>
-						<th>Confidence</th>
-						<th>Calibration</th>
-						<th>Resolution</th>
-						<th>Knowledge</th>
-						<th>Brier Score</th>
-					</tr>
-				</thead>
-			</table>
-		</div>
-    -->
-		<!-- <img src="{% static 'ucs/img/sample.png'%}" alt="Plot Sample" style="width:264px;height:244px;"> -->
-		<div>
-      <div class="table-responsive">
-        <table class="table table-striped table-bordered align-right" style="width: 53%;" id="binTable">
+        <table class="table table-striped table-bordered align-right" style="width: 53%;" id="binSumTable">
           <thead>
             <tr>
-              <th class="col-md-2" style="text-align: left">User</th>
               <th class="col-md-2" style="text-align: center">Calibration</th>
               <th class="col-md-2" style="text-align: center">Resolution</th>
-              <th class="col-md-2" style="text-align: center">Brier Score</th>
               <th class="col-md-2" style="text-align: center">Knowledge</th>
+              <th class="col-md-2" style="text-align: center">Brier Score</th>
               <th class="col-md-2" style="text-align: center">WLS Slope</th>
               <th class="col-md-2" style="text-align: center">WLS Intercept</th>
               <th class="col-md-2" style="text-align: center">Confidence Bias</th>
@@ -49,15 +23,33 @@
           <tbody></tbody>
         </table>
       </div>
-		  <div>
-			  <canvas id="myChart" style="width:450px;height:450px;"></canvas>
-		  </div>
-      
-      <!--<div>
+      <div>
+        <canvas id="myChart" style="width:450px;height:450px;"></canvas>
+      </div>
+		<!-- <img src="{% static 'ucs/img/sample.png'%}" alt="Plot Sample" style="width:264px;height:244px;"> -->
+		<div>
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered align-right" style="width: 53%;" id="binTable">
+          <thead>
+            <tr>
+              <th class="col-md-2" style="text-align: left">User</th>
+              <th class="col-md-2" style="text-align: center">Calibration</th>
+              <th class="col-md-2" style="text-align: center">Resolution</th>
+              <th class="col-md-2" style="text-align: center">Knowledge</th>
+              <th class="col-md-2" style="text-align: center">Brier Score</th>
+              <th class="col-md-2" style="text-align: center">WLS Slope</th>
+              <th class="col-md-2" style="text-align: center">WLS Intercept</th>
+              <th class="col-md-2" style="text-align: center">Confidence Bias</th>
+              <th class="col-md-2" style="text-align: center">Directional Bias</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>      
+      <div>
         <canvas class="vl" id="myChart2" style="width:450px;height:450px;"></canvas>
       </div>
       <br><br><br>
-      !-->
       <!--<div class="table-responsive">
         <table class="table table-striped table-bordered align-right" style="width: auto;" id="ValueTable" >
           <thead>
@@ -110,40 +102,69 @@
 
 <!-- iCheck -->
 <script src="{% static 'ucs/js/plugins/iCheck/icheck.min.js' %}"></script>
-<!-- DJ-Comment out, is merged into new table
 <script type="text/javascript">
-	var tableRef = document.getElementById("ResultTable");
-	var num = tableRef.rows.length;
-	var newRow   = tableRef.insertRow(num);
-	
-	var data = {{summary | safe}};
-
-	var newCell_1  = newRow.insertCell(0);
-	var newText1  = document.createTextNode(data.confidence);
-	newCell_1.appendChild(newText1);
-	
-	var newCell_2  = newRow.insertCell(1);
-	var newText2  = document.createTextNode(data.calibration);
-	newCell_2.appendChild(newText2)
-	
-	var newCell_3  = newRow.insertCell(2);
-	var newText3  = document.createTextNode(data.resolution);
-	newCell_3.appendChild(newText3)
-	
-	var newCell_4  = newRow.insertCell(3);
-	var newText4  = document.createTextNode(data.knowledge);
-	newCell_4.appendChild(newText4)
-
-	var newCell_5  = newRow.insertCell(4);
-	var newText5  = document.createTextNode(data.brierscore);
-	newCell_5.appendChild(newText5)
-
-	//#######################################################################
-	// Adding data to second table
-	//#######################################################################
-
+    var sumdata = {{summary_org | safe}};
+    var data = {{wcd_table_org | safe}};
+    var tableRef = document.getElementById("binSumTable").getElementsByTagName('tbody')[0];
+    //data.forEach(function(name,index) {
+    var num = tableRef.rows.length;
+    var newRow = tableRef.insertRow(num);
+    var newCell = newRow.insertCell(0);
+    var newText = document.createTextNode(sumdata.calibration);
+    newCell.appendChild(newText);
+    if( sumdata.calibration == "Not Calculated") {
+      newCell.style.textAlign = "left";
+    } else {
+      newCell.style.textAlign = "right";
+    }
+    // resolution
+    newCell = newRow.insertCell(1);
+    newText = document.createTextNode(sumdata.resolution);
+    newCell.appendChild(newText);
+    if( sumdata.calibration == "Not Calculated") {
+      newCell.style.textAlign = "left";
+    } else {
+      newCell.style.textAlign = "right";
+    }
+    // knowledge
+    newCell = newRow.insertCell(2);
+    newText = document.createTextNode(sumdata.knowledge);
+    newCell.appendChild(newText);
+    if( sumdata.calibration == "Not Calculated") {
+      newCell.style.textAlign = "left";
+    } else {
+      newCell.style.textAlign = "right";
+    }
+    // Brier Score
+    newCell = newRow.insertCell(3);
+    newText = document.createTextNode(sumdata.brierscore);
+    newCell.appendChild(newText);
+    if( sumdata.calibration == "Not Calculated") {
+      newCell.style.textAlign = "left";
+    } else {
+      newCell.style.textAlign = "right";
+    }
+    // WLS Slope
+    newCell = newRow.insertCell(4);
+    newText = document.createTextNode(data.slope);
+    newCell.appendChild(newText);
+    newCell.style.textAlign = "right";
+    // WLS intercept
+    newCell = newRow.insertCell(5);
+    newText = document.createTextNode(data.intercept);
+    newCell.appendChild(newText);
+    newCell.style.textAlign = "right";
+    // Confidence Bias
+    newCell = newRow.insertCell(6)
+    newText = document.createTextNode(data.cbias);
+    newCell.appendChild(newText);
+    newCell.style.textAlign = "right";
+    // Directional Bias
+    newCell = newRow.insertCell(7);
+    newText = document.createTextNode(data.dbias);
+    newCell.appendChild(newText); 
+    newCell.style.textAlign = "right";
 </script>
--->
 <!-- DJ WLS slope, intercept and confidence bias and directional bias table data 
      Merged the Calibration, Resolution, Knowledge, Brier Score into same table
 -->
@@ -180,7 +201,7 @@
       }
       // knowledge
       newCell = newRow.insertCell(3);
-      newText = document.createTextNode(sumdata[key].brierscore);
+      newText = document.createTextNode(sumdata[key].knowledge);
       newCell.appendChild(newText);
       if( sumdata.calibration == "Not Calculated") {
         newCell.style.textAlign = "left";
@@ -189,7 +210,7 @@
       }
       // Brier Score
       newCell = newRow.insertCell(4);
-      newText = document.createTextNode(sumdata[key].knowledge);
+      newText = document.createTextNode(sumdata[key].brierscore);
       newCell.appendChild(newText);
       if( sumdata.calibration == "Not Calculated") {
         newCell.style.textAlign = "left";
@@ -224,6 +245,9 @@
     var dp_data = {{dp_list | safe}};
     var p_list = [];
     var tableRef = document.getElementById("valTable2").getElementsByTagName('tbody')[0];
+    var loop_p10_data = [];
+    var loop_p50_data = [];
+    var loop_p90_data = [];
     for( key in dp_data ) {
       var num = tableRef.rows.length;
       var newRow = tableRef.insertRow(num);
@@ -239,21 +263,29 @@
     for( key in p_list ) {
       newCell = newRow.insertCell(0);
       var th = document.createElement('th');
-      th.innerHTML = p_list[key]
+      th.innerHTML = p_list[key];
       newCell.appendChild(th);
-     
     }
+    var loop_p10_cnt = 1;
+    var loop_p50_cnt = 1;
+    var loop_p90_cnt = 1;
+    var usr_cnt = 1;
     for( key in dp_data ) {
       var num = tableRef.rows.length;
       var newRow = tableRef.insertRow(num);
       //User
       var newCell = newRow.insertCell(0);
-      var newText = document.createTextNode(key);
+      var newText = document.createTextNode(key + " (" + usr_cnt.toString() + ")" );
+      usr_cnt = usr_cnt + 1;
       newCell.appendChild(newText);
       var check_list = [];
       var cnt = 0;
       var inst_cnt = 0;
+
       dp_data[key].forEach(function(name, index) {
+        var p10_flag = 0;
+        var p50_flag = 0;
+        var p90_flag = 0;
         if( name.y == "" ) {
           name.y = 0;
         }
@@ -262,15 +294,38 @@
         if( name.x < 0.1 ) {
           position = 1
         } else if( name.x >= 0.1 && name.x < 0.2 ) {
-          position = 2;
+          if( check_list[cnt-1] == 2 ) {
+              position = 3;
+          } else {
+              position = 2;
+              p10_flag = 1;
+          }
         } else if( name.x >= 0.2 && name.x < 0.3 ) {
-          position = 3; 
+          if( check_list[cnt-1] == 3 ) {
+            position = 4;
+          } else {
+            position = 3;
+          }
         } else if( name.x >= 0.3 && name.x < 0.4 ) {
-          position = 4;
+          if( check_list[cnt-1] == 4 ) {
+            position = 5;
+          } else {
+            position = 4;
+          }
         } else if( name.x >= 0.4 && name.x < 0.5 ) {
-          position = 5;
+          if( check_list[cnt-1] == 5 ) {
+            position = 6;
+            p50_flag = 1;
+          } else {
+            position = 5;
+          }
         } else if( name.x >= 0.5 && name.x < 0.6 ) {
-          position = 6;
+          if( check_list[cnt-1] == 6 ) {
+            position = 7;
+          } else {
+            position = 6;
+            p50_flag = 1;
+          }
         } else if( name.x >= 0.6 && name.x < 0.7 ) {
           if( check_list[cnt-1] == 7 ) {
             position = 8;
@@ -286,14 +341,42 @@
         } else if( name.x >= 0.8 && name.x < 0.9 ) {
           if( check_list[cnt-1] == 9 ) {
             position = 10;
+            p90_flag = 1;
           } else {
             position = 9;
           }
         } else if( name.x >= 0.9 && name.x < 1 ) {
-          position = 10;
+          if( check_list[cnt-1] == 10 ) {
+            position = 11;
+          } else {
+            position = 10;
+            p90_flag = 1;
+          }
         } else if( name.x >= 1 ) {
           position = 11;
         } 
+        if( p10_flag == 1 ) {
+          var tmp = {
+            x: loop_p10_cnt,
+            y: name.y
+          };
+          loop_p10_cnt = loop_p10_cnt + 1;
+          loop_p10_data.push(tmp);
+        } else if( p50_flag == 1 ) {
+          var tmp = {
+            x: loop_p50_cnt,
+            y: name.y
+          };
+          loop_p50_cnt = loop_p50_cnt + 1;
+          loop_p50_data.push(tmp);
+        } else if( p90_flag == 1 ) {
+          var tmp = {
+            x: loop_p90_cnt,
+            y: name.y
+          };
+          loop_p90_cnt = loop_p90_cnt + 1;
+          loop_p90_data.push(tmp);
+        }
         check_list.push(position);
         if( position > 1 ) {
           if( check_list.length < 2 ) {
@@ -552,7 +635,7 @@ var lineChart = new Chart(speedCanvas, {
 
 </script>
 <script>
-/*var speedCanvas = document.getElementById("myChart2").getContext('2d');
+var speedCanvas = document.getElementById("myChart2").getContext('2d');
 
 Chart.defaults.global.defaultFontFamily = "Lato";
 Chart.defaults.global.defaultFontSize = 18;
@@ -560,58 +643,144 @@ Chart.defaults.global.defaultFontSize = 18;
 var datapoints = {{ datapoints | safe }};
 var wls_datapoints = {{wls_datapoints | safe}};
 var dp_list = {{ dp_list | safe }};
+var line_list = [];
+var cnt = 0;
+/*datapoints.forEach(function(name,index) {
+    alert(name.x);
+    if( cnt == 1 || cnt == 5 || cnt == 9 ) {
+      line_list.push(name.x);
+    }
+    cnt = cnt + 1;
+});*/
 
-alert(datapoints.x);
-alert("DP");
-
-// var y = {{ y | safe }};
-
-var d = [{
-                x: 0.2,
-                y: 0.4
-            }, {
-                x: 0.8,
-                y: 0.5
-            }, {
-                x: 0.4,
-                y: 0.6
-            }];
-var slope_data = [{
-                x: 0,
-                y: 0
-            }, {
-                x: 0.5,
-                y: 0.5
-            }, {
-                x: 1.0,
-                y: 1.0
-            }];            
+// var y = {{ y | safe }};        
 
 var data_list = [];
-dp_list.forEach(function(name,index) {
-    var point_list = [];
-    name.forEach(function(name2,index2) {
-        
-        //point_list.push(name2);
-    });
-    alert(point_list);
-    var tmp = {
-          label: "TEST",
-          data: name,
-          lineTension: 0,
-          fill: false,
-          borderColor: 'rgba(128,0,0,1)',
-          backgroundColor: 'transparent',
-          pointBorderColor: 'rgba(128,0,0,1)',
-          pointBackgroundColor: 'rgba(128,0,0,0.5)',
-          showLine: true,
-          pointRadius: 5,
-          pointHoverRadius: 10,
-          pointHitRadius: 30,
-          pointBorderWidth: 2,
-        };
-});
-alert(datapoints);
+/*for( key in dp_list ) {
+  var tmp = {
+        label: key,
+        data: dp_list[key],
+        lineTension: 0,
+        fill: false,
+        borderColor: 'rgba(128,0,0,1)',
+        backgroundColor: 'transparent',
+        pointBorderColor: 'rgba(128,0,0,1)',
+        pointBackgroundColor: 'rgba(128,0,0,0.5)',
+        showLine: true,
+        pointRadius: 5,
+        pointHoverRadius: 10,
+        pointHitRadius: 30,
+        pointBorderWidth: 2,
+      };
+  data_list.push(tmp);
+}*/
+var p10_plot = {
+   label: "P10 Loop Data",
+      data: loop_p10_data,
+      lineTension: 0,
+      fill: false,
+      borderColor: 'rgba(128,0,0,1)',
+      backgroundColor: 'transparent',
+      pointBorderColor: 'rgba(128,0,0,1)',
+      pointBackgroundColor: 'rgba(128,0,0,0.5)',
+      showLine: true,
+      pointRadius: 5,
+      pointHoverRadius: 10,
+      pointHitRadius: 30,
+      pointBorderWidth: 2,
+};
+var p50_plot = {
+   label: "P50 Loop Data",
+      data: loop_p50_data,
+      lineTension: 0,
+      fill: false,
+      borderColor: 'blue',
+      backgroundColor: 'transparent',
+      pointBorderColor: 'blue',
+      pointBackgroundColor: 'rgba(128,0,0,0.5)',
+      showLine: true,
+      pointRadius: 5,
+      pointHoverRadius: 10,
+      pointHitRadius: 30,
+      pointBorderWidth: 2,
+};
+var p90_plot = {
+   label: "P90 Loop Data",
+      data: loop_p90_data,
+      lineTension: 0,
+      fill: false,
+      borderColor: 'rgba(10,219,114,1)',
+      backgroundColor: 'transparent',
+      pointBorderColor: 'rgba(10,219,114,1)',
+      pointBackgroundColor: 'rgba(10,219,114,1)',
+      showLine: true,
+      pointRadius: 5,
+      pointHoverRadius: 10,
+      pointHitRadius: 30,
+      pointBorderWidth: 2,
+};
+data_list.push(p10_plot);
+data_list.push(p50_plot);
+data_list.push(p90_plot);
+
+for( var i = 0; i < 3; i++ ) {
+  var bin_name = "";
+  var color = "";
+  if( i == 0 ) {
+    var line_list = [
+      {
+        x:0,
+        y:.10
+      }, {
+        x:usr_cnt,
+        y:.10
+      }
+    ];
+    bin_name = "P10 Bin";
+    color = 'rgba(128,0,0,1)';
+  } else if( i == 1 ) {
+    var line_list = [
+      {
+        x:0,
+        y:.50
+      }, {
+        x:usr_cnt,
+        y:.50
+      }
+    ];
+    bin_name = "P50 Bin";
+    color = 'blue';
+  } else {
+    var line_list = [
+      {
+        x:0,
+        y:.90
+      }, {
+        x:usr_cnt,
+        y:.90
+      }
+    ];
+    bin_name = "P90 Bin";
+    color = 'rgba(10,219,114,1)';
+  }
+  var tmp = {
+    label: bin_name,
+    data: line_list,
+    lineTension: 0,
+    fill: false,
+    borderColor: color,
+    backgroundColor: 'transparent',
+    pointBorderColor: color,
+    pointBackgroundColor: color,
+    showLine: true,
+    pointRadius: 5,
+    pointHoverRadius: 10,
+    pointHitRadius: 30,
+    pointBorderWidth: 2,
+  };
+  data_list.push(tmp);
+}
+
 var speedData = {
   datasets: data_list,
 };
@@ -632,8 +801,8 @@ var chartOptions = {
       ticks: {
             beginAtZero:true,
             min: 0,
-      max: 1,
-      stepSize: 0.1
+      max: usr_cnt,
+      stepSize: 1
         },
       gridLines: {
         color: "black",
@@ -671,6 +840,6 @@ var lineChart = new Chart(speedCanvas, {
   options: chartOptions,
   scaleStartValue:0,
   scaleStepWidth:0.1
-}); */
+}); 
 </script>
 {% endblock %}
