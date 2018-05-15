@@ -391,11 +391,12 @@
           } else {
             if( check_list[cnt-1] != position-1 ) {
               var loop_cnt = check_list[cnt-1];
-              while( loop_cnt >= check_list[cnt-1] ) {
+              alert(check_list[cnt]);
+              while( loop_cnt < check_list[cnt] ) {
                 newCell = newRow.insertCell(loop_cnt+1);
                 newText = document.createTextNode("0");
                 newCell.appendChild(newText);
-                loop_cnt = loop_cnt - 1;
+                loop_cnt = loop_cnt + 1;
                 inst_cnt = inst_cnt + 1;
               }
             }
