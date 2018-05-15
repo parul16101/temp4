@@ -29,8 +29,8 @@
             <tr>
               <th class="col-md-2" style="text-align: center">Calibration</th>
               <th class="col-md-2" style="text-align: center">Resolution</th>
-              <th class="col-md-2" style="text-align: center">Brier Score</th>
               <th class="col-md-2" style="text-align: center">Knowledge</th>
+              <th class="col-md-2" style="text-align: center">Brier Score</th>
               <th class="col-md-2" style="text-align: center">WLS Slope</th>
               <th class="col-md-2" style="text-align: center">WLS Intercept</th>
               <th class="col-md-2" style="text-align: center">Confidence Bias</th>
@@ -147,7 +147,7 @@
     }
     // knowledge
     newCell = newRow.insertCell(2);
-    newText = document.createTextNode(sumdata.brierscore);
+    newText = document.createTextNode(sumdata.knowledge);
     newCell.appendChild(newText);
     if( sumdata.calibration == "Not Calculated") {
       newCell.style.textAlign = "left";
@@ -156,7 +156,7 @@
     }
     // Brier Score
     newCell = newRow.insertCell(3);
-    newText = document.createTextNode(sumdata.knowledge);
+    newText = document.createTextNode(sumdata.brierscore);
     newCell.appendChild(newText);
     if( sumdata.calibration == "Not Calculated") {
       newCell.style.textAlign = "left";
