@@ -26,6 +26,8 @@
       <div>
         <canvas id="myChart" style="width:450px;height:450px;"></canvas>
       </div>
+      <hr>
+      <h3><strong>Looping Summary of Assessment</strong></h3>
 		<!-- <img src="{% static 'ucs/img/sample.png'%}" alt="Plot Sample" style="width:264px;height:244px;"> -->
 		<div>
       <div class="table-responsive">
@@ -773,7 +775,7 @@ for( var i = 0; i < 3; i++ ) {
     backgroundColor: 'transparent',
     pointBorderColor: color,
     pointBackgroundColor: color,
-    showLine: true,
+    borderDash: [5, 5],
     pointRadius: 5,
     pointHoverRadius: 10,
     pointHitRadius: 30,
