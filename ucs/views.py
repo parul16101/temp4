@@ -47,7 +47,7 @@ WarningQ = {0 : "The true value was updated for record in row ",
 4 : "A new category was created for record in row "}
 
 if 'Windows' in platform.system():
-    file_path = os.path.join("home/shared/Apache", "data") #Uncommnet this when complete fixing
+    file_path = os.path.join(os.getcwd(), "data")
     log_path  = 'tmp/log.csv'
     data_path = 'tmp/data.csv'
 else:
@@ -1078,7 +1078,6 @@ def batch_import(request):
         #Write the uploaded file to the Uploads folder on Terra
         fileData = request.FILES.get("file_data")
         file_name = fileData.name
-        #file_path = os.path.join(os.getcwd(), "data")
         if not os.path.exists(file_path):
             os.makedirs(file_path)
         file_location = os.path.join(file_path, file_name)
