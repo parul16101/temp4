@@ -1420,9 +1420,6 @@ def plotting(request):
     return render(request, "ucs/plotting.html", {})
 
 
-
-
-
 def result(request):
     user_id = request.session.get("userId")
     if not user_id:
@@ -1541,6 +1538,7 @@ def result(request):
                         writer.writerow(data)
             csvfile.write("\n\n\n");
     return render(request, "ucs/result.html", {"summary":json.dumps(summary_results),"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_table})
+
 
 def result_test(request):
     
@@ -2000,7 +1998,7 @@ def computeResults(ASet):
     knowledge = 0.0
 
     data = processAssessments(ASet)
-  
+
     #Write data to file
     with open(log_path, 'a') as csvfile:
         data_fieldnames = ['trueValue', 'operator', 'vAssigned', 'pAssigned','true_false']
@@ -2079,7 +2077,6 @@ def computeResults(ASet):
             temp['y'] = round(a[1],3)
             datapoints.append(temp)
 
-
         ###############################################################
         data1 = {}
         data1['rep_message'] = 'Success'
@@ -2091,11 +2088,13 @@ def computeResults(ASet):
         summary_results['resolution'] = round(resolution, 3)
         summary_results['brierscore'] = round(brierscore, 3)
 
-    except:
-            print "Something Unexpected Happened!!!"
+    except Exception as e:
+            print e
+            #print "Something Unexpected Happened!!!"
 
     return summary_results, values, plot, datapoints
     #return summary_results, values, plot, datapoints, WLS_table_json
+
 
 def scoring_test(request):
     user_id = request.session.get("userId")
@@ -2166,6 +2165,7 @@ def scoring_test(request):
             return JsonResponse(data)
     return render(request, "ucs/scoring_test.html",{"message": message, "username": request.session.get("username"), "questionList": json_question,
         "cataList": json_cata, "userList": json_user, "groupList": json_group, "assignmentList": json_assignment})
+
 
 def processAssessments(ASet):
     data = []
