@@ -17,6 +17,6 @@ Installation steps for the Probabilistic Forecast Tracking and Calibration Softw
 
 5. Run "python manage.py migrate"
 
-6. Run "python manage.py runserver 0.0.0.0:8000"
+6. Run "python manage.py runserver 0.0.0.0:8888"
 
-7. Open a browser and do "localhost:8000/ucs"
+7. Open a browser and do "localhost:8888/ucs"
