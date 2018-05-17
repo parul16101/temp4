@@ -1454,7 +1454,7 @@ def result(request):
             csvfile.write("\n\n\n");
 
         ##################IT'S NO LONGER RAUL CODE######################
-        QSet, ASet = returnAssessments(answer,0)
+        QSet, ASet = returnAssessments(answer,0,"", "")
         QA_map = {} #Mapping of questions to assessments
         temp = ASet.values()
         with open(log_path, 'a') as csvfile:
@@ -1579,7 +1579,7 @@ def result_test(request):
                 writer.writerow({'Question Type': answer[0], 'Forecast': answer[1], 'Question Purpose': answer[2], 'Question Text': answer[3], '# of Choices': answer[4], 'Category': answer[5], 'User': answer[6], 'Group': answer[7], 'Assignment Name': answer[8], 'Date Submitted': answer[9]})
                 csvfile.write("\n\n\n");
             ##################IT'S NO LONGER RAUL CODE######################
-            QSet, ASet = returnAssessments(answer,1)
+            QSet, ASet = returnAssessments(answer,0,"","")
             QA_map = {} #Mapping of questions to assessments
             temp = ASet.values()
             with open(log_path, 'a') as csvfile:
@@ -1614,14 +1614,17 @@ def result_test(request):
                 answer_copy = answer
                 get_assessments = ASet.values()
                 loop_set = {}
+                usr_id_set = []
+                usr_id_pos = 0
                 for val in get_assessments:
                     usr = User.objects.get(pk=val['user_id_id']).username 
                     if usr not in loop_set:
                         loop_set[usr] = []
                     loop_set[usr].append(val)
+                    usr_id_set.append(val['user_id_id'])
                 for key in loop_set:
                     answer_copy[6] = key
-                    temp_QSet, temp_ASet = returnAssessments(answer_copy,1)
+                    temp_QSet, temp_ASet = returnAssessments(answer_copy,1, usr_id_set[usr_id_pos], "user")
                     srt, vt, pt, dpt = computeResults(temp_ASet)
                     sumresult_list[key] = srt
                     values_list.append(vt)
@@ -1630,6 +1633,7 @@ def result_test(request):
                     wdt, wcdt = wls_bias_calc(pt)
                     wls_dp_list.append(wdt)
                     wls_c_d_list[key] = wcdt
+                    usr_id_pos = usr_id_pos + 1
                 wls_c_d_list = json.dumps(wls_c_d_list)
                 sumresult_list = json.dumps(sumresult_list)
                 datapoints_list = json.dumps(datapoints_list)
@@ -1639,19 +1643,17 @@ def result_test(request):
                 answer_copy = answer
                 get_assessments = ASet.values()
                 loop_set = {}
-                '''for val in get_assessments:
-                    usr = User.objects.get(pk=val['user_id_id']).username 
-                    if usr not in loop_set:
-                        loop_set[usr] = []
-                    loop_set[usr].append(val)'''
+                group_id_set = []
+                group_id_pos = 0
                 get_grps = Assigned_group.objects.all()
                 for val in get_grps:
                     if val.group_id not in loop_set:
                         loop_set[val.group_id.group_name] = []
                     loop_set[val.group_id.group_name]
+                    group_id_set.append(val.group_id)
                 for key in loop_set:
                     answer_copy[7] = key
-                    temp_QSet, temp_ASet = returnAssessments(answer_copy,1)
+                    temp_QSet, temp_ASet = returnAssessments(answer_copy,1, group_id_set[group_id_pos], "group")
                     srt, vt, pt, dpt = computeResults(temp_ASet)
                     sumresult_list[key] = srt
                     values_list.append(vt)
@@ -1660,6 +1662,7 @@ def result_test(request):
                     wdt, wcdt = wls_bias_calc(pt)
                     wls_dp_list.append(wdt)
                     wls_c_d_list[key] = wcdt
+                    group_id_pos = group_id_pos + 1
                 wls_c_d_list = json.dumps(wls_c_d_list)
                 sumresult_list = json.dumps(sumresult_list)
                 datapoints_list = json.dumps(datapoints_list)
@@ -1829,7 +1832,7 @@ def processRequests(req,current_user):
     return answer
 
 
-def returnAssessments(answer, check):
+def returnAssessments(answer, check, loop_filter, loop_type):
     if check == 0:
         QSet = Question.objects.all()
         #print "Question Object: ", QSet.all()
@@ -1842,7 +1845,7 @@ def returnAssessments(answer, check):
             #print 'QText: ', QText
             QSet = Question.objects.filter(question_text__in=Q_text)
             #print 'QSet: ', QSet
-            print answer[8]
+            #print answer[8]
         else:
             print 'The assignment name is not specified'
         if answer[0] is not None:
@@ -1874,7 +1877,7 @@ def returnAssessments(answer, check):
             tmp = Category.objects.get(category_text=answer[5])
             QSet = Question.objects.filter(id__in=QSet, category=tmp)
             #print 'GOT VALUE'
-            print tmp
+            #print tmp
         else:
             print 'The category is not specified'
         #Query on question_set, user_name, and ...
@@ -1912,7 +1915,10 @@ def returnAssessments(answer, check):
         '''
         target_assignments = []
         question_set = []
-        get_assign_list = Assignment_log.objects.filter(finish_date__gte="0000-00-00")
+        if loop_type == "user":
+            get_assign_list = Assignment_log.objects.filter(finish_date__gte="0000-00-00", user_id=loop_filter)
+        elif loop_type == "group":
+            get_assign_list = Assignment_log.objects.filter(finish_date__gte="0000-00-00", group_id=loop_filter)
         for asn in get_assign_list:
             if answer[8]:
                 if asn.assignment_id.assignment_name == answer[8]:
@@ -1953,7 +1959,7 @@ def returnAssessments(answer, check):
         #get_assessments = Assessment.objects.filter(question_id__in=question_set)
         for ga in get_assessments:
             a_set.append(ga)
-            print ga.date_of_assessment
+            #print ga.date_of_assessment
         if answer[6]:
             user = User.objects.get(username = answer[6])
             a_set = [a for a in a_set if a.user_id == user]
