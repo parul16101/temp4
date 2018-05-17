@@ -3,7 +3,7 @@
 Django views for ucs project.
 This contains various function which process HTTP requests and render corrosponding html pages.
 """
-import os, sys, time, zipfile, urllib, shutil, base64, json, hashlib, csv, math
+import os, sys, time, zipfile, urllib, shutil, base64, json, hashlib, csv, math, platform
 from time import strftime
 from django.shortcuts import render, redirect
 from django.template import RequestContext
@@ -45,6 +45,15 @@ WarningQ = {0 : "The true value was updated for record in row ",
 2 : "The units were updated for record in row ",
 3 : "The units reported in the import file is different than the one in the database for record in row ",
 4 : "A new category was created for record in row "}
+
+if 'Windows' in platform.system():
+    file_path = os.path.join("home/shared/Apache", "data") #Uncommnet this when complete fixing
+    log_path  = 'tmp/log.csv'
+    data_path = 'tmp/data.csv'
+else:
+    file_path = os.path.join("/home/shared/Apache", "data") #Uncommnet this when complete fixing
+    log_path  = '/tmp/log.csv'
+    data_path = '/tmp/data.csv'
 
 
 def refresh_database():
@@ -1070,7 +1079,6 @@ def batch_import(request):
         fileData = request.FILES.get("file_data")
         file_name = fileData.name
         #file_path = os.path.join(os.getcwd(), "data")
-        file_path = os.path.join("/home/shared/Apache", "data") #Uncommnet this when complete fixing
         if not os.path.exists(file_path):
             os.makedirs(file_path)
         file_location = os.path.join(file_path, file_name)
@@ -1437,11 +1445,12 @@ def result(request):
         #answer = [question_type, forecast, question_purpose, question_text, true_or_false, category, user_name, group_name, assignment_name, date_submitted]
 
         #write answer in the file
-        #if not os.path.isdir('tmp/'):
-        #    os.makedirs('tmp/')
+        if 'Windows' in platform.system():
+            if not os.path.isdir('tmp/'):
+                os.makedirs('tmp/')
 
         #Log File
-        with open('/tmp/log.csv', 'wb') as csvfile:
+        with open(log_path, 'wb') as csvfile:
             para_fieldnames = ['Question Type', 'Forecast', 'Question Purpose', 'Question Text', '# of Choices', 'Category', 'User', 'Group', 'Assignment Name', 'Date Submitted']
             writer = csv.DictWriter(csvfile, fieldnames=para_fieldnames)
             writer.writeheader()
@@ -1452,7 +1461,7 @@ def result(request):
         QSet, ASet = returnAssessments(answer,0)
         QA_map = {} #Mapping of questions to assessments
         temp = ASet.values()
-        with open('/tmp/log.csv', 'a') as csvfile:
+        with open(log_path, 'a') as csvfile:
             assessment_fieldnames = ['Question ID', 'Date of assessment','User Name','Operator','Answer Text','Details Of Assessment','Option Text','ID']
             writer = csv.DictWriter(csvfile, fieldnames=assessment_fieldnames,lineterminator='\n')
             writer.writeheader()
@@ -1488,7 +1497,7 @@ def result(request):
         else:
             max_assessment_size = max(A_len_list)
 
-        with open('/tmp/data.csv', 'wb') as csvfile:
+        with open(data_path, 'wb') as csvfile:
             data_fieldnames = ['USER', 'QUESTIONID', 'TRAINING', 'FORECAST', 'DISCRETE', 'NO OF CHOICES', 'CATEGORY', 'QUESTION TEXT', 'DATE TRUE VALUE KNOWN', 'TRUE VALUE', 'UNITS', 'ANSWER SOURCE', 'ALLOW ASSESSMENT', 'DATE OF ASSESSMENT', 'OPERATOR', 'ASSESSMENT DETAILS', 'NUMBER OF PAIRS']
             for i in range(max_assessment_size):
                 data_fieldnames.append('PROB '+str(i+1))
@@ -1566,7 +1575,7 @@ def result_test(request):
         wls_dp_list = []
         wls_c_d_list = {}
         if answer[13] == 1:
-            with open('/tmp/log.csv', 'wb') as csvfile:
+            with open(log_path, 'wb') as csvfile:
                 para_fieldnames = ['Question Type', 'Forecast', 'Question Purpose', 'Question Text', '# of Choices', 'Category', 'User', 'Group', 'Assignment Name', 'Date Submitted']
                 writer = csv.DictWriter(csvfile, fieldnames=para_fieldnames)
                 writer.writeheader()
@@ -1576,7 +1585,7 @@ def result_test(request):
             QSet, ASet = returnAssessments(answer,1)
             QA_map = {} #Mapping of questions to assessments
             temp = ASet.values()
-            with open('/tmp/log.csv', 'a') as csvfile:
+            with open(log_path, 'a') as csvfile:
                 assessment_fieldnames = ['Question ID', 'Date of assessment','User Name','Operator','Answer Text','Details Of Assessment','Option Text','ID']
                 writer = csv.DictWriter(csvfile, fieldnames=assessment_fieldnames,lineterminator='\n')
                 writer.writeheader()
@@ -1725,20 +1734,18 @@ def wls_bias_calc(plot):
 def download_log(request):
     #zip("debug\\","debugzip")
     #file_path = "debugzip.zip"
-    file_path = "/tmp/log.csv"
-    if os.path.exists(file_path):
-        with open(file_path, 'rb') as fh:
+    if os.path.exists(log_path):
+        with open(log_path, 'rb') as fh:
             response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
-            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(log_path)
             return response
     else:
         return HttpResponse("<h1>File not found.</h1>")
 
 
 def batch_export(request):
-    file_path = "/tmp/data.csv"
-    if os.path.exists(file_path):
-        with open(file_path, 'rb') as fh:
+    if os.path.exists(data_path):
+        with open(data_path, 'rb') as fh:
             response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
             response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
             return response
@@ -1748,7 +1755,7 @@ def batch_export(request):
 
 ## Function to insert data into debug.csv
 def insert_data_to_debug_file_vertically(fieldnames,values,file_mode):
-    with open('/tmp/log.csv', file_mode) as csvfile:
+    with open(log_path, file_mode) as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=['Parameter','Value'],lineterminator='\n')
         writer.writeheader()
         for key in fieldnames:
@@ -1996,7 +2003,7 @@ def computeResults(ASet):
     data = processAssessments(ASet)
   
     #Write data to file
-    with open('/tmp/log.csv', 'a') as csvfile:
+    with open(log_path, 'a') as csvfile:
         data_fieldnames = ['trueValue', 'operator', 'vAssigned', 'pAssigned','true_false']
         writer = csv.DictWriter(csvfile, fieldnames=data_fieldnames,lineterminator='\n')
         writer.writeheader()
@@ -2038,7 +2045,7 @@ def computeResults(ASet):
             bin_data.append([bins[j+1], bincount, bincorr, binprob, binmean, binpercorr]) #For DEBUG
         ######################Dump the bins#########################
         #Create bins Table
-        with open('/tmp/log.csv', 'a') as csvfile:
+        with open(log_path, 'a') as csvfile:
             bin_fieldnames = ['bin', 'bincount', 'bincorr', 'binprob', 'binmean', 'binpercorr']
             writer = csv.DictWriter(csvfile, fieldnames=bin_fieldnames,lineterminator='\n')
             writer.writeheader()
