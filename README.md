@@ -15,8 +15,12 @@ Installation steps for the Probabilistic Forecast Tracking and Calibration Softw
 
 4. Open Anaconda Navigator again, click green arrow(root) to open a terminal. (Otherwise you need to add lots of stuff to the evnironmental path), navigator to where the manage.py is.
 
-5. Run "python manage.py migrate"
+5. Run "python manage.py makemigrations" to commit the database configuration
 
-6. Run "python manage.py runserver 0.0.0.0:8888"
+6. Run "python manage.py migrate" to apply the commits
 
-7. Open a browser and do "localhost:8888/ucs"
+7. Run "python manage.py createsuperuser" to set up a super admin for managing the raw database
+
+8. Run "python manage.py runserver 0.0.0.0:8888"
+
+9. Open Google Chrome and browse "localhost:8888/ucs"
