@@ -9,7 +9,7 @@ Installation steps for the Probabilistic Forecast Tracking and Calibration Softw
   
 3. Download the database: PostGreSQL:
 * Download the latest version of PostGreSQL via https://www.enterprisedb.com/downloads/postgres-postgresql-downloads
-* In the installing process, set the password to the user [postgresql] to "admin"
+* In the installing process, set password "admin" to the default user [postgres]
 * After installation, open the program pgAdmin 4 to activate the database
 * Create a database “apa_db” and click "SAVE"
 
