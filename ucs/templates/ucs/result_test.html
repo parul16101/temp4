@@ -285,7 +285,7 @@
       var newRow = tableRef.insertRow(num);
       //User
       var newCell = newRow.insertCell(0);
-      var newText = document.createTextNode(key + " (" + usr_cnt.toString() + ")" );
+      var newText = document.createTextNode( " (" + usr_cnt.toString() + ") " + key );
       usr_cnt = usr_cnt + 1;
       newCell.appendChild(newText);
       var check_list = [];
