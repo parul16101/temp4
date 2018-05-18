@@ -532,13 +532,10 @@ var speedData = {
     borderColor: 'blue',
     backgroundColor: 'transparent',
     pointBorderColor: 'blue',
-    pointBackgroundColor: 'rgba(0,0,255,0.5)',
+    pointBackgroundColor: 'rgba(0,0,255,1)',
     borderDash: [5, 5],
-    pointRadius: 5,
-    pointHoverRadius: 10,
-    pointHitRadius: 30,
-    pointBorderWidth: 2,
-
+    pointRadius: 0,
+    pointBorderWidth: 1,
   }, {
     label: "WLS",
     data: wls_datapoints,
@@ -547,12 +544,12 @@ var speedData = {
     borderColor: 'rgba(10,219,114,1)',
     backgroundColor: 'transparent',
     pointBorderColor: 'rgba(10,219,114,1)',
-    pointBackgroundColor: 'rgba(10,219,114,0.5)',
+    pointBackgroundColor: 'rgba(10,219,114,1)',
     showLine: true,
     pointRadius: 3,
-    pointHoverRadius: 10,
-    pointHitRadius: 30,
-    pointBorderWidth: 2,
+    pointHoverRadius: 5,
+    pointHitRadius: 15,
+    pointBorderWidth: 1,
   }],
 };
 
@@ -783,9 +780,9 @@ for( var i = 0; i < 3; i++ ) {
     pointBorderColor: color,
     pointBackgroundColor: color,
     borderDash: [5, 5],
-    pointRadius: 5,
-    pointHoverRadius: 10,
-    pointHitRadius: 30,
+    pointRadius: 0,
+    pointHoverRadius: 3,
+    pointHitRadius: 9,
     pointBorderWidth: 2,
   };
   data_list.push(tmp);
