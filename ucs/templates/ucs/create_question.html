@@ -78,7 +78,7 @@
 							<div class="i-checks">
 								<label class="">
 									<div class="iradio_square-green" style="position: relative;">
-										<input type="radio" id="discrete_type" value="1" name="question_type" style="position: absolute; opacity: 0;" checked>
+										<input type="radio" id="discrete_type" value="1" name="question_type" style="position: absolute; opacity: 0;">
 										<ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
 									</div>
 									<i></i>
@@ -86,7 +86,7 @@
 								</label>
 								<label class="">
 									<div class="iradio_square-green" style="position: relative;">
-										<input type="radio" value="0" name="question_type" style="position: absolute; opacity: 0;">
+										<input type="radio" value="0" name="question_type" style="position: absolute; opacity: 0;" checked>
 										<ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
 									</div>
 									<i></i>
@@ -126,8 +126,9 @@
 				</div>
 				<div  class="form-group">
 					<label class="control-label" for="description">Question Text</label>
+					<h5>Specify the units for the requested quanity within the question text</h5>
 					<!-- <input type = "text" id="question_text" name="question_text" class="form-control"  placeholder="Place your question text here" onfocus="this.placeholder=''" onblur="this.placeholder='Place your question description here'" maxlength="300" required=""></input> -->
-					<textarea id="question_text" name="question_text" class="form-control" placeholder="Place your question text here..." onfocus="this.placeholder=''" onblur="this.placeholder='Place your question text here...'" rows="2"></textarea>
+					<textarea id="question_text" name="question_text" class="form-control" placeholder="Place your question text here..." onfocus="this.placeholder=''" onblur="this.placeholder='Place your question text here...'" rows="7"></textarea>
 				</div>
 				<div class="form-group">
 					<label id="questionChoicesLabel" class="control-label" for="T_or_F">Question Choices</label>
@@ -152,7 +153,7 @@
 						</div>
 					</div>
 					<div class="col-sm-6">
-						<div class="form-group">
+						<div class="form-group unit-class">
 							<label>Unit</label>
 							<input type="text" id= "unit" name="unit" placeholder="N/A" onfocus="this.placeholder=''" onblur="this.placeholder='N/A'" class="form-control" style ="Width:20%"></input>
 						</div>
@@ -254,6 +255,7 @@
 
 <script>
 	$(document).ready(function () {
+		$(".unit-class").hide();
 		$('.i-checks').iCheck({
 			checkboxClass: 'icheckbox_square-green',
 			radioClass: 'iradio_square-green',

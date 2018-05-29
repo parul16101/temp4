@@ -410,7 +410,6 @@ def edit_question(request):
     owned = False
     if user_id != question.uploader_id:
         owned = True
-
     return render(request, "ucs/edit_question.html", {"question":question, "userId": user_id, "uploaderId": question.uploader_id, "owned": owned, "username":request.session.get("username"), "cataList": json_cata})
 
 
@@ -464,6 +463,7 @@ def save_question(request):
         unit = request.POST.get("unit")
         true_value = request.POST.get("true_value")
         category = request.POST.get("category")
+        allow_assessment = request.POST.get("allow_assessment");
         category_info = Category.objects.get(category_text = category)
         date_true_value_known = request.POST.get("date_true_value_known")
         question_text = request.POST.get("question_text")
@@ -473,6 +473,7 @@ def save_question(request):
         question.category_id = category_info.id
         question.close_date = time_norm(date_true_value_known)
         question.question_text = question_text
+        question.allow_assessment = allow_assessment
         question.save()
     return HttpResponse("success")
 
@@ -1571,7 +1572,7 @@ def result_test(request):
         datapoints_list = {}
         wls_dp_list = []
         wls_c_d_list = {}
-        if answer[13] == 1:
+        if answer[14] == 1:
             with open(log_path, 'wb') as csvfile:
                 para_fieldnames = ['Question Type', 'Forecast', 'Question Purpose', 'Question Text', '# of Choices', 'Category', 'User', 'Group', 'Assignment Name', 'Date Submitted']
                 writer = csv.DictWriter(csvfile, fieldnames=para_fieldnames)
@@ -1639,7 +1640,7 @@ def result_test(request):
                 datapoints_list = json.dumps(datapoints_list)
                 option = json.dumps("User");
                 return render(request, "ucs/result_test.html", {"loop_option": option, "wcd_table_org": wls_c_d_table, "summary_org": summary_results, "summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list, "dp_list": datapoints_list})
-            if answer[12] is not None:
+            elif answer[12] is not None:
                 answer_copy = answer
                 get_assessments = ASet.values()
                 loop_set = {}
@@ -1668,6 +1669,19 @@ def result_test(request):
                 datapoints_list = json.dumps(datapoints_list)
                 option = json.dumps("Group");
                 return render(request, "ucs/result_test.html", {"loop_option": option, "wcd_table_org": wls_c_d_table, "summary_org": summary_results,"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list, "dp_list": datapoints_list})
+            elif answer[13] is not None:
+                print answer[17]
+                print answer[16]
+                get_assessments = ASet.filter(date_of_assessment__gte=answer[17], date_of_assessment__lte=answer[16])
+                print get_assessments
+                if answer[15] == "Day":
+                    print "Day"
+                elif answer[15] == "Week":
+                    print "Week"
+                elif answer[15] == "Month":
+                    print "Month"
+                elif answer[15] == "Year":
+                    print "Year"
             usr_key = User.objects.get(pk=user_id).username
             sumresult_list[usr_key] = summary_results
             wls_c_d_list[usr_key] = wls_c_d_table
@@ -1822,9 +1836,23 @@ def processRequests(req,current_user):
         # loop option
         user_loop = req.POST.get("userloop")
         group_loop = req.POST.get("grouploop")
+        
+        timeloop = req.POST.get("timeloop");
+        bin_type = "None"
+        if req.POST.get("binday") == "on":
+            bin_type = "Day"
+        elif req.POST.get("binweek") == "on":
+            bin_type = "Week"
+        elif req.POST.get("binmonth") == "on":
+            bin_type = "Month"
+        elif req.POST.get("binyear") == "on":
+            bin_type = "Year"
+        timeloop_edate = req.POST.get("timeloop_edate");
+        timeloop_sdate = req.POST.get("timeloop_sdate");
+        
         loop_request = 1;           
         answer = [question_type, forecast, question_use, question_text, true_or_false, category, user_name, group_name, assignment_name, edate_submitted
-        , sdate_submitted, user_loop, group_loop, loop_request]
+        , sdate_submitted, user_loop, group_loop, timeloop, loop_request, bin_type, timeloop_edate, timeloop_sdate]
         return answer
     #print req.POS.get("date_submitted")
     answer = [question_type, forecast, question_use, question_text, true_or_false, category, user_name, group_name, assignment_name, req.POST.get("date_submitted")]
@@ -1916,9 +1944,9 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         target_assignments = []
         question_set = []
         if loop_type == "user":
-            get_assign_list = Assignment_log.objects.filter(finish_date__gte="0000-00-00", user_id=loop_filter)
+            get_assign_list = Assignment_log.objects.filter(finish_date__gt="0000-00-00", user_id=loop_filter)
         elif loop_type == "group":
-            get_assign_list = Assignment_log.objects.filter(finish_date__gte="0000-00-00", group_id=loop_filter)
+            get_assign_list = Assignment_log.objects.filter(finish_date__gt="0000-00-00", group_id=loop_filter)
         for asn in get_assign_list:
             if answer[8]:
                 if asn.assignment_id.assignment_name == answer[8]:

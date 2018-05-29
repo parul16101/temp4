@@ -16,7 +16,7 @@
 </head>
 <div class="row">
 	<div class="ibox-title">
-		<h3 align='center'><strong>User Evaluation</strong></h3>
+		<h1 align='center'><strong>User Evaluation</strong></h1>
 		<text> NOTE: This page is in development.</text>
 		
 	</div>
@@ -27,7 +27,7 @@
 		<div class="row divBackground">
 			<div class="qn 1st">
                 <div class="form-group">
-                    <h4><strong> Loop Options </strong></h4>
+                    <h2><strong> Loop Options </strong></h2>
                     <h5> This will split the results in individual rows based on option. Only one can be selected</h5>
                     <div class="col-sm-4" id="date1">
                         <label class="control-label" for="userloop">User Name</label>
@@ -45,11 +45,44 @@
                             </label>
                         </fieldset>
                     </div>
+                    <div class="col-sm-4 timediv" id="date1">
+                        <label class="control-label" for="timeloop"> Time</label>
+                        <fieldset>
+                            <label class="">
+                                <input type="checkbox" value="1" name="timeloop" id="rad3" > Yes
+                            </label>
+                        </fieldset>
+                    </div>
+                    <div class="col-sm-4" id="tdate1">
+                        <label><h3>Loop Initial</h3></label>
+                        <div class="input-group date" style = "margin-bottom:1%;">
+                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input style="width:55%;" type="text" id="timeloop_sdate" name="timeloop_sdate" placeholder="Loop Time Start Date" class="form-control" >
+                        </div>
+                    </div>
+                    <div class="col-sm-8" id="tdate2">
+                        <label><h3>Loop Final</h3></label>
+                        <div class="input-group date" style = "margin-bottom:1%;">
+                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input style="width:22%;" type="text" id="timeloop_edate" name="timeloop_edate" placeholder="Loop Time End Date " class="form-control" >
+                        </div>
+                    </div>
+                    <br><br>
+                    <div class="col-sm-8" id="tlb">
+                        <label class="control-label" for="timebin">Time interval
+                        <fieldset>
+                            <label class="">
+                                <input type="text" name="binscale" id="binscale" placeholder="Bin Count"> 
+                                Day<input type="checkbox" name="binday" id="binday"> 
+                                Week<input type="checkbox" name="binweek" id="binweek"> 
+                                Month<input type="checkbox" name="binmonth" id="binmonth"> 
+                                Year<input type="checkbox" name="binyear" id="binyear"> 
+                            </label>
+                        </fieldset>
+                    </div>
                 </div>
-                <br><br><br>
-                <div class="form-group">
-                    <h4><strong> Date Filter Options</strong></h4>
-                    <h5>Select a start and end date for a field or leave blank for [0000/00/00 - 9999/01/01]</h5><br>
+                <br><br><br><br>
+                <div class="form-group" id="DFO">
+                    <h2><strong> Date Filter Options</strong></h2>
+                    <h5>Select a start and end date for a field or leave blank for [0000-00-00 , 9999-01-01]</h5><br>
                     <div class="col-sm-4" id="date1">
                         <label class="control-label" for="submitted_date">Assessment Submitted Start Date </label>
                         <div class="input-group date" style = "margin-bottom:1%;">
@@ -64,8 +97,8 @@
                     </div>
                 </div>           
 				<div class="form-group">
-                <br><br><br><br>
-                    <h4><strong>Unique Filter Options</strong></h4>
+                <br><br><br><br><br><br>
+                    <h2><strong>Unique Filter Options</strong></h2>
                     <h5>The following fields will act as logical 'and' conditions. Blank for all choices.</h5><br>
 					<label class="control-label" for="question_type">Question Type</label>
 					<fieldset>
@@ -172,6 +205,10 @@
 <script src="{% static 'ucs/js/plugins/iCheck/icheck.min.js' %}"></script>
 <script>
 	$(document).ready(function () {
+        $('#tdate1').hide();
+        $('#tdate2').hide();
+        $('.timediv').hide();
+        $('#tlb').hide();
 		$('.i-checks').iCheck({
 			checkboxClass: 'icheckbox_square-green',
 			radioClass: 'iradio_square-green',
@@ -189,6 +226,23 @@
                 $('#group').prop('disabled', true);
             } else {
                 $('#group').prop('disabled', false);
+            }
+        });
+        $('#rad3').change(function() {
+            if( $('#rad3').is(':checked') ) {
+                $('#DFO').hide();
+                $('#sub_sdate').val("");
+                $('#sub_edate').val("");
+                $('#tdate1').show();
+                $('#tdate2').show();
+                $('#tlb').show();
+            } else {;
+                $('#tdate1').hide();
+                $('#tdate2').hide();
+                $('#tlb').hide();
+                $('#timeloop_sdate').val("");
+                $('#timeloop_edate').val("");
+                $('#DFO').show();
             }
         });
 	});
@@ -369,6 +423,20 @@
 		$('.js-example-basic-single').select2();
 		//Date picker
 		$('#date1 .input-group.date').datepicker({
+			todayBtn: "linked",
+			keyboardNavigation: false,
+			forceParse: false,
+			calendarWeeks: true,
+			autoclose: true
+		});
+		$('#tdate1 .input-group.date').datepicker({
+			todayBtn: "linked",
+			keyboardNavigation: false,
+			forceParse: false,
+			calendarWeeks: true,
+			autoclose: true
+		});
+		$('#tdate2 .input-group.date').datepicker({
 			todayBtn: "linked",
 			keyboardNavigation: false,
 			forceParse: false,
