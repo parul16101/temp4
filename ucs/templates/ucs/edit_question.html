@@ -11,7 +11,11 @@
 		<div class="ibox-content m-b-sm border-bottom">
 			<div class="row">
 				<div class="col-sm-6">
-					<div class="form-group">
+					<div  class="form-group">
+						<label class="control-label" for="question_text">Question Text</label>
+						<textarea id="question_text" name="question_text" class="form-control" placeholder="Write something for your question" readonly>{{question.question_text}}</textarea>
+					</div>
+					<div class="form-group unit-class">
 						<label class="control-label" for="unit">Unit</label>
 						<input type="text" id="unit" name="unit" value="{{question.unit}}" class="form-control" readonly>
 						<input type="hidden" id="question_id" name="question_id" value="{{question.id}}">
@@ -26,17 +30,24 @@
 					</div>
 					<div class="form-group">
 						<label class="control-label" for="category">Category</label>
-                                                <select id="category" name="category" class="form-control" style="width:50%" disabled> 
-                                                </select>
+                        <select id="category" name="category" class="form-control" style="width:50%" disabled></select>
 					</div>
+                    <div class="form-group">
+                        <label class="control-label" for="allow_assessment">Allow Assessment</label>
+                        <select id="allow_assessment" name="allow_assessment" class="form-control" style="width:50%" disabled></select>
+                    </div>
 					<div class="row">
 						<div class="col-sm-6">
 							<div class="form-group">
 								<label class="control-label" for="no_of_choices">Number of Choices</label>
 									{% if question.num_of_choices > 2 %}
 									<input type="text" class="form-control" value="2+" readonly>
-									{% else %}
+									{% elif question.num_of_choices == 2 %}
 									<input type="text" class="form-control" value="2" readonly>
+									{% elif question.num_of_choices == 1 %}
+									<input type="text" class="form-control" value="1" readonly>
+									{% else %}
+									<input type="text" class="form-control" value="0" readonly>
 									{% endif %}
 							</div>
 						</div>
@@ -49,12 +60,6 @@
 								</div>
 							</div>
 						</div>
-					</div>
-				</div>
-				<div class="col-sm-6">
-					<div  class="form-group">
-						<label class="control-label" for="question_text">Question Text</label>
-						<textarea id="question_text" name="question_text" class="form-control" placeholder="Write something for your question" readonly>{{question.question_text}}</textarea>
 					</div>
 				</div>
 			</div>
@@ -93,6 +98,7 @@
 <script src="{% static 'ucs/js/plugins/sweetalert/sweetalert2.min.js'%}"></script>
 <script src="{% static 'ucs/js/js.cookie.js'%}"></script>
 <script>
+		$(".unit-class").hide();
         var category = "Default";
         var catas = {{cataList | safe}};
         var select_cata = document.getElementById("category");
@@ -104,6 +110,15 @@
                 select_cata.options[select_cata.options.length] = new Option(name.category, name.category, false, false);
             }
         });
+        var select_allow_assessment = document.getElementById("allow_assessment");
+        var allow_val = "{{question.allow_assessment}}";
+        if( allow_val == "True" ) {
+            select_allow_assessment.options[select_allow_assessment.options.length] = new Option("True", "True", false, true); 
+            select_allow_assessment.options[select_allow_assessment.options.length] = new Option("False", "False", false, false);  
+        } else {
+            select_allow_assessment.options[select_allow_assessment.options.length] = new Option("True", "True", false, false); 
+            select_allow_assessment.options[select_allow_assessment.options.length] = new Option("False", "False", false, true);             
+        }
 	function editOrSave(){
 		var editOrSave = $("#operation").val();
 		if(editOrSave === "" || editOrSave === "edit"){
@@ -112,7 +127,8 @@
 			$("#unit").prop("readonly", false);
 			$("#owner").prop("readonly", false);
 			$("#true_value").prop("readonly", false);
-                        $("#category").prop('disabled', false);
+            $("#category").prop('disabled', false);
+            $('#allow_assessment').prop('disabled', false);
 			$("#date_true_value_known").prop("readonly", false);
 			var date_true_value_known = $('#date1 .input-group.date');
 			date_true_value_known.datepicker("enable");
@@ -126,6 +142,7 @@
 			var date_true_value_known = $("#date_true_value_known").val();
 			var question_text = $("#question_text").val();
 			var csrftoken = Cookies.get("csrftoken");
+            var allow_assessment_val = $('#allow_assessment').val();
 			function csrfSafeMethod(method) {
 				// these HTTP methods do not require CSRF protection
 				return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
@@ -144,7 +161,8 @@
 				true_value: true_value,
 				category: category,
 				date_true_value_known: date_true_value_known,
-				question_text: question_text
+				question_text: question_text,
+                allow_assessment: allow_assessment_val,
 			});
 			posting.done(function(data){
 				$("#operation").val("edit");
@@ -152,6 +170,7 @@
 				$("#owner").prop("readonly", true);
 				$("#true_value").prop("readonly", true);
 				$("#category").prop("disabled", true);
+                $('#allow_assessment').prop('disabled', true);
 				$("#date_true_value_known").prop("readonly", true);
 				var date_true_value_known = $('#date1 .input-group.date');
 				date_true_value_known.datepicker("disabled");

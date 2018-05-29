@@ -25,7 +25,7 @@
 			-ms-overflow-style: -ms-autohiding-scrollbar;
 			border: 1px solid #DDD;
 		}
-        .bodycontainer { max-height: 450px; width: 100%; margin: 0; overflow-y: auto; }
+        .bodycontainer { max-height: 700px; width: 100%; margin: 0; overflow-y: auto; }
         .table-scrollable { margin: 0; padding: 0; }
 	</style>
 </head>
@@ -57,7 +57,7 @@
 										<th><button type="button" name="select-all" id="select-all" value="0" > All</button></th>
 										<th style="display:none;">#</th>
 										<th>Question Text</th>
-										<th>Date True <br>Value Known</th>
+										<th>Date True Value Known</th>
 										<th>Upload Date</th>
 										<th>Category</th>
 									</tr>
@@ -88,8 +88,8 @@
 							<select size="10" multiple="multiple" name="selectedGroups" id="selectedGroups" style="width:100%;" ></select>
 						</div>
 					</div>
-					<div style="width:100%">
-						<input type="checkbox" id="sendemail" name="sendemail" checked> Send Email </input>
+					<div style="width:100%; float:left;margin-left:80%;">
+						<b>Send Email</b>&nbsp<input type="checkbox" id="sendemail" name="sendemail" checked>  </input>
 					</div>
 					<div style="width:100%">
 						<button type="button" class ="btn-success btn" style="width:15%;float:left;margin-top:0.1%;margin-left:80%;" id=submit_change>Submit</button>
@@ -331,10 +331,12 @@
 			
 			var newCell_3  = newRow.insertCell(3);
 			var newText3  = document.createTextNode(name.end_time);
+			newCell_3.style.textAlign = "center";
 			newCell_3.appendChild(newText3);
 
 			var newCell_4 = newRow.insertCell(4);
 			var newText4 = document.createTextNode(name.up_date);
+			newCell_4.style.textAlign = "center";
 			newCell_4.appendChild(newText4);
 
 			var newCell_5 = newRow.insertCell(5);

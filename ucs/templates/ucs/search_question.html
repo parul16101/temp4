@@ -17,8 +17,8 @@
 							<th>Category</th>
 							<th>Question Type</th>
 							<th>Question Use</th>
-							<th>Number of Choices</th>
-							<th>Forcast</th>
+							<th>Choices</th>
+							<th>Forecast</th>
 							<th>Date True Value Known</th>
 							<th></th>
 							<th></th>
@@ -129,6 +129,7 @@
 			else{
 				var newText3 = document.createTextNode("Discrete");
 			}
+			newCell_3.style.textAlign = "center";
 			newCell_3.appendChild(newText3);
 			
 			var newCell_4  = newRow.insertCell(4);
@@ -139,6 +140,7 @@
 			else{
 				var newText4 = document.createTextNode("Training");
 			}
+			newCell_4.style.textAlign = "center";
 			newCell_4.appendChild(newText4);
 			
 			var newCell_5  = newRow.insertCell(5);
@@ -153,10 +155,12 @@
 			else{
 				var newText6 = document.createTextNode("Yes");
 			}
+			newCell_6.style.textAlign = "center";
 			newCell_6.appendChild(newText6);
 			
 			var newCell_7  = newRow.insertCell(7);
 			var newText7 = document.createTextNode(name.end_time);
+			newCell_7.style.textAlign = "center";
 			newCell_7.appendChild(newText7);
 			
 			var newCell_8  = newRow.insertCell(8);

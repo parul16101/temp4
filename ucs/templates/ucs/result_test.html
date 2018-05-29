@@ -273,7 +273,8 @@
     for( key in p_list ) {
       newCell = newRow.insertCell(0);
       var th = document.createElement('th');
-      th.innerHTML = p_list[key];
+      //th.innerHTML = p_list[key];
+      th.innerHTML = "<span title='Probabilty Assigned'>" + p_list[key] + "</span>";
       newCell.appendChild(th);
     }
     var loop_p10_cnt = 1;
