@@ -1670,18 +1670,55 @@ def result_test(request):
                 option = json.dumps("Group");
                 return render(request, "ucs/result_test.html", {"loop_option": option, "wcd_table_org": wls_c_d_table, "summary_org": summary_results,"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list, "dp_list": datapoints_list})
             elif answer[13] is not None:
-                print answer[17]
-                print answer[16]
-                get_assessments = ASet.filter(date_of_assessment__gte=answer[17], date_of_assessment__lte=answer[16])
-                print get_assessments
+            	start_time = datetime.strptime(time_norm(answer[17]), "%Y-%m-%d").date()
+            	end_time = datetime.strptime(time_norm(answer[16]), "%Y-%m-%d").date()
+                time_filter_list = []
+                time_factor = int(answer[18]) #Bin spaceing               
                 if answer[15] == "Day":
-                    print "Day"
+                    time_cond = start_time
+                    while time_cond <= end_time :
+                        time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
+                        time_cond = time_cond + timedelta(days=time_factor)
                 elif answer[15] == "Week":
-                    print "Week"
+                    time_cond = start_time
+                    time_factor = time_factor * 7
+                    while time_cond <= end_time :
+                        time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
+                        time_cond = time_cond + timedelta(days=time_factor)            
                 elif answer[15] == "Month":
-                    print "Month"
+                    time_cond = start_time
+                    time_factor = time_factor * 30
+                    while time_cond <= end_time :
+                        time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
+                        time_cond = time_cond + timedelta(days=time_factor)       
                 elif answer[15] == "Year":
-                    print "Year"
+                    time_cond = start_time
+                    time_factor = time_factor * 364
+                    while time_cond <= end_time :
+                        time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
+                        time_cond = time_cond + timedelta(days=time_factor)
+                for key in time_filter_list:
+                    time_list = []
+                    prev_time = datetime.strptime(key, "%Y-%m-%d").date()
+                    prev_time = prev_time - timedelta(days=time_factor)
+                    curr_time = datetime.strptime(key, "%Y-%m-%d").date()
+                    while prev_time <= curr_time :
+                        time_list.append(prev_time.strftime("%Y-%m-%d"))
+                        prev_time = prev_time + timedelta(days=1)
+                    temp_QSet, temp_ASet = returnAssessments(answer,1, time_list, "time")
+                    srt, vt, pt, dpt = computeResults(temp_ASet)
+                    sumresult_list[key] = srt
+                    values_list.append(vt)
+                    plot_list.append(pt)
+                    datapoints_list[key] = dpt
+                    wdt, wcdt = wls_bias_calc(pt)
+                    wls_dp_list.append(wdt)
+                    wls_c_d_list[key] = wcdt
+                wls_c_d_list = json.dumps(wls_c_d_list)
+                sumresult_list = json.dumps(sumresult_list)
+                datapoints_list = json.dumps(datapoints_list)
+                option = json.dumps("Time");
+                return render(request, "ucs/result_test.html", {"loop_option": option, "wcd_table_org": wls_c_d_table, "summary_org": summary_results,"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list, "dp_list": datapoints_list})
             usr_key = User.objects.get(pk=user_id).username
             sumresult_list[usr_key] = summary_results
             wls_c_d_list[usr_key] = wls_c_d_table
@@ -1849,10 +1886,11 @@ def processRequests(req,current_user):
             bin_type = "Year"
         timeloop_edate = req.POST.get("timeloop_edate");
         timeloop_sdate = req.POST.get("timeloop_sdate");
+        binscale = req.POST.get("binscale")
         
         loop_request = 1;           
         answer = [question_type, forecast, question_use, question_text, true_or_false, category, user_name, group_name, assignment_name, edate_submitted
-        , sdate_submitted, user_loop, group_loop, timeloop, loop_request, bin_type, timeloop_edate, timeloop_sdate]
+        , sdate_submitted, user_loop, group_loop, timeloop, loop_request, bin_type, timeloop_edate, timeloop_sdate, binscale]
         return answer
     #print req.POS.get("date_submitted")
     answer = [question_type, forecast, question_use, question_text, true_or_false, category, user_name, group_name, assignment_name, req.POST.get("date_submitted")]
@@ -1947,6 +1985,8 @@ def returnAssessments(answer, check, loop_filter, loop_type):
             get_assign_list = Assignment_log.objects.filter(finish_date__gt="0000-00-00", user_id=loop_filter)
         elif loop_type == "group":
             get_assign_list = Assignment_log.objects.filter(finish_date__gt="0000-00-00", group_id=loop_filter)
+        elif loop_type == "time":
+            get_assign_list = Assignment_log.objects.filter(finish_date__in=loop_filter)
         for asn in get_assign_list:
             if answer[8]:
                 if asn.assignment_id.assignment_name == answer[8]:

@@ -247,7 +247,15 @@
     };
 </script>
 <!-- get data points for each loop value -->
-
+<script>
+function isEmpty(obj) {
+    for(var key in obj) {
+        if(obj.hasOwnProperty(key))
+            return false;
+    }
+    return true;
+}
+</script>
 <script>
     var dp_data = {{dp_list | safe}};
     var loop_option = {{ loop_option | safe }};
@@ -282,6 +290,9 @@
     var loop_p90_cnt = 1;
     var usr_cnt = 1;
     for( key in dp_data ) {
+      if( isEmpty(dp_data[key]) ) {
+        continue;
+      }
       var num = tableRef.rows.length;
       var newRow = tableRef.insertRow(num);
       //User
