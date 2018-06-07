@@ -16,7 +16,7 @@ from django.http import JsonResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from .models import User, Question, Group_member, Group, Category, Dataset, Assignment, Assigned_group, Assigned_question, Assessment, Assignment_log
-from .tools import time_norm
+from .tools import date_norm, get_timestamp, rmv_timestamp
 from collections import defaultdict
 from datetime import datetime, timedelta
 
@@ -61,28 +61,28 @@ def refresh_database():
     print "Start refreshing..."
     qid_list = Question.objects.all().values_list('id', flat=True)
     for qid in qid_list:
-        close_date  = time_norm(Question.objects.get(id=qid).close_date)
+        close_date  = date_norm(Question.objects.get(id=qid).close_date)
         print close_date
-        upload_date = time_norm(Question.objects.get(id=qid).upload_date)
+        upload_date = date_norm(Question.objects.get(id=qid).upload_date)
         print upload_date
         Question.objects.filter(id=qid).update(close_date=close_date)
         Question.objects.filter(id=qid).update(upload_date=upload_date)
     aid_list = Assessment.objects.all().values_list('id', flat=True)
     for aid in aid_list:
-        date_of_assessment = time_norm(Assessment.objects.get(id=aid).date_of_assessment)
+        date_of_assessment = date_norm(Assessment.objects.get(id=aid).date_of_assessment)
         print date_of_assessment
-        Assessment.objects.filter(id=aid).update(date_of_assessment=date_of_assessment)
+        Assessment.objects.filter(id=aid).update(date_of_assessment=date_of_assessment, time_of_assessment=get_timestamp())
     sid_list = Assignment.objects.all().values_list('id', flat=True)
     for sid in sid_list:
-        due_date = time_norm(Assignment.objects.get(id=sid).due_date)
+        due_date = date_norm(Assignment.objects.get(id=sid).due_date)
         print due_date
         Assignment.objects.filter(id=sid).update(due_date=due_date)
     lid_list = Assignment_log.objects.all().values_list('id', flat=True)
     for lid in lid_list:
-        due_date = time_norm(Assignment_log.objects.get(id=lid).due_date)
+        due_date = date_norm(Assignment_log.objects.get(id=lid).due_date)
         print due_date
         Assignment_log.objects.filter(id=lid).update(due_date=due_date)
-        finish_date = time_norm(Assignment_log.objects.get(id=lid).finish_date)
+        finish_date = date_norm(Assignment_log.objects.get(id=lid).finish_date)
         print finish_date
         if not finish_date:
             Assignment_log.objects.filter(id=lid).update(finish_date="0000-00-00")
@@ -90,7 +90,7 @@ def refresh_database():
             Assignment_log.objects.filter(id=lid).update(finish_date=finish_date)
     bid_list = Dataset.objects.all().values_list('id', flat=True)
     for bid in bid_list:
-        upload_date = time_norm(Dataset.objects.get(id=bid).upload_date)
+        upload_date = date_norm(Dataset.objects.get(id=bid).upload_date)
         print upload_date
         Dataset.objects.filter(id=bid).update(upload_date=upload_date)
     print "End refreshing..."
@@ -100,7 +100,7 @@ def refresh_database():
 ## Function to render home-page.
 # Function for rendering home page. Home page is rendered when someone login successfully.
 def home_page(request):
-    #####refresh_database()
+    refresh_database()
     #DJ Home page to do report
     if "userId" in request.session.keys():
         user_name = request.session.get("userId")
@@ -347,7 +347,7 @@ def create_question(request):
             T_or_F = request.POST.get("true_or_false")
             allow_assessment = request.POST.get("allow_assessment")
             unit = request.POST.get("unit", "NA")
-            upload_date = time_norm(request.POST.get("upload_date"))
+            upload_date = date_norm(request.POST.get("upload_date"))
             closing_date = request.POST.get("closing_date")
             print("question_type: "+question_type)
             print("forecast: "+forecast)
@@ -471,7 +471,7 @@ def save_question(request):
         question.unit = unit
         question.true_value = true_value
         question.category_id = category_info.id
-        question.close_date = time_norm(date_true_value_known)
+        question.close_date = date_norm(date_true_value_known)
         question.question_text = question_text
         question.allow_assessment = allow_assessment
         question.save()
@@ -894,7 +894,7 @@ def do_assignment(request):
                 #operator = content[i]
                 #i = i + 1
                 #print operator
-                new_assessment = Assessment(question_id = filtered_question, user_id = target_user, option_text = option, answer_text = answer, operator = operator, date_of_assessment = upload_date)
+                new_assessment = Assessment(question_id = filtered_question, user_id = target_user, option_text = option, answer_text = answer, operator = operator, date_of_assessment = upload_date, time_of_assessment=get_timestamp())
                 new_assessment.save()
         f_date = upload_date
         print 'f_date: ', f_date
@@ -1133,7 +1133,7 @@ def batch_import(request):
                             #print 'QCategory: ', QCategory
                             QuestionText = unicode(str(row[shift+6]).strip(), errors='replace')		## question_text *
                             #print 'QuestionText: ', QuestionText
-                            DateTrueValueKnown = time_norm(str(row[shift+7]))									## close_date *
+                            DateTrueValueKnown = date_norm(str(row[shift+7]))									## close_date *
                             #print "DateTrueValueKnown: ", DateTrueValueKnown;
                             TrueValue = unicode(str(row[shift+8]).strip(), errors='replace')			## true_value *
                             #print 'TrueValue: ', TrueValue
@@ -1203,7 +1203,7 @@ def batch_import(request):
                         if row[shift+i]:
                             ImportAssessment = True
                     if ImportAssessment == True:
-                        DateOfAssessment = time_norm(str(row[shift+12]))
+                        DateOfAssessment = date_norm(str(row[shift+12]))
                         Operator = str(row[shift+13])
                         DetailsOfAssessment = str(row[shift+14])
                         #VALIDATION OF ASSESSMENT INPUT/OPTIONS
@@ -1301,9 +1301,9 @@ def batch_import(request):
                                     ).filter(details_of_assessment = DetailsOfAssessment)
                                 if len(A) == 0:
                                     #Assessment does not exist in the database add question
-                                    newAssessment = Assessment(question_id=QuestionID, user_id = upload_user, answer_text = prob[i],
-                                        option_text = val[i], operator = Operator, date_of_assessment = DateOfAssessment,
-                                        details_of_assessment = DetailsOfAssessment)
+                                    newAssessment = Assessment(question_id=QuestionID, user_id=upload_user, answer_text=prob[i],
+                                        option_text=val[i], operator=Operator, date_of_assessment=DateOfAssessment,
+                                        time_of_assessment=get_timestamp(), details_of_assessment=DetailsOfAssessment)
                                     newAssessment.save()
                                 else:
                                     A.update(option_text = val[i])
@@ -1471,7 +1471,7 @@ def result(request):
                     QA_map[value['question_id_id']] = {}
                 else:
                     pass
-                AKey = str(value['user_id_id'])+'_'+value['date_of_assessment']
+                AKey = str(value['user_id_id'])+'_'+value['date_of_assessment']+'_'+value['time_of_assessment']
                 if AKey not in QA_map[value['question_id_id']].keys():
                     QA_map[value['question_id_id']][AKey] = []
                 else:
@@ -1596,7 +1596,7 @@ def result_test(request):
                         QA_map[value['question_id_id']] = []
                     else:
                         pass
-                    '''AKey = str(value['user_id_id'])+'_'+value['date_of_assessment']
+                    '''AKey = str(value['user_id_id'])+'_'+value['date_of_assessment']+'_'+value['time_of_assessment']
                     if AKey not in QA_map[value['question_id_id']].keys():
                         QA_map[value['question_id_id']][AKey] = []
                     else:
@@ -1670,8 +1670,8 @@ def result_test(request):
                 option = json.dumps("Group");
                 return render(request, "ucs/result_test.html", {"loop_option": option, "wcd_table_org": wls_c_d_table, "summary_org": summary_results,"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list, "dp_list": datapoints_list})
             elif answer[13] is not None:
-            	start_time = datetime.strptime(time_norm(answer[17]), "%Y-%m-%d").date()
-            	end_time = datetime.strptime(time_norm(answer[16]), "%Y-%m-%d").date()
+            	start_time = datetime.strptime(date_norm(answer[17]), "%Y-%m-%d").date()
+            	end_time = datetime.strptime(date_norm(answer[16]), "%Y-%m-%d").date()
                 time_filter_list = []
                 time_factor = int(answer[18]) #Bin spaceing               
                 if answer[15] == "Day":

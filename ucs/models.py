@@ -111,6 +111,9 @@ class Assessment(models.Model):
     ## @var date_of_assessment
     # This is a class variable. Data type of this variable is "string". It is used to store date of assessment. Maximum length of string allowed to store in it is 50.
     date_of_assessment = models.CharField(max_length=50)
+    ## @var time_of_assessment
+    # This is a class variable. Data type of this variable is "string". It is used to store time of assessment. Maximum length of string allowed to store in it is 50.
+    time_of_assessment = models.CharField(max_length=50)
     ## @var details_of_assessment
     # This is a class variable. Data type of this variable is "string". It is used to store details of assessment. Maximum length of string allowed to store in it is 1000.
     details_of_assessment = models.CharField(max_length=1000, blank=True, null=True)

@@ -2,6 +2,7 @@
 Django tools for project ucs
 """
 import os, json, shutil, threading, requests
+import datetime
 from time import strftime, time
 from ucs.settings import BASE_DIR
 from django import db
@@ -26,10 +27,24 @@ def writeConfiguration(key, value):
 
 ## Generate Unified Timestamp.
 # This function normalize any input type of time into the format "yyyy-mm-dd".
-def time_norm(time_string=""):
+def date_norm(raw_date=""):
     from dateutil import parser
     try:
-        d = parser.parse(time_string)
+        d = parser.parse(raw_date)
         return d.strftime("%Y-%m-%d")
     except:
         return ""
+
+# This function attached "hours, minute, and seconds" to the input
+def get_timestamp():
+    now = datetime.datetime.now()
+    return "%d:%d:%d"%(now.hour, now.minute, now.second)
+
+# This function removes  "hours, minute, and seconds" from the input
+def rmv_timestamp(raw_time=""):
+    format_date = date_norm(raw_time)
+    if not format_date:
+        return ""
+    else:
+        time = raw_time.split("-")
+        return date_norm("%s-%s-%s"%(time[0], time[1], time[2]))
