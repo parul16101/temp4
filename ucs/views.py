@@ -68,10 +68,11 @@ def refresh_database():
         Question.objects.filter(id=qid).update(close_date=close_date)
         Question.objects.filter(id=qid).update(upload_date=upload_date)
     aid_list = Assessment.objects.all().values_list('id', flat=True)
+    timestamp = get_timestamp()
     for aid in aid_list:
         date_of_assessment = date_norm(Assessment.objects.get(id=aid).date_of_assessment)
         print date_of_assessment
-        Assessment.objects.filter(id=aid).update(date_of_assessment=date_of_assessment, time_of_assessment=get_timestamp())
+        Assessment.objects.filter(id=aid).update(date_of_assessment=date_of_assessment, time_of_assessment=timestamp)
     sid_list = Assignment.objects.all().values_list('id', flat=True)
     for sid in sid_list:
         due_date = date_norm(Assignment.objects.get(id=sid).due_date)
@@ -884,6 +885,7 @@ def do_assignment(request):
             if float(content[0]) > float(content[2]):
                 operator = 'GE'
             print "Operator: ",operator
+            timestamp = get_timestamp()
             while (i < len(content)):
                 asst = content[i]
                 option = str(float(asst))
@@ -894,7 +896,7 @@ def do_assignment(request):
                 #operator = content[i]
                 #i = i + 1
                 #print operator
-                new_assessment = Assessment(question_id = filtered_question, user_id = target_user, option_text = option, answer_text = answer, operator = operator, date_of_assessment = upload_date, time_of_assessment=get_timestamp())
+                new_assessment = Assessment(question_id = filtered_question, user_id = target_user, option_text = option, answer_text = answer, operator = operator, date_of_assessment = upload_date, time_of_assessment=timestamp)
                 new_assessment.save()
         f_date = upload_date
         print 'f_date: ', f_date
@@ -1295,6 +1297,7 @@ def batch_import(request):
                                      DateTrueValueKnown, TrueValue, Units, QuestionSource, AllowAssessment,
                                      DateOfAssessment,Operator,DetailsOfAssessment, NumOfPairs,prob[i], val[i]])
                                 ## Check if Assessment exists in database
+                                timestamp = get_timestamp()
                                 A = Assessment.objects.filter(user_id = upload_user
                                     ).filter(question_id = QuestionID).filter(answer_text = prob[i]
                                     ).filter(date_of_assessment = DateOfAssessment
@@ -1303,7 +1306,7 @@ def batch_import(request):
                                     #Assessment does not exist in the database add question
                                     newAssessment = Assessment(question_id=QuestionID, user_id=upload_user, answer_text=prob[i],
                                         option_text=val[i], operator=Operator, date_of_assessment=DateOfAssessment,
-                                        time_of_assessment=get_timestamp(), details_of_assessment=DetailsOfAssessment)
+                                        time_of_assessment=timestamp, details_of_assessment=DetailsOfAssessment)
                                     newAssessment.save()
                                 else:
                                     A.update(option_text = val[i])
@@ -1798,7 +1801,7 @@ def batch_export(request):
     if os.path.exists(data_path):
         with open(data_path, 'rb') as fh:
             response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
-            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(data_path)
             return response
     else:
         return HttpResponse("<h1>File not found.</h1>")
