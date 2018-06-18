@@ -44,7 +44,8 @@ WarningQ = {0 : "The true value was updated for record in row ",
 1 : "Insufficient data for the question, missing Question text, Category, NoOfChoices",
 2 : "The units were updated for record in row ",
 3 : "The units reported in the import file is different than the one in the database for record in row ",
-4 : "A new category was created for record in row "}
+4 : "A new category was created for record in row ",
+5 : "Assignment name not found in the database "}
 
 if 'Windows' in platform.system():
     file_path = os.path.join(os.getcwd(), "data")
@@ -98,10 +99,65 @@ def refresh_database():
     ####################################################################
 
 
+def refresh_database_2():
+    #####################SCRIPT TO CLEAN DATE###########################
+    print "Start refreshing..."
+    aid_list = Assessment.objects.all().values_list('id', flat=True)
+    a_set    = Assignment.objects.get(assignment_name="Default")
+    for aid in aid_list:
+        Assessment.objects.filter(id=aid).update(assignment_id=a_set)
+    print "End refreshing..."
+    ####################################################################
+
+
+
+def init_config():
+    #Create an DEFAULT category
+    c_set = Category.objects.all()
+    if not c_set:
+        default_category = Category(category_text = "Default", num_of_question = 0)
+        default_category.save()
+
+    #Create DEFAULT assignment
+    a_set = Assignment.objects.filter(assignment_name = "Default")
+    print "#$#$#@$@#$@"
+    print len(a_set), a_set
+    if len(a_set) == 0:
+        default_assignment = Assignment(assignment_name = "Default", due_date = "")
+        default_assignment.save()
+
+    #Create ALL USERS group
+    g_set = Group.objects.all()
+    print "#$#$#@$@#$@"
+    print len(g_set), g_set
+    if not g_set:
+        all_users_group = Group(group_name = "All Users")
+        all_users_group.save()
+
+    #Create NO USERS group
+    g_set = Group.objects.filter(group_name = "No Users")
+    print "#$#$#@$@#$@"
+    print len(g_set), g_set    
+    if len(g_set) == 0:
+        no_users_group = Group(group_name = "No Users")
+        no_users_group.save()
+        
+    #Create association between DEFAULT assignment and NO USERS group
+    default_assignment = Assignment.objects.get(assignment_name = "Default")
+    no_users_group = Group.objects.get(group_name = "No Users")
+    default_no_users = Assigned_group(assignment_id = default_assignment, group_id = no_users_group)
+    default_no_users.save()
+
+
+
 ## Function to render home-page.
 # Function for rendering home page. Home page is rendered when someone login successfully.
 def home_page(request):
     #refresh_database()
+    #refresh_database_2()
+    ###print [item.pk for item in Assignment.objects.all()]
+    ###print Assignment.objects.get(assignment_name="Default").id
+    #init_config()
     #DJ Home page to do report
     if "userId" in request.session.keys():
         user_name = request.session.get("userId")
@@ -244,10 +300,7 @@ def register(request):
         else:
             newUser = User(username=username, email=email, password=password)
             newUser.save()
-            group_set = Group.objects.all()
-            if not group_set:
-                new_group = Group(group_name = "All Users")
-                new_group.save()
+            init_config() #Initialize default assignments, groups, and categories
             all_users = Group.objects.get(group_name = "All Users")
             new_user = User.objects.get(username = username)
             newMember = Group_member(group_id = all_users, user_id = new_user)
@@ -313,11 +366,6 @@ def create_question(request):
         return redirect(reverse("login"))
     message = None
 
-    tag_set = Category.objects.all()
-    #Create an "ALL" category as default
-    if not tag_set:
-        new_tag = Category(category_text = "Default", num_of_question = 0)
-        new_tag.save()
     tag_set = Category.objects.all()
     category_list = []
     number_list = []
@@ -594,10 +642,6 @@ def create_assignment(request):
 
 def manage_category(request):
     tag_set = Category.objects.all()
-    if not tag_set:
-        new_tag = Category(category_text = "Default", num_of_question = 0)
-        new_tag.save()
-        tag_set = Category.objects.all()
     cidList = []
     category_list = []
     number_list = []
@@ -653,7 +697,7 @@ def search_assignment(request):
     for assignment in existAssignment:
         aidList.append(assignment.id)
         number = Assigned_question.objects.filter(assignment_id = assignment).count()
-        if number == 0:
+        if number == 0 and assignment.assignment_name != "Default":
             assignment.delete()
         else:
             assignmentlist.append(assignment.assignment_name)
@@ -896,7 +940,9 @@ def do_assignment(request):
                 #operator = content[i]
                 #i = i + 1
                 #print operator
-                new_assessment = Assessment(question_id = filtered_question, user_id = target_user, option_text = option, answer_text = answer, operator = operator, date_of_assessment = upload_date, time_of_assessment=timestamp)
+                ###JASON 06-17###
+                new_assessment = Assessment(assignment_id = target_assignment, question_id = filtered_question, user_id = target_user, option_text = option, answer_text = answer, operator = operator, date_of_assessment = upload_date, time_of_assessment=timestamp)
+                #new_assessment = Assessment(question_id = filtered_question, user_id = target_user, option_text = option, answer_text = answer, operator = operator, date_of_assessment = upload_date, time_of_assessment=timestamp)
                 new_assessment.save()
         f_date = upload_date
         print 'f_date: ', f_date
@@ -1123,27 +1169,29 @@ def batch_import(request):
                             # VARIABLE NAME IN PYTHON  VARIABLE NAME IN DJANGO
                             # ADD A VALIDATION FOR QUESTIONS THAT ARE FORECAST
                             # [TODO] NEED TO CHANGE FINALIZE THE HEADING FORMAT
-                            QuestionUse = str(row[shift+1])											## training *
+                            AssignmentName = str(row[shift+0])                                      ## assignment name *
+                            #print 'AssignmentName:', AssignmentName
+                            QuestionUse = str(row[shift+1])                                         ## training *
                             #print 'QuestionUse:', QuestionUse
-                            QForecast = str(row[shift+2]).title()										## forecast *
+                            QForecast = str(row[shift+2]).title()                                       ## forecast *
                             #print 'QForecast: ', QForecast
-                            QuestionType = str(row[shift+3]).title()									## question_type *
+                            QuestionType = str(row[shift+3]).title()                                    ## question_type *
                             #print 'QuestionType: ', QuestionType
-                            NoOfChoices = int(row[shift+4])											## num_of_choices *
+                            NoOfChoices = int(row[shift+4])                                         ## num_of_choices *
                             #print 'NoOfChoices: ', NoOfChoices
-                            QCategory = unicode(str(row[shift+5]).strip(), errors='replace')			## category *
+                            QCategory = unicode(str(row[shift+5]).strip(), errors='replace')            ## category *
                             #print 'QCategory: ', QCategory
-                            QuestionText = unicode(str(row[shift+6]).strip(), errors='replace')		## question_text *
+                            QuestionText = unicode(str(row[shift+6]).strip(), errors='replace')     ## question_text *
                             #print 'QuestionText: ', QuestionText
-                            DateTrueValueKnown = date_norm(str(row[shift+7]))									## close_date *
+                            DateTrueValueKnown = date_norm(str(row[shift+7]))                                   ## close_date *
                             #print "DateTrueValueKnown: ", DateTrueValueKnown;
-                            TrueValue = unicode(str(row[shift+8]).strip(), errors='replace')			## true_value *
+                            TrueValue = unicode(str(row[shift+8]).strip(), errors='replace')            ## true_value *
                             #print 'TrueValue: ', TrueValue
-                            Units = unicode(str(row[shift+9]).strip(), errors='replace')				## unit *
+                            Units = unicode(str(row[shift+9]).strip(), errors='replace')                ## unit *
                             #print 'Units: ', Units
-                            QuestionSource = unicode(str(row[shift+10]).strip(), errors='replace')	## question_source
+                            QuestionSource = unicode(str(row[shift+10]).strip(), errors='replace')  ## question_source
                             #print 'QuestionSource: ', QuestionSource
-                            AllowAssessment = str(row[shift+11]).title()								## allow_assessment
+                            AllowAssessment = str(row[shift+11]).title()                                ## allow_assessment
                             #print 'AllowAssessment: ', AllowAssessment
                         else:
                             ErrorQv+=1
@@ -1154,9 +1202,17 @@ def batch_import(request):
                         if len(Q) == 0:
                             WarningQv +=1
                             WarningLogQ.insert(reader.line_num, WarningQ[4] + str(reader.line_num))
-                            newCategory = Category(category_text = QCategory, num_of_question = 0)
+                            newCategory = Category(category_text=QCategory, num_of_question=0)
                             newCategory.save()
-                    CategoryObj = Category.objects.get(category_text = QCategory)
+                        CategoryObj = Category.objects.get(category_text=QCategory)
+                        
+                        #Check assignment exists in the database
+                        Q = Assignment.objects.filter(assignment_name=AssignmentName)
+                        if len(Q) == 0:
+                            WarningQv +=1
+                            WarningLogQ.insert(reader.line_num, WarningQ[5] + str(reader.line_num))
+                            AssignmentName = "Default"
+                        AssignmentID = Assignment.objects.get(assignment_name=AssignmentName)
                     if ErrorQv == 0:
                         # Check if question exists in database
                         QSet = Question.objects.filter(question_text = QuestionText)
@@ -1298,14 +1354,17 @@ def batch_import(request):
                                      DateOfAssessment,Operator,DetailsOfAssessment, NumOfPairs,prob[i], val[i]])
                                 ## Check if Assessment exists in database
                                 timestamp = get_timestamp()
-                                A = Assessment.objects.filter(user_id = upload_user
-                                    ).filter(question_id = QuestionID).filter(answer_text = prob[i]
+                                A = Assessment.objects.filter(assignment_id = AssignmentID
+                                    ).filter(user_id = upload_user
+                                    ).filter(question_id = QuestionID
+                                    ).filter(answer_text = prob[i]
                                     ).filter(date_of_assessment = DateOfAssessment
                                     ).filter(details_of_assessment = DetailsOfAssessment)
                                 if len(A) == 0:
                                     #Assessment does not exist in the database add question
-                                    newAssessment = Assessment(question_id=QuestionID, user_id=upload_user, answer_text=prob[i],
-                                        option_text=val[i], operator=Operator, date_of_assessment=DateOfAssessment,
+                                    ###JASON 06-17###
+                                    newAssessment = Assessment(assignment_id=AssignmentID, question_id=QuestionID, user_id=upload_user, 
+                                        answer_text=prob[i], option_text=val[i], operator=Operator, date_of_assessment=DateOfAssessment,
                                         time_of_assessment=timestamp, details_of_assessment=DetailsOfAssessment)
                                     newAssessment.save()
                                 else:
@@ -1498,7 +1557,7 @@ def result(request):
             max_assessment_size = max(A_len_list)
 
         with open(data_path, 'wb') as csvfile:
-            data_fieldnames = ['USER', 'QUESTIONID', 'TRAINING', 'FORECAST', 'DISCRETE', 'NO OF CHOICES', 'CATEGORY', 'QUESTION TEXT', 'DATE TRUE VALUE KNOWN', 'TRUE VALUE', 'UNITS', 'ANSWER SOURCE', 'ALLOW ASSESSMENT', 'DATE OF ASSESSMENT', 'OPERATOR', 'ASSESSMENT DETAILS', 'NUMBER OF PAIRS']
+            data_fieldnames = ['USER', 'ASSIGNMENT', 'TRAINING', 'FORECAST', 'DISCRETE', 'NO OF CHOICES', 'CATEGORY', 'QUESTION TEXT', 'DATE TRUE VALUE KNOWN', 'TRUE VALUE', 'UNITS', 'ANSWER SOURCE', 'ALLOW ASSESSMENT', 'DATE OF ASSESSMENT', 'OPERATOR', 'ASSESSMENT DETAILS', 'NUMBER OF PAIRS']
             for i in range(max_assessment_size):
                 data_fieldnames.append('PROB '+str(i+1))
                 data_fieldnames.append('VALUE '+str(i+1))
@@ -1512,13 +1571,14 @@ def result(request):
                     for AKey in QA_map[qn.id]:
                         #Data File
                         data = {}
-                        data['QUESTIONID'] = qn.id
+                        #data['QUESTIONID'] = qn.id
+                        data['QUESTION TEXT'] = qn.question_text.encode('utf-8')
+                        data['ASSIGNMENT'] = "Default"
                         data['TRAINING'] = str(qn.corporate_training)
                         data['FORECAST'] = str(qn.forecast)
                         data['DISCRETE'] = str(qn.question_type)
                         data['NO OF CHOICES'] = qn.num_of_choices
                         data['CATEGORY'] = str(qn.category).encode('utf-8')
-                        data['QUESTION TEXT'] = qn.question_text.encode('utf-8')
                         data['DATE TRUE VALUE KNOWN'] = str(qn.upload_date)
                         data['TRUE VALUE'] = qn.true_value
                         data['UNITS'] = str(qn.unit).encode('utf-8')
@@ -1537,6 +1597,9 @@ def result(request):
                             data['ASSESSMENT DETAILS'] = str(QA_map[qn.id][AKey][0]['details_of_assessment']).encode('utf-8')
                         data['NUMBER OF PAIRS'] = len(QA_map[qn.id][AKey])
                         for j in range(data['NUMBER OF PAIRS']):
+                            ###JASON 06-17###
+                            a_set = Assignment.objects.get(id = QA_map[qn.id][AKey][j]['assignment_id_id'])
+                            data['ASSIGNMENT'] = a_set.assignment_name
                             data['PROB '+str(j+1)]  = QA_map[qn.id][AKey][j]['answer_text']
                             data['VALUE '+str(j+1)] = QA_map[qn.id][AKey][j]['option_text']
                         writer.writerow(data)
@@ -1673,8 +1736,8 @@ def result_test(request):
                 option = json.dumps("Group");
                 return render(request, "ucs/result_test.html", {"loop_option": option, "wcd_table_org": wls_c_d_table, "summary_org": summary_results,"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list, "dp_list": datapoints_list})
             elif answer[13] is not None:
-            	start_time = datetime.strptime(date_norm(answer[17]), "%Y-%m-%d").date()
-            	end_time = datetime.strptime(date_norm(answer[16]), "%Y-%m-%d").date()
+                start_time = datetime.strptime(date_norm(answer[17]), "%Y-%m-%d").date()
+                end_time = datetime.strptime(date_norm(answer[16]), "%Y-%m-%d").date()
                 time_filter_list = []
                 time_factor = int(answer[18]) #Bin spaceing               
                 if answer[15] == "Day":
@@ -1746,7 +1809,7 @@ def wls_bias_calc(plot):
         X_bar += row[2]*row[0]
         Y_bar += row[2]*row[1]
     if sum_w == 0:
-    	sum_w = 0.01
+        sum_w = 0.01
     X_bar = X_bar / sum_w
     Y_bar = Y_bar / sum_w
 
@@ -1754,11 +1817,11 @@ def wls_bias_calc(plot):
         BETA_1 += row[2]*(row[0]-X_bar)*(row[1]-Y_bar)
         denom += row[2]*(math.pow((row[0]-X_bar),2))
     if denom == 0:
-    	denom = 0.01
+        denom = 0.01
     BETA_1 = BETA_1 / denom
     BETA_0 = Y_bar - BETA_1*X_bar
     if BETA_1 == 0:
-    	BETA_1 = 0.01
+        BETA_1 = 0.01
     #BETA_1 is WLS slope
     #BETA_0 is WLS intercept
     wls_datapoints = []

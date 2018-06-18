@@ -64,7 +64,7 @@
 		var newText2  = document.createTextNode(name.number);
 		newCell_2.appendChild(newText2);
 		
-		if(name.group_name != "All Users"){
+		if(name.group_name != "All Users" && name.group_name != "No Users"){
 			var newCell_3  = newRow.insertCell(3);
 			newCell_3.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="edit_group(this)" >'
 			+'<span class="glyphicon glyphicon-pencil"></span> Edit</button>';

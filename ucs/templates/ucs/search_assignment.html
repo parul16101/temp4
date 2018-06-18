@@ -62,41 +62,43 @@
 
     datas.forEach(function(name, index) {
         // DJ - No need to defined n variables for n data types. Waste memory and makes code non-scale
-        var num = tableRef.rows.length;
-        var newRow   = tableRef.insertRow(num);
-        var newCell  = newRow.insertCell(0);
-        var newText  = document.createTextNode(name.assignment_id);
-        newCell.appendChild(newText);
-        newCell.style.display = 'none';
+        if (name.assignment_name != "Default") {
+	        var num = tableRef.rows.length;
+	        var newRow   = tableRef.insertRow(num);
+	        var newCell  = newRow.insertCell(0);
+	        var newText  = document.createTextNode(name.assignment_id);
+	        newCell.appendChild(newText);
+	        newCell.style.display = 'none';
 
-        newCell  = newRow.insertCell(1);
-        newText  = document.createTextNode(name.assignment_name);
-        newCell.appendChild(newText);
+	        newCell  = newRow.insertCell(1);
+	        newText  = document.createTextNode(name.assignment_name);
+	        newCell.appendChild(newText);
 
-        newCell  = newRow.insertCell(2);
-        newText  = document.createTextNode(name.number);
-        newCell.appendChild(newText);
-        newCell.style.textAlign = "center";
+	        newCell  = newRow.insertCell(2);
+	        newText  = document.createTextNode(name.number);
+	        newCell.appendChild(newText);
+	        newCell.style.textAlign = "center";
 
-        newCell = newRow.insertCell(3);
-        newText = document.createTextNode(name.cdate);
-        newCell.appendChild(newText);
-        newCell.style.textAlign = "center";
+	        newCell = newRow.insertCell(3);
+	        newText = document.createTextNode(name.cdate);
+	        newCell.appendChild(newText);
+	        newCell.style.textAlign = "center";
 
-        newCell  = newRow.insertCell(4);
-        newCell.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="do_assignment(this)" >'
-        +'<span class="glyphicon glyphicon-pencil"></span> Do </button>';
-        newCell.style.textAlign = "center";
-        //{% if request.session.admin_user %}
-        newCell  = newRow.insertCell(5);
-        newCell.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="edit_assignment(this)" >'
-        +'<span class="glyphicon glyphicon-pencil"></span> Edit </button>';
-        newCell.style.textAlign = "center";
+	        newCell  = newRow.insertCell(4);
+	        newCell.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="do_assignment(this)" >'
+	        +'<span class="glyphicon glyphicon-pencil"></span> Do </button>';
+	        newCell.style.textAlign = "center";
+	        //{% if request.session.admin_user %}
+	        newCell  = newRow.insertCell(5);
+	        newCell.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="edit_assignment(this)" >'
+	        +'<span class="glyphicon glyphicon-pencil"></span> Edit </button>';
+	        newCell.style.textAlign = "center";
 
-        newCell  = newRow.insertCell(6);
-        newCell.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="delete_assignment(this)" >'
-        +'<span class="fa fa-times"></span> Delete </button>';
-        newCell.style.textAlign = "center";
+	        newCell  = newRow.insertCell(6);
+	        newCell.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="delete_assignment(this)" >'
+	        +'<span class="fa fa-times"></span> Delete </button>';
+	        newCell.style.textAlign = "center";
+        }
         //{% endif %}
     });
 </script>

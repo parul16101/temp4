@@ -93,6 +93,9 @@ class Assignment(models.Model):
         return self.assignment_name
 
 class Assessment(models.Model):
+    ## @var assignment_id
+    # This is Foreign key. It is a reference to a assignment.
+    assignment_id = models.ForeignKey(Assignment, on_delete=models.CASCADE, null=True, blank=True)
     ## @var question_id
     # This is Foreign key. It is a reference to a question.
     question_id = models.ForeignKey(Question, on_delete=models.CASCADE)
