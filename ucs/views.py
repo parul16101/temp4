@@ -154,10 +154,10 @@ def init_config():
 # Function for rendering home page. Home page is rendered when someone login successfully.
 def home_page(request):
     #refresh_database()
-    #refresh_database_2()
+    ####init_config()
+    ####refresh_database_2()
     ###print [item.pk for item in Assignment.objects.all()]
     ###print Assignment.objects.get(assignment_name="Default").id
-    #init_config()
     #DJ Home page to do report
     if "userId" in request.session.keys():
         user_name = request.session.get("userId")
