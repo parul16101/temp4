@@ -1971,14 +1971,16 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         if answer[8]:
             Q_text = []
             A_id = Assignment.objects.get(assignment_name=answer[8])
-            AQ_objs = Assigned_question.objects.filter(assignment_id=A_id)
-            for obj in AQ_objs:
-                Q_text.append(obj.question_id)
-            #print 'QText: ', QText
-            QSet = Question.objects.filter(question_text__in=Q_text)
+            ASet = Assessment.objects.filter(assignment_id=A_id)
+            ##AQ_objs = Assigned_question.objects.filter(assignment_id=A_id)
+            ##for obj in AQ_objs:
+            ##    Q_text.append(obj.question_id)
+            ##print 'QText: ', QText
+            ##QSet = Question.objects.filter(question_text__in=Q_text)
             #print 'QSet: ', QSet
             #print answer[8]
         else:
+            ASet = Assessment.objects.filter(question_id__in=QSet)
             print 'The assignment name is not specified'
         if answer[0] is not None:
             QSet = Question.objects.filter(id__in=QSet, question_type=answer[0])
@@ -2006,14 +2008,15 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         else:
             print 'The number of choices is not specified'
         if answer[5]:
-            tmp = Category.objects.get(category_text=answer[5])
+            tmp  = Category.objects.get(category_text=answer[5])
             QSet = Question.objects.filter(id__in=QSet, category=tmp)
             #print 'GOT VALUE'
             #print tmp
         else:
             print 'The category is not specified'
         #Query on question_set, user_name, and ...
-        ASet = Assessment.objects.filter(question_id__in=QSet)
+        ASet = Assessment.objects.filter(id__in=ASet, question_id__in=QSet)
+
         if answer[7]:
             G_user = []
             G_id = Group.objects.get(group_name=answer[7])
@@ -2036,7 +2039,6 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         else:
             print 'The date of assessment is not specified'
     else:
-        
         ''' 
         answer = [question_type, forecast, question_use, question_text, true_or_false, category, user_name, group_name, assignment_name, edate_submitted
         sdate_submitted, edate_f_assign, sdate_f_assign, edate_c_question, sdate_c_question, loop_request]
