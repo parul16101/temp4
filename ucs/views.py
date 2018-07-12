@@ -3,7 +3,10 @@
 Django views for ucs project.
 This contains various function which process HTTP requests and render corrosponding html pages.
 """
-import os, sys, time, zipfile, urllib, shutil, base64, json, hashlib, csv, math, platform
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+import os, time, zipfile, urllib, shutil, base64, json, hashlib, csv, math, platform
 from time import strftime
 from django.shortcuts import render, redirect
 from django.template import RequestContext
@@ -1156,6 +1159,9 @@ def batch_import(request):
             print header
             if "NUMBER OF PAIRS" in header and header.index("NUMBER OF PAIRS") == shift+15:
                 for row in reader:
+                    # If encounter an empty row, skip the rest of the lines
+                    if not row:
+                        break
                     ErrorQv = 0
                     WarningQv = 0
                     # ********************** QUESTION INFORMATION VALIDATION **********************
@@ -1268,7 +1274,7 @@ def batch_import(request):
                         # Validate that NumOfPairs, Operator, or DateOfAssessment are not missing
                         if row[shift+15] == '' or Operator == '' or DateOfAssessment == '' or row[shift+4] == '':
                             ErrorAv += 1
-                            ErrorLogA.insert(reader.line_num, ErrorA[0] + str(reader.line_num))
+                            ErrorLogA.insert(reader.line_num, ErrorA[0]+str(reader.line_num))
                         else:
                             NumOfPairs=int(row[shift+15])
                             NumOfChoices=float(row[shift+4])
@@ -1276,88 +1282,92 @@ def batch_import(request):
                             # Validate that NumOfChoices can only be 0 or greater than 1
                             if NumOfChoices < 0 or NumOfChoices == 1:
                                 ErrorAv +=1
-                                ErrorLogA.insert(reader.line_num, ErrorA[1] + str(reader.line_num))
+                                ErrorLogA.insert(reader.line_num, ErrorA[1]+str(reader.line_num))
                             # Check for insufficient data when NumOfPairs is different than NumOfChoices for discrete
                             elif NumOfChoices == 0:
                                 # Check that for the continuous case NumOfPairs is greater than 1
                                 # Should a check for the case were continuous should be 0 for NumOfChoices
                                 if NumOfPairs <= 0:
                                     ErrorAv += 1
-                                    ErrorLogA.insert(reader.line_num, ErrorA[2] + str(reader.line_num))
+                                    ErrorLogA.insert(reader.line_num, ErrorA[2]+str(reader.line_num))
                             else:
                                 # Check that for discrete the NumOfChoices is equal to NumOfPairs
                                 if NumOfPairs != NumOfChoices:
                                     ErrorAv +=1
-                                    ErrorLogA.insert(reader.line_num, ErrorA[2] + str(reader.line_num))
+                                    ErrorLogA.insert(reader.line_num, ErrorA[2]+str(reader.line_num))
                         if ErrorAv == 0:
                             #VALIDATION OF SUFFICIENT DATA
                             prob = []
                             val = []
-                            for i in range (0,NumOfPairs):
+                            for i in range(0, NumOfPairs):
                                 if not row[shift+16+2*i] or not row[shift+17+2*i]:
-                                    ErrorAv +=1
-                                    ErrorLogA.insert(reader.line_num, ErrorA[3] + str(reader.line_num))
+                                    ErrorAv += 1
+                                    ErrorLogA.insert(reader.line_num, ErrorA[3]+str(reader.line_num))
                                 else:
-                                    prob.insert(reader.line_num,float(row[shift+16+2*i]))
-                                    val.insert(reader.line_num,float(row[shift+17+2*i]))
+                                    prob.insert(reader.line_num, float(row[shift+16+2*i]))
+                                    val.insert(reader.line_num, float(row[shift+17+2*i]))
                         #VALIDATION OF AVAILABLE ASSESSMENT DATA
                         # Sort both Probabilities and Values for further validation if there are more than
                         # 2 pairs of assessments
                         if ErrorAv == 0:
-                            if sum(prob) > 2:
+                            if len(prob) > 2:
                                 prob, val = (list(x) for x in zip(*sorted(zip(prob, val))))
                             if NumOfChoices > 1:
                                 # Check that the operator is not different than EQ or empty
                                 if Operator != "EQ":
                                     ErrorAv += 1
-                                    ErrorLogA.insert(reader.line_num, ErrorA[8] + str(reader.line_num))
+                                    ErrorLogA.insert(reader.line_num, ErrorA[8]+str(reader.line_num))
                                 # Warn user that the sum is not 1
-                                if sum(prob) !=1:
+                                if sum(prob) != 1:
                                     WarningAv += 1
-                                    WarningLogA.insert(reader.line_num, WarningA[0] + str(reader.line_num))
+                                    WarningLogA.insert(reader.line_num, WarningA[0]+str(reader.line_num))
                                 # Check that all probabilities are between 0 and 1
                                 if sum([i > 1 for i in prob]) > 0:
                                     ErrorAv +=1
-                                    ErrorLogA.insert(reader.line_num, ErrorA[9] + str(reader.line_num))
+                                    ErrorLogA.insert(reader.line_num, ErrorA[9]+str(reader.line_num))
                                 if sum([i < 0 for i in prob]) > 0:
                                     ErrorAv +=1
-                                    ErrorLogA.insert(reader.line_num, ErrorA[9] + str(reader.line_num))
+                                    ErrorLogA.insert(reader.line_num, ErrorA[9]+str(reader.line_num))
                                 # Check that all values are between 1 and the NumOfChoices
                                 if sum([i > NumOfChoices for i in val]) > 0:
                                     ErrorAv +=1
-                                    ErrorLogA.insert(reader.line_num, ErrorA[10] + str(reader.line_num))
+                                    ErrorLogA.insert(reader.line_num, ErrorA[10]+str(reader.line_num))
                                 # Check that for LE everything is ascending
                                 if Operator == "LE" and NumOfPairs > 2:
                                     if sum([x>y for x, y in zip(val, val[1:])]) > 0:
                                         ErrorAv +=1
-                                        ErrorLogA.insert(reader.line_num, ErrorA[5] + str(reader.line_num))
-                                    # Check that for GE everything is ascending
+                                        ErrorLogA.insert(reader.line_num, ErrorA[5]+str(reader.line_num))
+                                # Check that for GE everything is ascending
                                 elif Operator == "GE" and NumOfPairs > 2:
                                     if sum([x<y for x, y in zip(val, val[1:])]) > 0:
                                         ErrorAv +=1
-                                        ErrorLogA.insert(reader.line_num, ErrorA[6] + str(reader.line_num))
-                                # Check that the operator is not EQ or empt
+                                        ErrorLogA.insert(reader.line_num, ErrorA[6]+str(reader.line_num))
+                                # Check that the operator is EQ
+                                elif Operator == "EQ" and NumOfPairs >= 2:
+                                    pass
+                                # Check that the operator is not EQ or empty
                                 else:
                                     ErrorAv +=1
-                                    ErrorLogA.insert(reader.line_num, ErrorA[4] + str(reader.line_num))
+                                    ErrorLogA.insert(reader.line_num, ErrorA[4]+str(reader.line_num))
                                 # Check that all probabilities are between 0 and 1
                                 if sum([i > 1 for i in prob]) > 0:
                                     ErrorAv += 1
-                                    ErrorLogA.insert(reader.line_num, ErrorA[7] + str(reader.line_num))
+                                    ErrorLogA.insert(reader.line_num, ErrorA[7]+str(reader.line_num))
                                 if sum([i < 0 for i in prob]) > 0:
                                     ErrorAv += 1
-                                    ErrorLogA.insert(reader.line_num, ErrorA[7] + str(reader.line_num))
+                                    ErrorLogA.insert(reader.line_num, ErrorA[7]+str(reader.line_num))
                         if ErrorAv == 0:
-                            for i in range (0, NumOfPairs):
+                            for i in range(0, NumOfPairs):
                                 data.append([0, QuestionUse, QForecast, QuestionType, NoOfChoices, QCategory, QuestionText,
                                      DateTrueValueKnown, TrueValue, Units, QuestionSource, AllowAssessment,
-                                     DateOfAssessment,Operator,DetailsOfAssessment, NumOfPairs,prob[i], val[i]])
+                                     DateOfAssessment, Operator, DetailsOfAssessment, NumOfPairs, prob[i], val[i]])
                                 ## Check if Assessment exists in database
                                 timestamp = get_timestamp()
                                 A = Assessment.objects.filter(assignment_id = AssignmentID
                                     ).filter(user_id = upload_user
                                     ).filter(question_id = QuestionID
                                     ).filter(answer_text = prob[i]
+                                    ).filter(option_text = val[i]
                                     ).filter(date_of_assessment = DateOfAssessment
                                     ).filter(details_of_assessment = DetailsOfAssessment)
                                 if len(A) == 0:
