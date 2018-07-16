@@ -1527,7 +1527,7 @@ def result(request):
             csvfile.write("\n\n\n");
 
         ##################IT'S NO LONGER RAUL CODE######################
-        QSet, ASet = returnAssessments(answer,0,"", "")
+        QSet, ASet = returnAssessments(answer, 0, "", "")
         QA_map = {} #Mapping of questions to assessments
         temp = ASet.values()
         with open(log_path, 'a') as csvfile:
@@ -1625,11 +1625,11 @@ def result_test(request):
     current_user = User.objects.get(id= user_id)
     summary_results = {}
     plot = []
-    summary_results['confidence'] = "Not Calculated"
+    summary_results['confidence']  = "Not Calculated"
     summary_results['calibration'] = "Not Calculated"
-    summary_results['knowledge'] ="Not Calculated"
-    summary_results['resolution'] = "Not Calculated"
-    summary_results['brierscore'] = "Not Calculated"
+    summary_results['knowledge']   = "Not Calculated"
+    summary_results['resolution']  = "Not Calculated"
+    summary_results['brierscore']  = "Not Calculated"
 
     datapoints = []
     if request.method == "POST":
@@ -1656,7 +1656,7 @@ def result_test(request):
                 writer.writerow({'Question Type': answer[0], 'Forecast': answer[1], 'Question Purpose': answer[2], 'Question Text': answer[3], '# of Choices': answer[4], 'Category': answer[5], 'User': answer[6], 'Group': answer[7], 'Assignment Name': answer[8], 'Date Submitted': answer[9]})
                 csvfile.write("\n\n\n");
             ##################IT'S NO LONGER RAUL CODE######################
-            QSet, ASet = returnAssessments(answer,0,"","")
+            QSet, ASet = returnAssessments(answer, 0, "", "")
             QA_map = {} #Mapping of questions to assessments
             temp = ASet.values()
             with open(log_path, 'a') as csvfile:
@@ -1701,7 +1701,8 @@ def result_test(request):
                     usr_id_set.append(val['user_id_id'])
                 for key in loop_set:
                     answer_copy[6] = key
-                    temp_QSet, temp_ASet = returnAssessments(answer_copy,1, usr_id_set[usr_id_pos], "user")
+                    temp_QSet, temp_ASet = returnAssessments(answer_copy, 1, usr_id_set[usr_id_pos], "user")
+                    print "JJ: ", len(temp_QSet), len(temp_ASet)
                     srt, vt, pt, dpt = computeResults(temp_ASet)
                     sumresult_list[key] = srt
                     values_list.append(vt)
@@ -1730,7 +1731,8 @@ def result_test(request):
                     group_id_set.append(val.group_id)
                 for key in loop_set:
                     answer_copy[7] = key
-                    temp_QSet, temp_ASet = returnAssessments(answer_copy,1, group_id_set[group_id_pos], "group")
+                    temp_QSet, temp_ASet = returnAssessments(answer_copy, 1, group_id_set[group_id_pos], "group")
+                    print "JJ: ", len(temp_QSet), len(temp_ASet)
                     srt, vt, pt, dpt = computeResults(temp_ASet)
                     sumresult_list[key] = srt
                     values_list.append(vt)
@@ -1746,55 +1748,59 @@ def result_test(request):
                 option = json.dumps("Group");
                 return render(request, "ucs/result_test.html", {"loop_option": option, "wcd_table_org": wls_c_d_table, "summary_org": summary_results,"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list, "dp_list": datapoints_list})
             elif answer[13] is not None:
-                start_time = datetime.strptime(date_norm(answer[17]), "%Y-%m-%d").date()
-                end_time = datetime.strptime(date_norm(answer[16]), "%Y-%m-%d").date()
-                time_filter_list = []
-                time_factor = int(answer[18]) #Bin spaceing               
-                if answer[15] == "Day":
-                    time_cond = start_time
-                    while time_cond <= end_time :
-                        time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
-                        time_cond = time_cond + timedelta(days=time_factor)
-                elif answer[15] == "Week":
-                    time_cond = start_time
-                    time_factor = time_factor * 7
-                    while time_cond <= end_time :
-                        time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
-                        time_cond = time_cond + timedelta(days=time_factor)            
-                elif answer[15] == "Month":
-                    time_cond = start_time
-                    time_factor = time_factor * 30
-                    while time_cond <= end_time :
-                        time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
-                        time_cond = time_cond + timedelta(days=time_factor)       
-                elif answer[15] == "Year":
-                    time_cond = start_time
-                    time_factor = time_factor * 364
-                    while time_cond <= end_time :
-                        time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
-                        time_cond = time_cond + timedelta(days=time_factor)
-                for key in time_filter_list:
-                    time_list = []
-                    prev_time = datetime.strptime(key, "%Y-%m-%d").date()
-                    prev_time = prev_time - timedelta(days=time_factor)
-                    curr_time = datetime.strptime(key, "%Y-%m-%d").date()
-                    while prev_time <= curr_time :
-                        time_list.append(prev_time.strftime("%Y-%m-%d"))
-                        prev_time = prev_time + timedelta(days=1)
-                    temp_QSet, temp_ASet = returnAssessments(answer,1, time_list, "time")
-                    srt, vt, pt, dpt = computeResults(temp_ASet)
-                    sumresult_list[key] = srt
-                    values_list.append(vt)
-                    plot_list.append(pt)
-                    datapoints_list[key] = dpt
-                    wdt, wcdt = wls_bias_calc(pt)
-                    wls_dp_list.append(wdt)
-                    wls_c_d_list[key] = wcdt
-                wls_c_d_list = json.dumps(wls_c_d_list)
-                sumresult_list = json.dumps(sumresult_list)
-                datapoints_list = json.dumps(datapoints_list)
-                option = json.dumps("Time");
-                return render(request, "ucs/result_test.html", {"loop_option": option, "wcd_table_org": wls_c_d_table, "summary_org": summary_results,"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list, "dp_list": datapoints_list})
+                if not answer[16] or not answer[17] or not answer[18]:
+                    pass
+                else:
+                    start_time = datetime.strptime(date_norm(answer[17]), "%Y-%m-%d").date()
+                    end_time = datetime.strptime(date_norm(answer[16]), "%Y-%m-%d").date()
+                    time_filter_list = []
+                    time_factor = int(answer[18]) #Bin spaceing               
+                    if answer[15] == "Day":
+                        time_cond = start_time
+                        while time_cond <= end_time :
+                            time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
+                            time_cond = time_cond + timedelta(days=time_factor)
+                    elif answer[15] == "Week":
+                        time_cond = start_time
+                        time_factor = time_factor * 7
+                        while time_cond <= end_time :
+                            time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
+                            time_cond = time_cond + timedelta(days=time_factor)            
+                    elif answer[15] == "Month":
+                        time_cond = start_time
+                        time_factor = time_factor * 30
+                        while time_cond <= end_time :
+                            time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
+                            time_cond = time_cond + timedelta(days=time_factor)       
+                    elif answer[15] == "Year":
+                        time_cond = start_time
+                        time_factor = time_factor * 364
+                        while time_cond <= end_time :
+                            time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
+                            time_cond = time_cond + timedelta(days=time_factor)
+                    for key in time_filter_list:
+                        time_list = []
+                        prev_time = datetime.strptime(key, "%Y-%m-%d").date()
+                        prev_time = prev_time - timedelta(days=time_factor)
+                        curr_time = datetime.strptime(key, "%Y-%m-%d").date()
+                        while prev_time <= curr_time :
+                            time_list.append(prev_time.strftime("%Y-%m-%d"))
+                            prev_time = prev_time + timedelta(days=1)
+                        temp_QSet, temp_ASet = returnAssessments(answer, 1, time_list, "time")
+                        print "JJ: ", len(temp_QSet), len(temp_ASet)
+                        srt, vt, pt, dpt = computeResults(temp_ASet)
+                        sumresult_list[key] = srt
+                        values_list.append(vt)
+                        plot_list.append(pt)
+                        datapoints_list[key] = dpt
+                        wdt, wcdt = wls_bias_calc(pt)
+                        wls_dp_list.append(wdt)
+                        wls_c_d_list[key] = wcdt
+                    wls_c_d_list = json.dumps(wls_c_d_list)
+                    sumresult_list = json.dumps(sumresult_list)
+                    datapoints_list = json.dumps(datapoints_list)
+                    option = json.dumps("Time");
+                    return render(request, "ucs/result_test.html", {"loop_option": option, "wcd_table_org": wls_c_d_table, "summary_org": summary_results,"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list, "dp_list": datapoints_list})
             usr_key = User.objects.get(pk=user_id).username
             sumresult_list[usr_key] = summary_results
             wls_c_d_list[usr_key] = wls_c_d_table
@@ -1992,6 +1998,7 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         else:
             ASet = Assessment.objects.filter(question_id__in=QSet)
             print 'The assignment name is not specified'
+            print "Number of Assessment: ", len(ASet)
         if answer[0] is not None:
             QSet = Question.objects.filter(id__in=QSet, question_type=answer[0])
             #print 'GOT VALUE'
@@ -2048,7 +2055,9 @@ def returnAssessments(answer, check, loop_filter, loop_type):
             ASet = Assessment.objects.filter(id__in=ASet, date_of_assessment=answer[9])
         else:
             print 'The date of assessment is not specified'
-    else:
+    elif check == 2:
+        pass
+        #DJ's code for the looping
         ''' 
         answer = [question_type, forecast, question_use, question_text, true_or_false, category, user_name, group_name, assignment_name, edate_submitted
         sdate_submitted, edate_f_assign, sdate_f_assign, edate_c_question, sdate_c_question, loop_request]
@@ -2057,6 +2066,7 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         answer[13-14] := question upload date
         answer[15] := loop_request
         '''
+        #"""
         target_assignments = []
         question_set = []
         if loop_type == "user":
@@ -2122,6 +2132,99 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         #print a_set
         QSet = Question.objects.filter(question_text__in=question_set)
         ASet = Assessment.objects.filter(question_id__in=a_set_qid)
+        print "#######################################################"
+        print QSet
+        print ASet
+        print "#######################################################"
+        #"""
+    else:
+        
+        ''' 
+        answer = [question_type, forecast, question_use, question_text, true_or_false, category, user_name, group_name, assignment_name, edate_submitted
+        sdate_submitted, edate_f_assign, sdate_f_assign, edate_c_question, sdate_c_question, loop_request]
+        answer[9-10] := assessment Date submitted
+        answer[11-12] := assignment finish date
+        answer[13-14] := question upload date
+        answer[15] := loop_request
+        '''
+        target_assignments = []
+        if loop_type == "user":
+            get_assign_list = Assignment_log.objects.filter(finish_date__gt="0000-00-00", user_id=loop_filter)
+        elif loop_type == "group":
+            get_assign_list = Assignment_log.objects.filter(finish_date__gt="0000-00-00", group_id=loop_filter)
+        elif loop_type == "time":
+            get_assign_list = Assignment_log.objects.filter(finish_date__in=loop_filter)
+        
+        for asn in get_assign_list:
+            if answer[8]:
+                if asn.assignment_id.assignment_name == answer[8]:
+                    target_assignments.append(asn.assignment_id)
+            else:
+                target_assignments.append(asn.assignment_id)
+        ################################################################################
+        print "JJ: ", len(target_assignments)
+        ASet = Assessment.objects.filter(assignment_id__in=target_assignments)
+
+        """
+        qs_list = Assigned_question.objects.filter(assignment_id__in=target_assignments)
+        for ql in qs_list:
+            ql = Question.objects.filter(question_text=ql.question_id.question_text)
+            for q in ql:
+                question_set.append(q)
+        """
+        print "JJ: ", len(ASet)
+
+        ################################################################################
+        QSet = Question.objects.all()
+        if answer[0] is not None:
+            QSet = [qs for qs in QSet if qs.question_type == answer[0]]
+        if answer[1] is not None:
+            QSet = [qs for qs in QSet if qs.forecast == answer[1]]
+        if answer[2] is not None:
+            QSet = [qs for qs in QSet if qs.corporate_training == answer[2]]
+        if answer[3]:  
+            QSet = [qs for qs in QSet if qs.question_text == answer[3]]
+        if answer[4]:
+            QSet = [qs for qs in QSet if qs.num_of_choices == answer[4]]
+        if answer[5]:
+            cond_val = Category.objects.get(category_text=answer[5])
+            QSet = [qs for qs in QSet if qs.category == cond_val]
+        print "JJ: ", len(QSet), len(ASet)
+        #print question_set
+        ###a_set = []
+        if answer[9] != "" and answer[10] != "":
+            ASet = Assessment.objects.filter(id__in=ASet, question_id__in=QSet, date_of_assessment__range=[answer[10], answer[9]])
+        elif answer[9] == "" and answer[10] != "":
+            ASet = Assessment.objects.filter(id__in=ASet, question_id__in=QSet, date_of_assessment__range=[answer[10], "2100-01-01"])
+        elif answer[10] ==  "" and answer[9] != "":
+            ASet = Assessment.objects.filter(id__in=ASet, question_id__in=QSet, date_of_assessment__range=["0000-00-00", answer[9]])
+        else:
+            ASet = Assessment.objects.filter(id__in=ASet, question_id__in=QSet)
+        #startDate = answer[10].split("/")
+        #endDate   = answer[9].split("/")
+        
+        #get_assessments = Assessment.objects.filter(question_id__in=question_set)
+        ##for ga in get_assessments:
+        ##    a_set.append(ga)
+        ##    #print ga.date_of_assessment
+        if answer[6]:
+            user = User.objects.get(username = answer[6])
+            ASet = [a for a in ASet if a.user_id == user]
+        if answer[7]:
+            G_user = []
+            G_id = Group.objects.get(group_name=answer[7])
+            GM_objs = Group_member.objects.filter(group_id=G_id)
+            for obj in GM_objs:
+                G_user.append(obj.user_id)
+            ASet = [a for a in ASet if a.user_id in G_user]
+        
+        #a_set_qid = []
+        #for a in a_set:
+        #    a_set_qid.append(a.question_id)
+        #print a_set
+        ###QSet = Question.objects.filter(question_text__in=question_set)
+        ###ASet = Assessment.objects.filter(question_id__in=a_set_qid)
+        print "JJ: ", len(QSet), len(ASet)
     return (QSet, ASet)
 
 
@@ -2241,8 +2344,8 @@ def computeResults(ASet):
         summary_results['brierscore'] = round(brierscore, 3)
 
     except Exception as e:
-            print e
-            #print "Something Unexpected Happened!!!"
+        print e
+        #print "Something Unexpected Happened!!!"
 
     return summary_results, values, plot, datapoints
     #return summary_results, values, plot, datapoints, WLS_table_json
