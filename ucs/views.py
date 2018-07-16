@@ -144,7 +144,7 @@ def init_config():
     if len(g_set) == 0:
         no_users_group = Group(group_name = "No Users")
         no_users_group.save()
-        
+
     #Create association between DEFAULT assignment and NO USERS group
     default_assignment = Assignment.objects.get(assignment_name = "Default")
     no_users_group = Group.objects.get(group_name = "No Users")
@@ -1215,9 +1215,18 @@ def batch_import(request):
                         #Check assignment exists in the database
                         Q = Assignment.objects.filter(assignment_name=AssignmentName)
                         if len(Q) == 0:
-                            WarningQv +=1
-                            WarningLogQ.insert(reader.line_num, WarningQ[5] + str(reader.line_num))
-                            AssignmentName = "Default"
+                            AssignmentName = str(file_name)+str(upload_date)
+                            Q = Assignment.objects.filter(assignment_name=AssignmentName)
+                            if len(Q) == 0:
+                                WarningQv +=1
+                                WarningLogQ.insert(reader.line_num, WarningQ[5] + str(reader.line_num))
+                                newAssignment  = Assignment(assignment_name=AssignmentName, due_date=upload_date)
+                                newAssignment.save()
+                                AssignmentObj  = Assignment.objects.get(assignment_name=AssignmentName)
+                                no_users_group = Group.objects.get(group_name="No Users")
+                                insertIntoAssignmentLog = Assignment_log(assignment_id=AssignmentObj, user_id=user_id, due_date=upload_date, 
+                                    finish_date="0000-00-00", group_id=no_users_group)
+                                insertIntoAssignmentLog.save()
                         AssignmentID = Assignment.objects.get(assignment_name=AssignmentName)
                     if ErrorQv == 0:
                         # Check if question exists in database
@@ -1500,11 +1509,11 @@ def result(request):
     current_user = User.objects.get(id= user_id)
     summary_results = {}
     plot = []
-    summary_results['confidence'] = "Not Calculated"
+    summary_results['confidence']  = "Not Calculated"
     summary_results['calibration'] = "Not Calculated"
-    summary_results['knowledge'] ="Not Calculated"
-    summary_results['resolution'] = "Not Calculated"
-    summary_results['brierscore'] = "Not Calculated"
+    summary_results['resolution']  = "Not Calculated"
+    summary_results['knowledge']   = "Not Calculated"
+    summary_results['brierscore']  = "Not Calculated"
 
     datapoints = []
     if request.method == "POST":
@@ -1553,7 +1562,7 @@ def result(request):
 
 
         summary_results, values, plot, datapoints = computeResults(ASet)
-        summary_fieldnames = ['Confidence', 'Calibration','Resolution','Knowledge','Brierscore']
+        summary_fieldnames = ['Confidence', 'Calibration', 'Resolution', 'Knowledge', 'Brierscore']
         insert_data_to_debug_file_vertically(summary_fieldnames,values,'a')
 
         #Get WLS line, confidence bias, and directional bias
@@ -1627,8 +1636,8 @@ def result_test(request):
     plot = []
     summary_results['confidence']  = "Not Calculated"
     summary_results['calibration'] = "Not Calculated"
-    summary_results['knowledge']   = "Not Calculated"
     summary_results['resolution']  = "Not Calculated"
+    summary_results['knowledge']   = "Not Calculated"
     summary_results['brierscore']  = "Not Calculated"
 
     datapoints = []
@@ -1681,7 +1690,7 @@ def result_test(request):
                 csvfile.write("\n\n\n");
             summary_results, values, plot, datapoints = computeResults(ASet)
                 
-            summary_fieldnames = ['Confidence', 'Calibration','Resolution','Knowledge','Brierscore']
+            summary_fieldnames = ['Confidence', 'Calibration', 'Resolution', 'Knowledge', 'Brierscore']
             insert_data_to_debug_file_vertically(summary_fieldnames,values,'a')
 
             #Get WLS line, confidence bias, and directional bias
@@ -2207,10 +2216,13 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         ##for ga in get_assessments:
         ##    a_set.append(ga)
         ##    #print ga.date_of_assessment
+        print "JJ: ", len(QSet), len(ASet)
         if answer[6]:
-            user = User.objects.get(username = answer[6])
-            ASet = [a for a in ASet if a.user_id == user]
+            print "HEHE...", loop_filter
+            upload_user = User.objects.get(username = answer[6])
+            ASet = [a for a in ASet if a.user_id == upload_user]
         if answer[7]:
+            print "HEHE...", loop_filter
             G_user = []
             G_id = Group.objects.get(group_name=answer[7])
             GM_objs = Group_member.objects.filter(group_id=G_id)
@@ -2239,18 +2251,18 @@ def computeResults(ASet):
     counter = []
     summary_results = {}
     plot = []
-    summary_results['confidence'] = "Not Calculated"
+    summary_results['confidence']  = "Not Calculated"
     summary_results['calibration'] = "Not Calculated"
-    summary_results['knowledge'] ="Not Calculated"
-    summary_results['resolution'] = "Not Calculated"
-    summary_results['brierscore'] = "Not Calculated"
-    datapoints = []
-    totalcount = 0.0
-    totalcorr = 0.0
-    confidence = 0.0
+    summary_results['resolution']  = "Not Calculated"
+    summary_results['knowledge']   = "Not Calculated"
+    summary_results['brierscore']  = "Not Calculated"
+    datapoints  = []
+    totalcount  = 0.0
+    totalcorr   = 0.0
+    confidence  = 0.0
     calibration = 0.0
-    resolution = 0.0
-    knowledge = 0.0
+    resolution  = 0.0
+    knowledge   = 0.0
 
     data = processAssessments(ASet)
 
@@ -2307,24 +2319,36 @@ def computeResults(ASet):
         ###################
         print "bins dumped to file"
         ############################################################
-        for j in range(len(bins)-1):
-            r = counter[j]
-            print totalcount
-            resolution = resolution + r[2]*(totalcorr/totalcount-r[1])**2
-
         # SUMMARY OF RESULTS
-        confidence = confidence / totalcount
-        values['Confidence'] = confidence
-        calibration = calibration / totalcount
-        values['Calibration'] = calibration
-        resolution = resolution / totalcount
-        values['Resolution'] = resolution
-        knowledge = totalcorr/totalcount*(1-totalcorr/totalcount)
-        values['Knowledge'] = knowledge
-        brierscore = knowledge - resolution + calibration
-        values['Brierscore'] = brierscore
+        if totalcount > 0:
+            for j in range(len(bins)-1):
+                r = counter[j]
+                print totalcount
+                resolution = resolution + r[2]*(totalcorr/totalcount-r[1])**2
+            confidence  = confidence / totalcount
+            calibration = calibration / totalcount
+            resolution  = resolution / totalcount
+            knowledge   = totalcorr/totalcount*(1-totalcorr/totalcount)
+            brierscore  = knowledge - resolution + calibration
+            values['Confidence']  = confidence
+            values['Calibration'] = calibration
+            values['Resolution']  = resolution
+            values['Knowledge']   = knowledge
+            values['Brierscore']  = brierscore
+            summary_results['confidence']  = round(confidence, 3)
+            summary_results['calibration'] = round(calibration, 3)
+            summary_results['resolution']  = round(resolution, 3)
+            summary_results['knowledge']   = round(knowledge, 3)
+            summary_results['brierscore']  = round(brierscore, 3)
+        else:
+            values['Confidence']  = summary_results['confidence']
+            values['Calibration'] = summary_results['calibration']
+            values['Resolution']  = summary_results['resolution']
+            values['Knowledge']   = summary_results['knowledge']
+            values['Brierscore']  = summary_results['brierscore']
+
         #print "\n\n\n\n\n\n Inside post \n\n\n\n"
-        #print values
+        print values
 
         for a in plot:
             temp = {}
@@ -2336,13 +2360,6 @@ def computeResults(ASet):
         data1 = {}
         data1['rep_message'] = 'Success'
         data1['status'] = True
-
-        summary_results['confidence'] = round(confidence, 3)
-        summary_results['calibration'] = round(calibration, 3)
-        summary_results['knowledge'] = round(knowledge, 3)
-        summary_results['resolution'] = round(resolution, 3)
-        summary_results['brierscore'] = round(brierscore, 3)
-
     except Exception as e:
         print e
         #print "Something Unexpected Happened!!!"
