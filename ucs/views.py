@@ -122,12 +122,12 @@ def init_config():
         default_category.save()
 
     #Create DEFAULT assignment
-    a_set = Assignment.objects.filter(assignment_name = "Default")
-    print "#$#$#@$@#$@"
-    print len(a_set), a_set
-    if len(a_set) == 0:
-        default_assignment = Assignment(assignment_name = "Default", due_date = "")
-        default_assignment.save()
+    #a_set = Assignment.objects.filter(assignment_name = "Default")
+    #print "#$#$#@$@#$@"
+    #print len(a_set), a_set
+    #if len(a_set) == 0:
+    #    default_assignment = Assignment(assignment_name = "Default", due_date = "")
+    #    default_assignment.save()
 
     #Create ALL USERS group
     g_set = Group.objects.all()
@@ -146,10 +146,10 @@ def init_config():
         no_users_group.save()
 
     #Create association between DEFAULT assignment and NO USERS group
-    default_assignment = Assignment.objects.get(assignment_name = "Default")
-    no_users_group = Group.objects.get(group_name = "No Users")
-    default_no_users = Assigned_group(assignment_id = default_assignment, group_id = no_users_group)
-    default_no_users.save()
+    #default_assignment = Assignment.objects.get(assignment_name = "Default")
+    #no_users_group = Group.objects.get(group_name = "No Users")
+    #default_no_users = Assigned_group(assignment_id = default_assignment, group_id = no_users_group)
+    #default_no_users.save()
 
 
 
@@ -1215,7 +1215,7 @@ def batch_import(request):
                         #Check assignment exists in the database
                         Q = Assignment.objects.filter(assignment_name=AssignmentName)
                         if len(Q) == 0:
-                            AssignmentName = str(file_name)+str(upload_date)
+                            AssignmentName = str(os.path.splitext(file_name)[0])+'_'+str(upload_date)
                             Q = Assignment.objects.filter(assignment_name=AssignmentName)
                             if len(Q) == 0:
                                 WarningQv +=1
@@ -1224,9 +1224,14 @@ def batch_import(request):
                                 newAssignment.save()
                                 AssignmentObj  = Assignment.objects.get(assignment_name=AssignmentName)
                                 no_users_group = Group.objects.get(group_name="No Users")
-                                insertIntoAssignmentLog = Assignment_log(assignment_id=AssignmentObj, user_id=user_id, due_date=upload_date, 
+                                insertIntoAssignmentLog = Assignment_log(assignment_id=AssignmentObj, user_id=upload_user, due_date=upload_date, 
                                     finish_date="0000-00-00", group_id=no_users_group)
                                 insertIntoAssignmentLog.save()
+                                ##############################
+                                newAssignedGroup = Assigned_group(assignment_id=AssignmentObj, group_id=no_users_group)
+                                newAssignedGroup.save()
+                                ##############################
+
                         AssignmentID = Assignment.objects.get(assignment_name=AssignmentName)
                     if ErrorQv == 0:
                         # Check if question exists in database
@@ -1259,6 +1264,10 @@ def batch_import(request):
                                     WarningLogQ.insert(reader.line_num, WarningQ[3] + str(reader.line_num))
                         QuestionID = Question.objects.get(question_text=QuestionText)
                         print 'QuestionID: ', QuestionID
+                        AQSet = Assigned_question.objects.filter(assignment_id=AssignmentID, question_id=QuestionID)
+                        if len(AQSet) == 0:
+                            newAssignedQuestion = Assigned_question(assignment_id=AssignmentID, question_id=QuestionID)
+                            newAssignedQuestion.save()
                     # Does not allow the import of an Assessment unless the question information is available
                     if ErrorQv == 0:
                         ErrorAv = 0
@@ -1592,7 +1601,7 @@ def result(request):
                         data = {}
                         #data['QUESTIONID'] = qn.id
                         data['QUESTION TEXT'] = qn.question_text.encode('utf-8')
-                        data['ASSIGNMENT'] = "Default"
+                        data['ASSIGNMENT'] = ""
                         data['TRAINING'] = str(qn.corporate_training)
                         data['FORECAST'] = str(qn.forecast)
                         data['DISCRETE'] = str(qn.question_type)
@@ -1738,6 +1747,7 @@ def result_test(request):
                         loop_set[val.group_id.group_name] = []
                     loop_set[val.group_id.group_name]
                     group_id_set.append(val.group_id)
+                print "group_id_set: ", group_id_set
                 for key in loop_set:
                     answer_copy[7] = key
                     temp_QSet, temp_ASet = returnAssessments(answer_copy, 1, group_id_set[group_id_pos], "group")
