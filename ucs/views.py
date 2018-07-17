@@ -1717,6 +1717,8 @@ def result_test(request):
                         loop_set[usr] = []
                     loop_set[usr].append(val)
                     usr_id_set.append(val['user_id_id'])
+                print "get_assessments: ", get_assessments
+                print "USER: ", usr_id_set
                 for key in loop_set:
                     answer_copy[6] = key
                     temp_QSet, temp_ASet = returnAssessments(answer_copy, 1, usr_id_set[usr_id_pos], "user")
