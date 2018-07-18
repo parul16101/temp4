@@ -2166,7 +2166,8 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         '''
         target_assignments = []
         if loop_type == "user":
-            get_assign_list = Assignment_log.objects.filter(finish_date__gt="0000-00-00")
+            get_assign_list = Assignment_log.objects.filter(finish_date__gt="0000-00-00", user_id=loop_filter)
+            #get_assign_list = Assessment.objects.filter(user_id=loop_filter)
         elif loop_type == "group":
             get_assign_list = Assignment_log.objects.filter(finish_date__gt="0000-00-00", group_id=loop_filter)
         elif loop_type == "time":
