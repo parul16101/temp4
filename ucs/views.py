@@ -1706,32 +1706,30 @@ def result_test(request):
             wls_datapoints, wls_c_d_table = wls_bias_calc(plot)
             ## Split into loop field sets
             if answer[11] is not None:
-                answer_copy = answer
+                answer_copy     = answer
                 get_assessments = ASet.values()
-                loop_set = {}
-                usr_id_set = []
-                usr_id_pos = 0
+                loop_set        = {}
                 for val in get_assessments:
-                    usr = User.objects.get(pk=val['user_id_id']).username 
+                    usr = User.objects.get(pk=val['user_id_id']).username
                     if usr not in loop_set:
                         loop_set[usr] = []
                     loop_set[usr].append(val)
-                    usr_id_set.append(val['user_id_id'])
-                print "get_assessments: ", get_assessments
-                print "USER: ", usr_id_set
                 for key in loop_set:
                     answer_copy[6] = key
-                    temp_QSet, temp_ASet = returnAssessments(answer_copy, 1, usr_id_set[usr_id_pos], "user")
-                    print "JJ: ", len(temp_QSet), len(temp_ASet)
-                    srt, vt, pt, dpt = computeResults(temp_ASet)
-                    sumresult_list[key] = srt
+                    UserID = User.objects.get(username=key)
+                    temp_QSet, temp_ASet = returnAssessments(answer_copy, 1, UserID, "user")
+                    srt, vt, pt, dpt     = computeResults(temp_ASet)
+                    print "srt: ", len(srt)
+                    print "vt: ", len(vt)
+                    print "pt: ", len(pt)
+                    print "dpt: ", len(dpt)
+                    sumresult_list[key]  = srt
                     values_list.append(vt)
                     plot_list.append(pt)
                     datapoints_list[key] = dpt
                     wdt, wcdt = wls_bias_calc(pt)
                     wls_dp_list.append(wdt)
                     wls_c_d_list[key] = wcdt
-                    usr_id_pos = usr_id_pos + 1
                 wls_c_d_list = json.dumps(wls_c_d_list)
                 sumresult_list = json.dumps(sumresult_list)
                 datapoints_list = json.dumps(datapoints_list)
@@ -1741,18 +1739,15 @@ def result_test(request):
                 answer_copy = answer
                 get_assessments = ASet.values()
                 loop_set = {}
-                group_id_set = []
                 group_id_pos = 0
                 get_grps = Assigned_group.objects.all()
                 for val in get_grps:
                     if val.group_id not in loop_set:
                         loop_set[val.group_id.group_name] = []
-                    loop_set[val.group_id.group_name]
-                    group_id_set.append(val.group_id)
-                print "group_id_set: ", group_id_set
                 for key in loop_set:
                     answer_copy[7] = key
-                    temp_QSet, temp_ASet = returnAssessments(answer_copy, 1, group_id_set[group_id_pos], "group")
+                    GroupID = Group.objects.get(group_name=key)
+                    temp_QSet, temp_ASet = returnAssessments(answer_copy, 1, GroupID, "group")
                     print "JJ: ", len(temp_QSet), len(temp_ASet)
                     srt, vt, pt, dpt = computeResults(temp_ASet)
                     sumresult_list[key] = srt
@@ -2077,7 +2072,6 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         else:
             print 'The date of assessment is not specified'
     elif check == 2:
-        pass
         #DJ's code for the looping
         ''' 
         answer = [question_type, forecast, question_use, question_text, true_or_false, category, user_name, group_name, assignment_name, edate_submitted
@@ -2096,6 +2090,8 @@ def returnAssessments(answer, check, loop_filter, loop_type):
             get_assign_list = Assignment_log.objects.filter(finish_date__gt="0000-00-00", group_id=loop_filter)
         elif loop_type == "time":
             get_assign_list = Assignment_log.objects.filter(finish_date__in=loop_filter)
+
+        print "get_assign_list: ", get_assign_list
         for asn in get_assign_list:
             if answer[8]:
                 if asn.assignment_id.assignment_name == answer[8]:
@@ -2170,12 +2166,13 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         '''
         target_assignments = []
         if loop_type == "user":
-            get_assign_list = Assignment_log.objects.filter(finish_date__gt="0000-00-00", user_id=loop_filter)
+            get_assign_list = Assignment_log.objects.filter(finish_date__gt="0000-00-00")
         elif loop_type == "group":
             get_assign_list = Assignment_log.objects.filter(finish_date__gt="0000-00-00", group_id=loop_filter)
         elif loop_type == "time":
             get_assign_list = Assignment_log.objects.filter(finish_date__in=loop_filter)
         
+        print "get_assign_list: ", get_assign_list
         for asn in get_assign_list:
             if answer[8]:
                 if asn.assignment_id.assignment_name == answer[8]:
@@ -2183,7 +2180,7 @@ def returnAssessments(answer, check, loop_filter, loop_type):
             else:
                 target_assignments.append(asn.assignment_id)
         ################################################################################
-        print "JJ: ", len(target_assignments)
+        print "target_assignments: ", len(target_assignments)
         ASet = Assessment.objects.filter(assignment_id__in=target_assignments)
 
         """
@@ -2193,7 +2190,7 @@ def returnAssessments(answer, check, loop_filter, loop_type):
             for q in ql:
                 question_set.append(q)
         """
-        print "JJ: ", len(ASet)
+        print "ASet: ", len(ASet)
 
         ################################################################################
         QSet = Question.objects.all()
@@ -2210,7 +2207,7 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         if answer[5]:
             cond_val = Category.objects.get(category_text=answer[5])
             QSet = [qs for qs in QSet if qs.category == cond_val]
-        print "JJ: ", len(QSet), len(ASet)
+        print "QSet ASet: ", len(QSet), len(ASet)
         #print question_set
         ###a_set = []
         if answer[9] != "" and answer[10] != "":
@@ -2228,7 +2225,7 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         ##for ga in get_assessments:
         ##    a_set.append(ga)
         ##    #print ga.date_of_assessment
-        print "JJ: ", len(QSet), len(ASet)
+        print "QSet ASet: ", len(QSet), len(ASet)
         if answer[6]:
             print "HEHE...", loop_filter
             upload_user = User.objects.get(username = answer[6])
@@ -2248,7 +2245,7 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         #print a_set
         ###QSet = Question.objects.filter(question_text__in=question_set)
         ###ASet = Assessment.objects.filter(question_id__in=a_set_qid)
-        print "JJ: ", len(QSet), len(ASet)
+        print "QSet ASet: ", len(QSet), len(ASet)
     return (QSet, ASet)
 
 
@@ -2263,18 +2260,18 @@ def computeResults(ASet):
     counter = []
     summary_results = {}
     plot = []
-    summary_results['confidence']  = "Not Calculated"
+    summary_results['confidence'] = "Not Calculated"
     summary_results['calibration'] = "Not Calculated"
-    summary_results['resolution']  = "Not Calculated"
-    summary_results['knowledge']   = "Not Calculated"
-    summary_results['brierscore']  = "Not Calculated"
-    datapoints  = []
-    totalcount  = 0.0
-    totalcorr   = 0.0
-    confidence  = 0.0
+    summary_results['knowledge'] ="Not Calculated"
+    summary_results['resolution'] = "Not Calculated"
+    summary_results['brierscore'] = "Not Calculated"
+    datapoints = []
+    totalcount = 0.0
+    totalcorr = 0.0
+    confidence = 0.0
     calibration = 0.0
-    resolution  = 0.0
-    knowledge   = 0.0
+    resolution = 0.0
+    knowledge = 0.0
 
     data = processAssessments(ASet)
 
@@ -2331,36 +2328,24 @@ def computeResults(ASet):
         ###################
         print "bins dumped to file"
         ############################################################
-        # SUMMARY OF RESULTS
-        if totalcount > 0:
-            for j in range(len(bins)-1):
-                r = counter[j]
-                print totalcount
-                resolution = resolution + r[2]*(totalcorr/totalcount-r[1])**2
-            confidence  = confidence / totalcount
-            calibration = calibration / totalcount
-            resolution  = resolution / totalcount
-            knowledge   = totalcorr/totalcount*(1-totalcorr/totalcount)
-            brierscore  = knowledge - resolution + calibration
-            values['Confidence']  = confidence
-            values['Calibration'] = calibration
-            values['Resolution']  = resolution
-            values['Knowledge']   = knowledge
-            values['Brierscore']  = brierscore
-            summary_results['confidence']  = round(confidence, 3)
-            summary_results['calibration'] = round(calibration, 3)
-            summary_results['resolution']  = round(resolution, 3)
-            summary_results['knowledge']   = round(knowledge, 3)
-            summary_results['brierscore']  = round(brierscore, 3)
-        else:
-            values['Confidence']  = summary_results['confidence']
-            values['Calibration'] = summary_results['calibration']
-            values['Resolution']  = summary_results['resolution']
-            values['Knowledge']   = summary_results['knowledge']
-            values['Brierscore']  = summary_results['brierscore']
+        for j in range(len(bins)-1):
+            r = counter[j]
+            print totalcount
+            resolution = resolution + r[2]*(totalcorr/totalcount-r[1])**2
 
+        # SUMMARY OF RESULTS
+        confidence = confidence / totalcount
+        values['Confidence'] = confidence
+        calibration = calibration / totalcount
+        values['Calibration'] = calibration
+        resolution = resolution / totalcount
+        values['Resolution'] = resolution
+        knowledge = totalcorr/totalcount*(1-totalcorr/totalcount)
+        values['Knowledge'] = knowledge
+        brierscore = knowledge - resolution + calibration
+        values['Brierscore'] = brierscore
         #print "\n\n\n\n\n\n Inside post \n\n\n\n"
-        print values
+        #print values
 
         for a in plot:
             temp = {}
@@ -2372,9 +2357,16 @@ def computeResults(ASet):
         data1 = {}
         data1['rep_message'] = 'Success'
         data1['status'] = True
+
+        summary_results['confidence'] = round(confidence, 3)
+        summary_results['calibration'] = round(calibration, 3)
+        summary_results['knowledge'] = round(knowledge, 3)
+        summary_results['resolution'] = round(resolution, 3)
+        summary_results['brierscore'] = round(brierscore, 3)
+
     except Exception as e:
-        print e
-        #print "Something Unexpected Happened!!!"
+            print e
+            #print "Something Unexpected Happened!!!"
 
     return summary_results, values, plot, datapoints
     #return summary_results, values, plot, datapoints, WLS_table_json
