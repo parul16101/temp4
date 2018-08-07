@@ -1237,8 +1237,10 @@ def batch_import(request):
                             newAssignment.save()
                             AssignmentObj  = Assignment.objects.get(assignment_name=AssignmentName)
                             no_users_group = Group.objects.get(group_name="No Users")
+                            #insertIntoAssignmentLog = Assignment_log(assignment_id=AssignmentObj, user_id=upload_user, due_date=upload_date, 
+                            #    finish_date="0000-00-00", group_id=no_users_group)
                             insertIntoAssignmentLog = Assignment_log(assignment_id=AssignmentObj, user_id=upload_user, due_date=upload_date, 
-                                finish_date="0000-00-00", group_id=no_users_group)
+                                finish_date=upload_date, group_id=no_users_group)
                             insertIntoAssignmentLog.save()
                             ##############################
                             newAssignedGroup = Assigned_group(assignment_id=AssignmentObj, group_id=no_users_group)
