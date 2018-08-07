@@ -1137,6 +1137,7 @@ def batch_import(request):
     if not user_id:
         return redirect(reverse("login"))
     message = ""
+    new_assignment_list = []  #A list for the new assignment appeared in the file
     #print 'The user id is ', user_id
     if request.method == "POST":
         shift = 1 #The input file format change
@@ -1192,25 +1193,25 @@ def batch_import(request):
                             #print 'AssignmentName:', AssignmentName
                             QuestionUse = str(row[shift+1])                                         ## training *
                             #print 'QuestionUse:', QuestionUse
-                            QForecast = str(row[shift+2]).title()                                       ## forecast *
+                            QForecast = str(row[shift+2]).title()                                   ## forecast *
                             #print 'QForecast: ', QForecast
-                            QuestionType = str(row[shift+3]).title()                                    ## question_type *
+                            QuestionType = str(row[shift+3]).title()                                ## question_type *
                             #print 'QuestionType: ', QuestionType
                             NoOfChoices = int(row[shift+4])                                         ## num_of_choices *
                             #print 'NoOfChoices: ', NoOfChoices
-                            QCategory = unicode(str(row[shift+5]).strip(), errors='replace')            ## category *
+                            QCategory = unicode(str(row[shift+5]).strip(), errors='replace')        ## category *
                             #print 'QCategory: ', QCategory
                             QuestionText = unicode(str(row[shift+6]).strip(), errors='replace')     ## question_text *
                             #print 'QuestionText: ', QuestionText
-                            DateTrueValueKnown = date_norm(str(row[shift+7]))                                   ## close_date *
+                            DateTrueValueKnown = date_norm(str(row[shift+7]))                       ## close_date *
                             #print "DateTrueValueKnown: ", DateTrueValueKnown;
-                            TrueValue = unicode(str(row[shift+8]).strip(), errors='replace')            ## true_value *
+                            TrueValue = unicode(str(row[shift+8]).strip(), errors='replace')        ## true_value *
                             #print 'TrueValue: ', TrueValue
-                            Units = unicode(str(row[shift+9]).strip(), errors='replace')                ## unit *
+                            Units = unicode(str(row[shift+9]).strip(), errors='replace')            ## unit *
                             #print 'Units: ', Units
-                            QuestionSource = unicode(str(row[shift+10]).strip(), errors='replace')  ## question_source
+                            QuestionSource = unicode(str(row[shift+10]).strip(), errors='replace')  ## question_source *
                             #print 'QuestionSource: ', QuestionSource
-                            AllowAssessment = str(row[shift+11]).title()                                ## allow_assessment
+                            AllowAssessment = str(row[shift+11]).title()                            ## allow_assessment *
                             #print 'AllowAssessment: ', AllowAssessment
                         else:
                             ErrorQv+=1
@@ -1243,7 +1244,7 @@ def batch_import(request):
                             newAssignedGroup = Assigned_group(assignment_id=AssignmentObj, group_id=no_users_group)
                             newAssignedGroup.save()
                             ##############################
-
+                            new_assignment_list.append(AssignmentName)
                         AssignmentID = Assignment.objects.get(assignment_name=AssignmentName)
                     if ErrorQv == 0:
                         # Check if question exists in database
@@ -1276,10 +1277,12 @@ def batch_import(request):
                                     WarningLogQ.insert(reader.line_num, WarningQ[3] + str(reader.line_num))
                         QuestionID = Question.objects.get(question_text=QuestionText)
                         print 'QuestionID: ', QuestionID
-                        AQSet = Assigned_question.objects.filter(assignment_id=AssignmentID, question_id=QuestionID)
-                        if len(AQSet) == 0:
-                            newAssignedQuestion = Assigned_question(assignment_id=AssignmentID, question_id=QuestionID)
-                            newAssignedQuestion.save()
+                        # If the Assignment Name is first-time appeared in the file
+                        if AssignmentName in new_assignment_list:
+                            AQSet = Assigned_question.objects.filter(assignment_id=AssignmentID, question_id=QuestionID)
+                            if len(AQSet) == 0:
+                                newAssignedQuestion = Assigned_question(assignment_id=AssignmentID, question_id=QuestionID)
+                                newAssignedQuestion.save()
                     # Does not allow the import of an Assessment unless the question information is available
                     if ErrorQv == 0:
                         ErrorAv = 0
@@ -1301,7 +1304,7 @@ def batch_import(request):
                         Operator = str(row[shift+13])
                         DetailsOfAssessment = str(row[shift+14])
                         #VALIDATION OF ASSESSMENT INPUT/OPTIONS
-                        # Validate that NumOfPairs, Operator, or DateOfAssessment are not missing
+                        #Validate that NumOfPairs, Operator, or DateOfAssessment are not missing
                         if row[shift+15] == '' or Operator == '' or DateOfAssessment == '' or row[shift+4] == '':
                             ErrorAv += 1
                             ErrorLogA.insert(reader.line_num, ErrorA[0]+str(reader.line_num))
