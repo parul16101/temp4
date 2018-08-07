@@ -35,6 +35,15 @@ def date_norm(raw_date=""):
     except:
         return ""
 
+# This function normalize any input type of time into the format "mm/dd/yyyy".
+def date_by_slash(raw_date=""):
+    from dateutil import parser
+    try:
+        d = parser.parse(raw_date)
+        return d.strftime("%m/%d/%Y")
+    except:
+        return ""		
+		
 # This function attached "hours, minute, and seconds" to the input
 def get_timestamp():
     now = datetime.datetime.now()

@@ -19,7 +19,7 @@ from django.http import JsonResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from .models import User, Question, Group_member, Group, Category, Dataset, Assignment, Assigned_group, Assigned_question, Assessment, Assignment_log
-from .tools import date_norm, get_timestamp, rmv_timestamp
+from .tools import date_norm, date_by_slash, get_timestamp, rmv_timestamp
 from collections import defaultdict
 from datetime import datetime, timedelta
 
@@ -458,11 +458,12 @@ def edit_question(request):
     q_id = request.GET.get('question_id','')
     q_id = int(q_id)
     print q_id
-    question = Question.objects.get(id=q_id)
+    question   = Question.objects.get(id=q_id)
+    close_date = date_by_slash(question.close_date)
     owned = False
     if user_id != question.uploader_id:
         owned = True
-    return render(request, "ucs/edit_question.html", {"question":question, "userId": user_id, "uploaderId": question.uploader_id, "owned": owned, "username":request.session.get("username"), "cataList": json_cata})
+    return render(request, "ucs/edit_question.html", {"question":question, "userId": user_id, "uploaderId": question.uploader_id, "owned": owned, "username":request.session.get("username"), "cataList": json_cata, "close_date":close_date})
 
 
 def search_question(request):
@@ -800,13 +801,13 @@ def edit_assignment(request):
         a_id = int(a_id)
         #print 'Assignment id: ', a_id
         target_assignment = Assignment.objects.get(id = a_id)
-        close_date = Assignment.objects.filter(id = a_id)
-        due_date = ""
-        for cw in close_date:
-            due_date = cw.due_date
-            break
+        due_date = Assignment.objects.get(id = a_id).due_date
+        #due_date = ""
+        #for cw in Assignment.objects.filter(id = a_id):
+        #    due_date = cw.due_date
+        #    break
         a_name = target_assignment.assignment_name
-        #print 'Assignment name: ', a_name
+        print 'Assignment name: ', a_name
         #DJ - Make sure new users or delted users update the assignment_log table
         if request.POST['action'] == "delete":
             g_name = request.POST['gp_name']
@@ -827,10 +828,16 @@ def edit_assignment(request):
             #delete_users = Group_member.objects.filter(group_id = target_group)
         if request.POST['action'] == "add":
             add_group = request.POST.getlist('gp_name[]')
+            due_date  = date_norm(request.POST['closing_date'])
+
+            Assignment.objects.filter(id = a_id).update(due_date = due_date)
+            Assignment_log.objects.filter(assignment_id = target_assignment).update(due_date = due_date)
+
             curr_users_list = []
             user_list = Assignment_log.objects.filter(assignment_id = target_assignment)
             for curr_user in user_list:
                 curr_users_list.append(curr_user.user_id)
+
             for item in add_group:
                 item = item.encode("utf-8")
                 target_group = Group.objects.get(group_name = item)
@@ -842,7 +849,12 @@ def edit_assignment(request):
                         print newuser
                         insertIntoAssignmentLog = Assignment_log(assignment_id = target_assignment, user_id = newuser.user_id, due_date = due_date,
                         finish_date = "0000-00-00", group_id = target_group)
-                        insertIntoAssignmentLog.save()                
+                        insertIntoAssignmentLog.save()
+                    newgroup = Assignment_log.objects.filter(group_id = target_group).filter(user_id = newuser.user_id)
+                    if len(newgroup) == 0:
+                        insertIntoAssignmentLog = Assignment_log(assignment_id = target_assignment, user_id = newuser.user_id, due_date = due_date,
+                        finish_date = "0000-00-00", group_id = target_group)
+                        insertIntoAssignmentLog.save()
                     #all_users.append(ul.user_id)
                 newAssignedGroup = Assigned_group(assignment_id = target_assignment, group_id = target_group)
                 newAssignedGroup.save()
@@ -851,8 +863,9 @@ def edit_assignment(request):
         a_id = int(a_id)
         print 'Assignment id: ', a_id
         target_assignment = Assignment.objects.get(id = a_id)
-        a_name = target_assignment.assignment_name
+        a_name   = target_assignment.assignment_name
         print 'Assignment name: ', a_name
+        due_date = date_by_slash(target_assignment.due_date)
     #$$%$%$%$%$%$%$%$%$%$%
     question_in_assignment = Assigned_question.objects.filter(assignment_id = target_assignment)
     text_list = []
@@ -890,7 +903,7 @@ def edit_assignment(request):
 
     at_pair = [{"group_id":i, "group_name":g} for i, g in zip(gidList, exgrouplist)]
     group_info = json.dumps(at_pair)
-    return  render(request, "ucs/edit_assignment.html", {"assignment_id": a_id, "assignment_name": a_name, "group_not_in_assignment": json_group, "group_in_assignment": group_info, "question_in_assignment": json_question})
+    return render(request, "ucs/edit_assignment.html", {"assignment_id":a_id, "assignment_name":a_name, "group_not_in_assignment":json_group, "group_in_assignment":group_info, "question_in_assignment":json_question, "due_date":due_date})
 
 
 def do_assignment(request):
@@ -1215,22 +1228,21 @@ def batch_import(request):
                         #Check assignment exists in the database
                         Q = Assignment.objects.filter(assignment_name=AssignmentName)
                         if len(Q) == 0:
-                            AssignmentName = str(os.path.splitext(file_name)[0])+'_'+str(upload_date)
-                            Q = Assignment.objects.filter(assignment_name=AssignmentName)
-                            if len(Q) == 0:
-                                WarningQv +=1
-                                WarningLogQ.insert(reader.line_num, WarningQ[5] + str(reader.line_num))
-                                newAssignment  = Assignment(assignment_name=AssignmentName, due_date=upload_date)
-                                newAssignment.save()
-                                AssignmentObj  = Assignment.objects.get(assignment_name=AssignmentName)
-                                no_users_group = Group.objects.get(group_name="No Users")
-                                insertIntoAssignmentLog = Assignment_log(assignment_id=AssignmentObj, user_id=upload_user, due_date=upload_date, 
-                                    finish_date="0000-00-00", group_id=no_users_group)
-                                insertIntoAssignmentLog.save()
-                                ##############################
-                                newAssignedGroup = Assigned_group(assignment_id=AssignmentObj, group_id=no_users_group)
-                                newAssignedGroup.save()
-                                ##############################
+                            if not AssignmentName:
+                                AssignmentName = str(os.path.splitext(file_name)[0])+'_'+str(upload_date)
+                            WarningQv +=1
+                            WarningLogQ.insert(reader.line_num, WarningQ[5] + str(reader.line_num))
+                            newAssignment  = Assignment(assignment_name=AssignmentName, due_date=upload_date)
+                            newAssignment.save()
+                            AssignmentObj  = Assignment.objects.get(assignment_name=AssignmentName)
+                            no_users_group = Group.objects.get(group_name="No Users")
+                            insertIntoAssignmentLog = Assignment_log(assignment_id=AssignmentObj, user_id=upload_user, due_date=upload_date, 
+                                finish_date="0000-00-00", group_id=no_users_group)
+                            insertIntoAssignmentLog.save()
+                            ##############################
+                            newAssignedGroup = Assigned_group(assignment_id=AssignmentObj, group_id=no_users_group)
+                            newAssignedGroup.save()
+                            ##############################
 
                         AssignmentID = Assignment.objects.get(assignment_name=AssignmentName)
                     if ErrorQv == 0:
