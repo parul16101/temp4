@@ -1233,13 +1233,13 @@ def batch_import(request):
                                 AssignmentName = str(os.path.splitext(file_name)[0])+'_'+str(upload_date)
                             WarningQv +=1
                             WarningLogQ.insert(reader.line_num, WarningQ[5] + str(reader.line_num))
-                            newAssignment  = Assignment(assignment_name=AssignmentName, due_date=upload_date)
+                            newAssignment  = Assignment(assignment_name=AssignmentName, due_date="")
                             newAssignment.save()
                             AssignmentObj  = Assignment.objects.get(assignment_name=AssignmentName)
                             no_users_group = Group.objects.get(group_name="No Users")
                             #insertIntoAssignmentLog = Assignment_log(assignment_id=AssignmentObj, user_id=upload_user, due_date=upload_date, 
                             #    finish_date="0000-00-00", group_id=no_users_group)
-                            insertIntoAssignmentLog = Assignment_log(assignment_id=AssignmentObj, user_id=upload_user, due_date=upload_date, 
+                            insertIntoAssignmentLog = Assignment_log(assignment_id=AssignmentObj, user_id=upload_user, due_date="", 
                                 finish_date=upload_date, group_id=no_users_group)
                             insertIntoAssignmentLog.save()
                             ##############################
