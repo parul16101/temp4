@@ -2004,6 +2004,7 @@ def processRequests(req,current_user):
         binscale = req.POST.get("binscale")
         
         loop_request = 1;           
+        print "LOOP CHECK"
         answer = [question_type, forecast, question_use, question_text, true_or_false, category, user_name, group_name, assignment_name, edate_submitted
         , sdate_submitted, user_loop, group_loop, timeloop, loop_request, bin_type, timeloop_edate, timeloop_sdate, binscale]
         return answer
@@ -2065,6 +2066,7 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         else:
             print 'The category is not specified'
         #Query on question_set, user_name, and ...
+
         ASet = Assessment.objects.filter(id__in=ASet, question_id__in=QSet)
 
         if answer[7]:
@@ -2084,10 +2086,25 @@ def returnAssessments(answer, check, loop_filter, loop_type):
             #print "username ",answer[6]
         else:
             print 'The user name is not specified'
-        if answer[9]:
-            ASet = Assessment.objects.filter(id__in=ASet, date_of_assessment=answer[9])
+        if answer[9] and answer[10]:
+      
+                start_time = datetime.strptime(date_norm(answer[10]), "%Y-%m-%d").date()
+                end_time = datetime.strptime(date_norm(answer[9]), "%Y-%m-%d").date()
+                time_filter_list = []
+                time_cond = start_time
+                print "START_TIME", start_time
+                print "END_TIME", end_time
+                while time_cond <= end_time :
+                    time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
+                    time_cond = time_cond + timedelta(days=1)
+                print "Aset 1", ASet       
+
+                ASet = Assessment.objects.filter(id__in=ASet, date_of_assessment__in=time_filter_list)
+
+                print "Aset 2, ", ASet
         else:
             print 'The date of assessment is not specified'
+
     elif check == 2:
         #DJ's code for the looping
         ''' 
@@ -2135,12 +2152,23 @@ def returnAssessments(answer, check, loop_filter, loop_type):
             question_set = [qs for qs in question_set if qs.category == cond_val]
         #print question_set
         a_set = []
-        if answer[9] != "" and answer[10] != "":
+        '''if answer[9] != "" and answer[10] != "":
             get_assessments = Assessment.objects.filter(question_id__in=question_set, date_of_assessment__range=[answer[10], answer[9]])
         elif answer[9] == "" and answer[10] != "":
             get_assessments = Assessment.objects.filter(question_id__in=question_set, date_of_assessment__range=[answer[10], "2100-01-01"])
         elif answer[10] ==  "" and answer[9] != "":
             get_assessments = Assessment.objects.filter(question_id__in=question_set, date_of_assessment__range=["0000-00-00", answer[9]])
+'''
+        if answer[9] and answer[10]:
+  
+            start_time = datetime.strptime(date_norm(answer[10]), "%Y-%m-%d").date()
+            end_time = datetime.strptime(date_norm(answer[9]), "%Y-%m-%d").date()
+            time_filter_list = []
+            time_cond = start_time
+            while time_cond <= end_time :
+                time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
+                time_cond = time_cond + timedelta(days=1)    
+            get_assessments = Assessment.objects.filter(id__in=ASet, date_of_assessment__in=time_filter_list)
         else:
             get_assessments = Assessment.objects.filter(question_id__in=question_set)
         #startDate = answer[10].split("/")
@@ -2201,6 +2229,7 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         print "target_assignments: ", len(target_assignments)
         ASet = Assessment.objects.filter(assignment_id__in=target_assignments)
 
+        
         """
         qs_list = Assigned_question.objects.filter(assignment_id__in=target_assignments)
         for ql in qs_list:
@@ -2208,7 +2237,7 @@ def returnAssessments(answer, check, loop_filter, loop_type):
             for q in ql:
                 question_set.append(q)
         """
-        print "ASet: ", len(ASet)
+        print "ASet: >>>> ", ASet
 
         ################################################################################
         QSet = Question.objects.all()
@@ -2228,14 +2257,27 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         print "QSet ASet: ", len(QSet), len(ASet)
         #print question_set
         ###a_set = []
-        if answer[9] != "" and answer[10] != "":
-            ASet = Assessment.objects.filter(id__in=ASet, question_id__in=QSet, date_of_assessment__range=[answer[10], answer[9]])
-        elif answer[9] == "" and answer[10] != "":
-            ASet = Assessment.objects.filter(id__in=ASet, question_id__in=QSet, date_of_assessment__range=[answer[10], "2100-01-01"])
-        elif answer[10] ==  "" and answer[9] != "":
-            ASet = Assessment.objects.filter(id__in=ASet, question_id__in=QSet, date_of_assessment__range=["0000-00-00", answer[9]])
+        #print "A9: ", answer[9]
+        #print "A10: ", answer[10]
+#        if answer[9] != "" and answer[10] != "":
+#            ASet = Assessment.objects.filter(id__in=ASet, question_id__in=QSet, date_of_assessment__range=[answer[10], answer[9]])
+#        elif answer[9] == "" and answer[10] != "":
+#            ASet = Assessment.objects.filter(id__in=ASet, question_id__in=QSet, date_of_assessment__range=[answer[10], "2100-01-01"])
+#        elif answer[10] ==  "" and answer[9] != "":
+#            ASet = Assessment.objects.filter(id__in=ASet, question_id__in=QSet, date_of_assessment__range=["0000-00-00", answer[9]])
+        if answer[10] and answer[9]:
+            start_time = datetime.strptime(date_norm(answer[10]), "%Y-%m-%d").date()
+            end_time = datetime.strptime(date_norm(answer[9]), "%Y-%m-%d").date()
+            time_filter_list = []
+            time_cond = start_time
+            while time_cond <= end_time :
+                time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
+                time_cond = time_cond + timedelta(days=1)    
+            get_assessments = Assessment.objects.filter(id__in=ASet, date_of_assessment__in=time_filter_list)
+
         else:
             ASet = Assessment.objects.filter(id__in=ASet, question_id__in=QSet)
+            #print "HERERE", ASet
         #startDate = answer[10].split("/")
         #endDate   = answer[9].split("/")
         
@@ -2243,19 +2285,27 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         ##for ga in get_assessments:
         ##    a_set.append(ga)
         ##    #print ga.date_of_assessment
+        
         print "QSet ASet: ", len(QSet), len(ASet)
         if answer[6]:
-            print "HEHE...", loop_filter
+            print "A6...", loop_filter
             upload_user = User.objects.get(username = answer[6])
             ASet = [a for a in ASet if a.user_id == upload_user]
         if answer[7]:
-            print "HEHE...", loop_filter
-            G_user = []
-            G_id = Group.objects.get(group_name=answer[7])
-            GM_objs = Group_member.objects.filter(group_id=G_id)
-            for obj in GM_objs:
-                G_user.append(obj.user_id)
-            ASet = [a for a in ASet if a.user_id in G_user]
+            print "A7...", loop_filter
+            #print "A7...LEN", len(loop_filter)
+            if loop_filter.group_name == "No Users":
+                G_user = User.objects.all()
+                print "G_user: ", G_user
+                ASet = [a for a in ASet if a.user_id in G_user]               
+            else:
+                G_user = []
+                G_id = Group.objects.get(group_name=answer[7])
+                GM_objs = Group_member.objects.filter(group_id=G_id)
+                print "GM...", GM_objs
+                for obj in GM_objs:
+                    G_user.append(obj.user_id)
+                ASet = [a for a in ASet if a.user_id in G_user]
         
         #a_set_qid = []
         #for a in a_set:
@@ -2264,6 +2314,8 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         ###QSet = Question.objects.filter(question_text__in=question_set)
         ###ASet = Assessment.objects.filter(question_id__in=a_set_qid)
         print "QSet ASet: ", len(QSet), len(ASet)
+        print "QSet: ", QSet
+        print "ASet: ***", ASet
     return (QSet, ASet)
 
 
