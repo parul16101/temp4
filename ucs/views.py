@@ -2273,7 +2273,7 @@ def returnAssessments(answer, check, loop_filter, loop_type):
             while time_cond <= end_time :
                 time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
                 time_cond = time_cond + timedelta(days=1)    
-            get_assessments = Assessment.objects.filter(id__in=ASet, date_of_assessment__in=time_filter_list)
+            ASet = Assessment.objects.filter(id__in=ASet, date_of_assessment__in=time_filter_list)
 
         else:
             ASet = Assessment.objects.filter(id__in=ASet, question_id__in=QSet)
