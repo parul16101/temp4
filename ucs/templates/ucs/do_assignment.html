@@ -2,58 +2,58 @@
 {% load static %}
 {% block content %}
 <head>
-	<style type="text/css">
-		.qn {
-			display: none;
-		}
-		.qn:first-child {
-			display: block;
-		}
-		input[id="submit"] {
-			display:none;
-		}
-		.table {
-			width: 50%;
-		}
-	</style>
+    <style type="text/css">
+        .qn {
+            display: none;
+        }
+        .qn:first-child {
+            display: block;
+        }
+        input[id="submit"] {
+            display:none;
+        }
+        .table {
+            width: 50%;
+        }
+    </style>
 </head>
 <div class="row">
-	<article>
-		<div class="ibox-content">
-			<div class="qn 1st" >
-				<h1 id = "Intro_name" style="font-family:verdana;font-size:300%;text-align: center"></h1>
-			</div>
-			<div class="qn 2nd">
-				<h1 id ="question_text"></h1>
-				<p id = "question_description"></p>
-				<p id = "question_source"></p>
-				<!-- DJ- added auto fill button -->
-				<button type="button" id="auto"  style="width:auto;margin-top:0.5%;margin-left:25%;" onclick = "autofill()">Auto Fill</button>
-				<div class="table-responsive">
-					<table class="table table-striped table-bordered " id="AssessmentTable">
-						<thead>
-							<tr>
-								<th width="20%">Choice</th>
-								<th width="20%">Probability (%)</th>
-								<!-- <th>Operators</th> -->
-								<th width="20%">Action</th>
-							</tr>
-						</thead>
-					</table>
-					<button class="btn btn-primary btn-xs my-xs-btn" type="button" style="margin-top:0.5%" id="add_answer" onClick="add_answer()"><span class="fa fa-plus"></span>add a new answer</button>
-				</div>
-				<div>
-					<button type="button" id="prev" class="btn btn-success" style="width:20%;margin-top:0.5%" onclick = "previous()">Previous</button>
-					<button type="button" id="next" class="btn btn-success" style="width:20%;margin-top:0.5%" onclick = "next()">Next</button>
+    <article>
+        <div class="ibox-content">
+            <div class="qn 1st" >
+                <h1 id = "Intro_name" style="font-family:verdana;font-size:300%;text-align: center"></h1>
+            </div>
+            <div class="qn 2nd">
+                <h1 id ="question_text"></h1>
+                <p id = "question_description"></p>
+                <p id = "question_source"></p>
+                <!-- DJ- added auto fill button -->
+                <button type="button" id="auto"  style="width:auto;margin-top:0.5%;margin-left:25%;" onclick = "autofill()">Auto Fill</button>
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered " id="AssessmentTable">
+                        <thead>
+                            <tr>
+                                <th width="20%">Choice</th>
+                                <th width="20%">Probability (%)</th>
+                                <!-- <th>Operators</th> -->
+                                <th width="20%">Action</th>
+                            </tr>
+                        </thead>
+                    </table>
+                    <button class="btn btn-primary btn-xs my-xs-btn" type="button" style="margin-top:0.5%" id="add_answer" onClick="add_answer()"><span class="fa fa-plus"></span>add a new answer</button>
+                </div>
+                <div>
+                    <button type="button" id="prev" class="btn btn-success" style="width:20%;margin-top:0.5%" onclick = "previous()">Previous</button>
+                    <button type="button" id="next" class="btn btn-success" style="width:20%;margin-top:0.5%" onclick = "next()">Next</button>
                     <button type="button" id="submit" class="btn btn-success pull-right" style="width:20%;margin-left: 0.5%"  onclick = "submit_answer()">Submit</button>
-                	<button type="button" id="cancel_test" class="btn btn-success pull-right" style="width:20%;"  onclick = "cancel_test()">Cancel</button>
+                    <button type="button" id="cancel_test" class="btn btn-success pull-right" style="width:20%;"  onclick = "cancel_test()">Cancel</button>
                     <div class="clearfix"></div>
                 </div>
-			</div>
-			<button type="button" class="btn btn-success" style="width:20%;float:right;" id=cancel>Cancel</button>
-			<button type="button" id="start_assignment" class="btn btn-success" style="width:40%;margin-left:30%">Start Assignment</button>
-		</div>
-	</article>
+            </div>
+            <button type="button" class="btn btn-success" style="width:20%;float:right;" id=cancel>Cancel</button>
+            <button type="button" id="start_assignment" class="btn btn-success" style="width:40%;margin-left:30%">Start Assignment</button>
+        </div>
+    </article>
 </div>
 {% endblock %}
 {% block jsPart %}
@@ -72,362 +72,362 @@
 <!-- iCheck -->
 <script src="{% static 'ucs/js/plugins/iCheck/icheck.min.js' %}"></script>
 <script type="text/javascript">
-	function isNumberKey(evt) {
-		var charCode = (evt.which) ? evt.which : evt.keyCode;
-		if (charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57))
-			return false;
-		return true;
-	}
-	var add_button = document.getElementById("add_answer");
-	var auto_button = document.getElementById("auto");
-	var tableRef = document.getElementById("AssessmentTable");
-	var saved_answer = [];
-	var question_title = [];
-	var datas = {{dataList | safe}};
-	var question_text = document.getElementById("question_text");     
-	var question_description = document.getElementById("question_description");
-	var question_source = document.getElementById("question_source");
-	var N_question = 0;
-	var title = document.getElementById("Intro_name");
-	title.innerHTML = "{{assignment_title}}";
-	load_question(N_question);
-	
-	function load_question(index){
-		add_button.disabled = true;
-		add_button.style.visibility = "hidden";
-		question_title[index] = datas[index].question_text;
-		var question_type = datas[index].question_type;
-		if(question_type == "1"){
-			var options = datas[index].question_text.split("***");
-			question_text.innerHTML  = options[0].trim();
-		}
-		else{
-			question_text.innerHTML  = question_title[index];
-		}
-	    //question_title[index] = options[0].trim();
-		/*
-		if(datas[index].question_description == ""){
-			question_description.innerHTML = "<strong>Question Description</strong>: None";
-		}
-		else{
-			question_description.innerHTML = "<strong>Question Description</strong>: "+datas[index].question_description;
-		}
-		*/
-		if(datas[index].question_source == ""){
-			question_source.innerHTML = "<strong>Question Source</strong>: None";
-		}
-		else{
-			question_source.innerHTML = "<strong>Question Source</strong>: "+datas[index].question_source;
-		}
-		//var question_type = datas[index].question_type
-		while(tableRef.rows.length > 1) {
-			tableRef.deleteRow(tableRef.rows.length -1);
-		}
-	    
-		if(question_type == "1"){
+    function isNumberKey(evt) {
+        var charCode = (evt.which) ? evt.which : evt.keyCode;
+        if (charCode != 45 && charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57))
+            return false;
+        return true;
+    }
+    var add_button = document.getElementById("add_answer");
+    var auto_button = document.getElementById("auto");
+    var tableRef = document.getElementById("AssessmentTable");
+    var saved_answer = [];
+    var question_title = [];
+    var datas = {{dataList | safe}};
+    var question_text = document.getElementById("question_text");     
+    var question_description = document.getElementById("question_description");
+    var question_source = document.getElementById("question_source");
+    var N_question = 0;
+    var title = document.getElementById("Intro_name");
+    title.innerHTML = "{{assignment_title}}";
+    load_question(N_question);
+    
+    function load_question(index){
+        add_button.disabled = true;
+        add_button.style.visibility = "hidden";
+        question_title[index] = datas[index].question_text;
+        var question_type = datas[index].question_type;
+        if(question_type == "1"){
+            var options = datas[index].question_text.split("***");
+            question_text.innerHTML  = options[0].trim();
+        }
+        else{
+            question_text.innerHTML  = question_title[index];
+        }
+        //question_title[index] = options[0].trim();
+        /*
+        if(datas[index].question_description == ""){
+            question_description.innerHTML = "<strong>Question Description</strong>: None";
+        }
+        else{
+            question_description.innerHTML = "<strong>Question Description</strong>: "+datas[index].question_description;
+        }
+        */
+        if(datas[index].question_source == ""){
+            question_source.innerHTML = "<strong>Question Source</strong>: None";
+        }
+        else{
+            question_source.innerHTML = "<strong>Question Source</strong>: "+datas[index].question_source;
+        }
+        //var question_type = datas[index].question_type
+        while(tableRef.rows.length > 1) {
+            tableRef.deleteRow(tableRef.rows.length -1);
+        }
+        
+        if(question_type == "1"){
             auto_button.disable = false;
             auto_button.style.visibility = "visible";
-			$("th").each(function(){
-				$(this).text($(this).text().replace("Value","Choice"));
-				if($(this).text().includes("Cumulative")){
-					$(this).text($(this).text().replace("Cumulative Probability","Probability"));
-				}
-			});
-			var optionsN = datas[index].num_of_choices
-			//Here is the code to write 
-			/*
-			//Code for discrete question
-			*/
+            $("th").each(function(){
+                $(this).text($(this).text().replace("Value","Choice"));
+                if($(this).text().includes("Cumulative")){
+                    $(this).text($(this).text().replace("Cumulative Probability","Probability"));
+                }
+            });
+            var optionsN = datas[index].num_of_choices
+            //Here is the code to write 
+            /*
+            //Code for discrete question
+            */
 
-			for(var i = 0;i<optionsN;i++) {
-				var num = tableRef.rows.length;
-				var newRow   = tableRef.insertRow(num);
-				var newCell_0  = newRow.insertCell(0);
-				newCell_0.innerHTML = '<input type="text" class="form-control" value = "'+options[i+1].trim()+'" readonly></input>';
-				
-				var newCell_1  = newRow.insertCell(1);
-				newCell_1.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)"></input>';
-				
-				var newCell_2  = newRow.insertCell(2);
-				var newText2 = document.createTextNode("N/A");
-				newCell_2.appendChild(newText2);
-			}
-			/* Action column to be removed for discrete questions */
-			$('td:nth-child(3), th:nth-child(3)').hide();
-			
-			if(saved_answer[index]){
-				var answer = saved_answer[index];
-				answer.forEach(function(element, idx) {
-					if(element[1]){
-						tableRef.rows[idx+1].cells[1].children[0].value = element[1];
-					}
-				});
-			}
-		}
-		else{
-			add_button.disabled = false;
-			add_button.style.visibility = "visible";
+            for(var i = 0;i<optionsN;i++) {
+                var num = tableRef.rows.length;
+                var newRow   = tableRef.insertRow(num);
+                var newCell_0  = newRow.insertCell(0);
+                newCell_0.innerHTML = '<input type="text" class="form-control" value = "'+options[i+1].trim()+'" readonly></input>';
+                
+                var newCell_1  = newRow.insertCell(1);
+                newCell_1.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)"></input>';
+                
+                var newCell_2  = newRow.insertCell(2);
+                var newText2 = document.createTextNode("N/A");
+                newCell_2.appendChild(newText2);
+            }
+            /* Action column to be removed for discrete questions */
+            $('td:nth-child(3), th:nth-child(3)').hide();
+            
+            if(saved_answer[index]){
+                var answer = saved_answer[index];
+                answer.forEach(function(element, idx) {
+                    if(element[1]){
+                        tableRef.rows[idx+1].cells[1].children[0].value = element[1];
+                    }
+                });
+            }
+        }
+        else{
+            add_button.disabled = false;
+            add_button.style.visibility = "visible";
             auto_button.disable = true;
             auto_button.style.visibility = "hidden";
-			$("th").each(function(){
-				$(this).text($(this).text().replace("Choice","Value"));
-				if(!$(this).text().includes("Cumulative")){
-					$(this).text($(this).text().replace("Probability","Cumulative Probability"));
-				}
-			});
-			if(saved_answer[index]){
-				var answer = saved_answer[index];
-				//console.log(answer);
-				answer.forEach(function(element, idx) {
-					var num = tableRef.rows.length;
-					var newRow   = tableRef.insertRow(num);
-					var newCell_0  = newRow.insertCell(0);
-					newCell_0.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)" value="'+element[0]+'"></input>';
-					
-					var newCell_1  = newRow.insertCell(1);
-					newCell_1.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)" value="'+element[1]+'"></input>';
-					
-					var newCell_2  = newRow.insertCell(2);
-					newCell_2.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="delete_answer(this)" >'
-					+'<span class="glyphicon glyphicon-pencil"></span> Delete </button>';
-				});
-			}
-			else {
-				//Default rows for P10, P50, and P90
-				var default_prob = ["90", "50", "10"];
-				var num = tableRef.rows.length;
-				for (i = 0; i < default_prob.length; i++) {
-					var newRow = tableRef.insertRow(num);
-					var newCell_0  = newRow.insertCell(0);
-					newCell_0.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)"></input>';
-					
-					var newCell_1  = newRow.insertCell(1);
-					newCell_1.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)" value="'+default_prob[i]+'" ></input>';
-					
-					var newCell_2  = newRow.insertCell(2);
-					newCell_2.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="delete_answer(this)" >'
-					+'<span class="glyphicon glyphicon-pencil"></span> Delete </button>';
-				}
-			}
-		}
-	}
+            $("th").each(function(){
+                $(this).text($(this).text().replace("Choice","Value"));
+                if(!$(this).text().includes("Cumulative")){
+                    $(this).text($(this).text().replace("Probability","Cumulative Probability"));
+                }
+            });
+            if(saved_answer[index]){
+                var answer = saved_answer[index];
+                //console.log(answer);
+                answer.forEach(function(element, idx) {
+                    var num = tableRef.rows.length;
+                    var newRow   = tableRef.insertRow(num);
+                    var newCell_0  = newRow.insertCell(0);
+                    newCell_0.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)" value="'+element[0]+'"></input>';
+                    
+                    var newCell_1  = newRow.insertCell(1);
+                    newCell_1.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)" value="'+element[1]+'"></input>';
+                    
+                    var newCell_2  = newRow.insertCell(2);
+                    newCell_2.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="delete_answer(this)" >'
+                    +'<span class="glyphicon glyphicon-pencil"></span> Delete </button>';
+                });
+            }
+            else {
+                //Default rows for P10, P50, and P90
+                var default_prob = ["90", "50", "10"];
+                var num = tableRef.rows.length;
+                for (i = 0; i < default_prob.length; i++) {
+                    var newRow = tableRef.insertRow(num);
+                    var newCell_0  = newRow.insertCell(0);
+                    newCell_0.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)"></input>';
+                    
+                    var newCell_1  = newRow.insertCell(1);
+                    newCell_1.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)" value="'+default_prob[i]+'" ></input>';
+                    
+                    var newCell_2  = newRow.insertCell(2);
+                    newCell_2.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="delete_answer(this)" >'
+                    +'<span class="glyphicon glyphicon-pencil"></span> Delete </button>';
+                }
+            }
+        }
+    }
 </script>
 <script type="text/javascript">
-	$("#start_assignment").click(function () {
-		var current = $(".qn:visible"),
-		total = $(".qn").length,
-		last = $(".qn:last");
-		//console.log(N_question)
-		//console.log(datas.length)
-		//console.log(datas)
-		
-		$(current).next().show();
-		$(current).hide();
-		$("#start_assignment").hide();
-		$("#cancel").hide();
-		$("#prev").hide();
+    $("#start_assignment").click(function () {
+        var current = $(".qn:visible"),
+        total = $(".qn").length,
+        last = $(".qn:last");
+        //console.log(N_question)
+        //console.log(datas.length)
+        //console.log(datas)
+        
+        $(current).next().show();
+        $(current).hide();
+        $("#start_assignment").hide();
+        $("#cancel").hide();
+        $("#prev").hide();
         if(N_question == datas.length - 1){
             $("#next").hide();
         }
         else {
             $("#submit").hide();
         }
-		//console.log(N_question)
-		//console.log(datas.length)
-		//console.log(datas)
-	});
-	
-	function Comparator(a, b) {
-   		if (a[1] < b[1]) return -1;
-   		if (a[1] > b[1]) return 1;
-   		return 0;
- 	}
+        //console.log(N_question)
+        //console.log(datas.length)
+        //console.log(datas)
+    });
     
-	function save_answer(index){
-		var answers = []
-		for(var i = 1;i < tableRef.rows.length;i++ ){
-			if(datas[index].question_type == "1"){
-				var option = i;
-			}
-			else{
-				var option = parseFloat(tableRef.rows[i].cells[0].children[0].value);
-			}
-			var prob = parseFloat(tableRef.rows[i].cells[1].children[0].value);
-			//var e = tableRef.rows[i].cells[2].children[0];
-			//var optrs = e.options[e.selectedIndex].text;
-			//var answer = [option, prob, optrs]
-			console.log('option: '+option);
-			console.log('prob: '+prob);
-			if(datas[index].question_type == "1"){
-				//For Discrete Assessment
-				if(prob == ""){
-					return 0;
-				}
-				if(isNaN(prob)){
-					console.log("is NAN");
-					console.log(prob);
-					return -1;
-				}
-				//if(prob >= 100){
-				//	return 4;
-				//}
-			}
-			else{
-				//For Continuous Assessment
-				if(option == "" || prob == ""){
-					return 0;
-				}
-				if(isNaN(option) || isNaN(prob)){
-					console.log("is NAN");
-					console.log(option);
-					return -1;
-				}
-				if(prob >= 100){
-					return 4;
-				}
-			}
-			var answer = [option, prob];
-			answers.push(answer);
-		}
+    function Comparator(a, b) {
+        if (a[1] < b[1]) return -1;
+        if (a[1] > b[1]) return 1;
+        return 0;
+    }
+    
+    function save_answer(index){
+        var answers = []
+        for(var i = 1;i < tableRef.rows.length;i++ ){
+            if(datas[index].question_type == "1"){
+                var option = i;
+            }
+            else{
+                var option = parseFloat(tableRef.rows[i].cells[0].children[0].value);
+            }
+            var prob = parseFloat(tableRef.rows[i].cells[1].children[0].value);
+            //var e = tableRef.rows[i].cells[2].children[0];
+            //var optrs = e.options[e.selectedIndex].text;
+            //var answer = [option, prob, optrs]
+            console.log('option: '+option);
+            console.log('prob: '+prob);
+            if(datas[index].question_type == "1"){
+                //For Discrete Assessment
+                if(prob === ""){
+                    return 0;
+                    //return 1;
+                }
+                
+                if(isNaN(prob)){
+                    console.log(prob+" is NAN");
+                    return -1;
+                }
+                //if(prob >= 100){
+                //  return 4;
+                //}
+            }
+            else{
+                //For Continuous Assessment
+                if(option === "" || prob === ""){
+                    return 0;
+                    //return 1;
+                }
+                if(isNaN(option) || isNaN(prob)){
+                    console.log(option+" is NAN");
+                    return -1;
+                }
+                if(prob >= 100){
+                    return 4;
+                }
+            }
+            var answer = [option, prob];
+            answers.push(answer);
+        }
         //console.log(index);
         //console.log(saved_answer.length);
         if(datas[index].question_type == "1"){
-        	//For Discrete Assessment
-			alen = answers.length;
-			sum = 0;
-			
-			for(i=0; i<alen; i++){
-				sum += (+answers[i][1]);
-			}
-			if( sum != 100 ){
-			    console.log(alen);
-				return 3;
-			}
-		}
-		else{
-			//For Continuous Assessment
-			answers = answers.sort(Comparator);
-			console.log(answers);
-			//answers are sorted according to probability
-			alen = answers.length;
-			var flag = 1; // cumulative
-			var ind = 0;
-			while(+answers[ind][0] == +answers[ind+1][0] && ind+1 < alen-1){
-				console.log("Couldn't decide flag");
-				ind++;
-			}
-			console.log(answers[ind+1][0],answers[ind][0]);
-			
-			if( +answers[ind+1][0] < +answers[ind][0] ){
-				console.log("decumulative");
-				flag = -1;
-			}
-			else{
-				console.log("cumulative");
-			}
-			
-			console.log("Flag:");
-			console.log(flag);
-			
-			if(flag==1){
-				for(i=0; i<alen-1 ;++i){
-					if(+answers[i+1][0] < +answers[i][0])
-						return -2;
-				}
-			}
-			else if(flag == -1){
-				for(i=0; i<alen-1 ;++i){
-					if(+answers[i+1][0] > +answers[i][0])
-						return +2;
-				}
-			}
-		}
-		saved_answer[index] = answers;
-		console.log(saved_answer);
-		//**********************
-		return 1;
-	}
-	
-	function save_database(){
-		var url_string = window.location.href;
+            //For Discrete Assessment
+            alen = answers.length;
+            sum = 0;
+            
+            for(i=0; i<alen; i++){
+                sum += (+answers[i][1]);
+            }
+            if( sum != 100 ){
+                console.log(alen);
+                return 3;
+            }
+        }
+        else{
+            //For Continuous Assessment
+            answers = answers.sort(Comparator);
+            console.log(answers);
+            //answers are sorted according to probability
+            alen = answers.length;
+            var flag = 1; // cumulative
+            var ind = 0;
+            while(+answers[ind][0] == +answers[ind+1][0] && ind+1 < alen-1){
+                console.log("Couldn't decide flag");
+                ind++;
+            }
+            console.log(answers[ind+1][0],answers[ind][0]);
+            
+            if( +answers[ind+1][0] < +answers[ind][0] ){
+                console.log("decumulative");
+                flag = -1;
+            }
+            else{
+                console.log("cumulative");
+            }
+            
+            console.log("Flag: "+flag);
+            
+            if(flag == 1){
+                for(i=0; i<alen-1 ;++i){
+                    if(+answers[i+1][0] < +answers[i][0])
+                        return -2;
+                }
+            }
+            else if(flag == -1){
+                for(i=0; i<alen-1 ;++i){
+                    if(+answers[i+1][0] > +answers[i][0])
+                        return +2;
+                }
+            }
+        }
+        saved_answer[index] = answers;
+        console.log(saved_answer);
+        //**********************
+        return 1;
+    }
+    
+    function save_database(){
+        var url_string = window.location.href;
         var url = new URL(url_string);
-		var param = url.searchParams.get("assignment_id");
-		/*var today = new Date();
-		var tomorrow = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
-		var dd = today.getDate();
-		var mm = today.getMonth()+1; //January is 0!
-		var yyyy = today.getFullYear();
-		if(dd<10){
-			dd='0'+dd
-		} 
-		if(mm<10){
-			mm='0'+mm
-		} 
-		today = mm+'/'+dd+'/'+yyyy;
-		//**********************
-		var upload_date = today;*/
-		var uploader = "{{request.session.username}}";
-		
-		
-		$.ajax({
-			type:"POST",
-			url:"/do_assignment/",
-			data: {
-				csrfmiddlewaretoken: "{{ csrf_token }}",
-				'question_text[]': question_title, // from form
-				'uploader':uploader,
-				'answer[]':saved_answer,
-				'assignment_id':param
-			},
-			success: function(data) {
-				alert(data.rep_message);
-				var is_admin = "{{request.session.admin_user}}";
-				if(is_admin == "False"){
-					window.location.replace("/show_assignment/");
-				}
-				else{
-					window.location.replace("/search_assignment/");
-				}
-			},
-		});
-	}
-	
-	function submit_answer(){
-		var x = save_answer(N_question);
-		if(x==1){
-			var proce = confirm("The current answer will be stored into database and you will not be able to go back, are you sure?");
-			if(proce){
-				save_database();
-			}
-		}
-		else if(x==0){
-			alert("Please don't leave any options empty ...");
-		}
-		else if(x==2 || x==-2){
-			alert("Values should either monotonically increase or monotonically decrease with cumulative probability ...");
-		}
-		else if(x==3){
-			alert("Values should sum up to 100 ...");
-		}
-		else if(x==4){
-			alert("Nothing is greater than or equal to 100% ...");
-		}
-		else{
-			alert("Please enter integer values ...");
-		}
-	}
-	
-	function cancel_test(){
-		var is_admin = "{{request.session.admin_user}}";
-		if(is_admin == 'True'){
-			window.location.replace("/search_assignment/");
-		}
-		else{
-			window.location.replace("/show_assignment/");
-		}
-	}
-	/* DJ- Added Auto fill function */
-	function autofill() {
+        var param = url.searchParams.get("assignment_id");
+        /*var today = new Date();
+        var tomorrow = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
+        var dd = today.getDate();
+        var mm = today.getMonth()+1; //January is 0!
+        var yyyy = today.getFullYear();
+        if(dd<10){
+            dd='0'+dd
+        } 
+        if(mm<10){
+            mm='0'+mm
+        } 
+        today = mm+'/'+dd+'/'+yyyy;
+        //**********************
+        var upload_date = today;*/
+        var uploader = "{{request.session.username}}";
+        
+        
+        $.ajax({
+            type:"POST",
+            url:"/do_assignment/",
+            data: {
+                csrfmiddlewaretoken: "{{ csrf_token }}",
+                'question_text[]': question_title, // from form
+                'uploader':uploader,
+                'answer[]':saved_answer,
+                'assignment_id':param
+            },
+            success: function(data) {
+                alert(data.rep_message);
+                var is_admin = "{{request.session.admin_user}}";
+                if(is_admin == "False"){
+                    window.location.replace("/show_assignment/");
+                }
+                else{
+                    window.location.replace("/search_assignment/");
+                }
+            },
+        });
+    }
+    
+    function submit_answer(){
+        var x = save_answer(N_question);
+        if(x==1){
+            var proce = confirm("The current answer will be stored into database and you will not be able to go back, are you sure?");
+            if(proce){
+                save_database();
+            }
+        }
+        else if(x==0){
+            alert("Please don't leave any options empty ...");
+        }
+        else if(x==2 || x==-2){
+            alert("Values should either monotonically increase or monotonically decrease with cumulative probability ...");
+        }
+        else if(x==3){
+            alert("Values should sum up to 100 ...");
+        }
+        else if(x==4){
+            alert("Nothing is greater than or equal to 100% ...");
+        }
+        else{
+            alert("Please enter integer values ...");
+        }
+    }
+    
+    function cancel_test(){
+        var is_admin = "{{request.session.admin_user}}";
+        if(is_admin == 'True'){
+            window.location.replace("/search_assignment/");
+        }
+        else{
+            window.location.replace("/show_assignment/");
+        }
+    }
+    /* DJ- Added Auto fill function */
+    function autofill() {
         var remainProb = 100;
         var qt_lef = 0;
         $('tr').find('td:eq(1)').each(function(i, row) {
@@ -445,87 +445,87 @@
                 $(this).closest('td').find('input[type="text"]').val(remainProb/qt_lef);
             }
         });       
-	}
+    }
 
-	function next(){
-		var x = save_answer(N_question);
-		if(x==1){
-			N_question = N_question + 1;
-			if(N_question <= datas.length){
-				load_question(N_question);
-				console.log(N_question);
-				if(N_question == datas.length - 1){
-					$("#next").hide();
-					$("#submit").show();
-				}
-			}
-			$("#prev").show();
-		}
-		else if(x==0){
-			alert("Please don't leave any options empty ...");
-		}
-		else if(x==2 || x==-2){
-			alert("Values should either monotonically increase or monotonically decrease with cumulative probability ...");
-		}
-		else if(x==3){
-			alert("Values should sum up to 100 ...");
-		}
-		else if(x==4){
-			alert("Nothing is greater than or equal to 100% ...");
-		}
-		else{
-			alert("Please enter integer values ...");
-		}
-	}
-	
-	function previous(){
-		save_answer(N_question);
-		N_question = N_question - 1;
-		if(N_question >= 0){
-			load_question(N_question);
-			if(N_question == 0){
-				$("#prev").hide();
-			}
-		}
-		console.log(N_question);
+    function next(){
+        var x = save_answer(N_question);
+        if(x==1){
+            N_question = N_question + 1;
+            if(N_question <= datas.length){
+                load_question(N_question);
+                console.log(N_question);
+                if(N_question == datas.length - 1){
+                    $("#next").hide();
+                    $("#submit").show();
+                }
+            }
+            $("#prev").show();
+        }
+        else if(x==0){
+            alert("Please don't leave any options empty ...");
+        }
+        else if(x==2 || x==-2){
+            alert("Values should either monotonically increase or monotonically decrease with cumulative probability ...");
+        }
+        else if(x==3){
+            alert("Values should sum up to 100 ...");
+        }
+        else if(x==4){
+            alert("Nothing is greater than or equal to 100% ...");
+        }
+        else{
+            alert("Please enter integer values ...");
+        }
+    }
+    
+    function previous(){
+        save_answer(N_question);
+        N_question = N_question - 1;
+        if(N_question >= 0){
+            load_question(N_question);
+            if(N_question === 0){
+                $("#prev").hide();
+            }
+        }
+        console.log(N_question);
         $("#next").show();
         $("#submit").hide();
     }
     
-	function add_answer(){
-		var num = tableRef.rows.length;
-		var newRow   = tableRef.insertRow(num);
-		var newCell_0  = newRow.insertCell(0);
-		newCell_0.innerHTML = '<input type="text" class="form-control"></input>';
-		
-		var newCell_1  = newRow.insertCell(1);
-		newCell_1.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)" required></input>';
-		
-		var newCell_2  = newRow.insertCell(2);
-		newCell_2.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="delete_answer(this)" >'
-		+'<span class="glyphicon glyphicon-pencil"></span> Delete </button>';
-	}
+    function add_answer(){
+        var num = tableRef.rows.length;
+        var newRow   = tableRef.insertRow(num);
+        var newCell_0  = newRow.insertCell(0);
+        newCell_0.innerHTML = '<input type="text" class="form-control"></input>';
+        
+        var newCell_1  = newRow.insertCell(1);
+        newCell_1.innerHTML = '<input type="text" class="form-control" onkeypress="return isNumberKey(event)" required></input>';
+        
+        var newCell_2  = newRow.insertCell(2);
+        newCell_2.innerHTML = '<button class="btn btn-primary btn-xs my-xs-btn" type="button" onClick="delete_answer(this)" >'
+        +'<span class="glyphicon glyphicon-pencil"></span> Delete </button>';
+    }
 </script>
 <script type="text/javascript">
-	function cancel(){
-		var is_admin = "{{request.session.admin_user}}";
-		if(is_admin == "False"){
-			window.location.replace("/show_assignment/");
-		}
-		else{
-			window.location.replace("/search_assignment/");
-		}
-	}
-	$(document).ready(function(){
-		$('#cancel').click(function(){
-			cancel();
-		});
-	});
+    function cancel(){
+        var is_admin = "{{request.session.admin_user}}";
+        if(is_admin == "False"){
+            window.location.replace("/show_assignment/");
+        }
+        else{
+            window.location.replace("/search_assignment/");
+        }
+    }
+    $(document).ready(function(){
+        $('#cancel').click(function(){
+            cancel();
+        });
+    });
 </script>
 <script type="text/javascript" >
-	function delete_answer(element){
-		var cell = element.parentNode.parentNode.rowIndex;
-		document.getElementById("AssessmentTable").deleteRow(cell);
-	}
+    function delete_answer(element){
+        var cell = element.parentNode.parentNode.rowIndex;
+        document.getElementById("AssessmentTable").deleteRow(cell);
+    }
 </script>
 {% endblock %}
