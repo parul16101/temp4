@@ -74,7 +74,7 @@
 <script type="text/javascript">
     function isNumberKey(evt) {
         var charCode = (evt.which) ? evt.which : evt.keyCode;
-        if (charCode != 45 && charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57))
+        if (charCode != 101 && charCode != 45 && charCode != 46 && charCode > 31 && (charCode < 48 || charCode > 57))
             return false;
         return true;
     }
@@ -244,15 +244,34 @@
     }
     
     function save_answer(index){
-        var answers = []
+        var answers = [];
+        //var pattern = new RegExp("^-?[0-9]+\.?[0-9]*([e](-?[0-9]+))?$");
+        var pattern = /^[\+\-]?\d*\.?\d+(?:[Ee][\+\-]?\d+)?$/;
+        var tmpVal;
         for(var i = 1;i < tableRef.rows.length;i++ ){
             if(datas[index].question_type == "1"){
                 var option = i;
             }
             else{
-                var option = parseFloat(tableRef.rows[i].cells[0].children[0].value);
+                tmpVal = tableRef.rows[i].cells[0].children[0].value
+                //alert(tmpVal)
+                //alert(pattern.test(tmpVal))
+                if(pattern.test(tmpVal)){
+                    var option = parseFloat(tmpVal);
+                }
+                else{
+                    return 5;
+                }
             }
-            var prob = parseFloat(tableRef.rows[i].cells[1].children[0].value);
+            tmpVal = tableRef.rows[i].cells[1].children[0].value
+            //alert(tmpVal)
+            //alert(pattern.test(tmpVal))
+            if(pattern.test(tmpVal)){
+                var prob = parseFloat(tmpVal);
+            }
+            else{
+                return 5;
+            }
             //var e = tableRef.rows[i].cells[2].children[0];
             //var optrs = e.options[e.selectedIndex].text;
             //var answer = [option, prob, optrs]
@@ -413,7 +432,7 @@
             alert("Nothing is greater than or equal to 100% ...");
         }
         else{
-            alert("Please enter integer values ...");
+            alert("Values should be valid input numbers ...");
         }
     }
     
@@ -474,7 +493,7 @@
             alert("Nothing is greater than or equal to 100% ...");
         }
         else{
-            alert("Please enter integer values ...");
+            alert("Values should be valid input numbers ...");
         }
     }
     
