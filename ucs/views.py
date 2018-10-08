@@ -2526,7 +2526,7 @@ def processAssessments(ASet):
         operator = assessment.operator
         #Only one dot allow in the float value
         dot_num = len(trueValue)-len(trueValue.replace('.',''))
-        if dot_num <= 1 and trueValue.replace('.','').isdigit():
+        if dot_num <= 1 and trueValue.replace('.','').replace('-','').isdigit():
             trueValue = float(trueValue)
             pAssigned = float(pAssigned)
             vAssigned = float(vAssigned)
