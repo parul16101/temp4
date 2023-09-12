@@ -93,6 +93,9 @@ class Assignment(models.Model):
         return self.assignment_name
 
 class Assessment(models.Model):
+    ## @var assignment_id
+    # This is Foreign key. It is a reference to a assignment.
+    assignment_id = models.ForeignKey(Assignment, on_delete=models.CASCADE, null=True, blank=True)
     ## @var question_id
     # This is Foreign key. It is a reference to a question.
     question_id = models.ForeignKey(Question, on_delete=models.CASCADE)
@@ -111,6 +114,9 @@ class Assessment(models.Model):
     ## @var date_of_assessment
     # This is a class variable. Data type of this variable is "string". It is used to store date of assessment. Maximum length of string allowed to store in it is 50.
     date_of_assessment = models.CharField(max_length=50)
+    ## @var time_of_assessment
+    # This is a class variable. Data type of this variable is "string". It is used to store time of assessment. Maximum length of string allowed to store in it is 50.
+    time_of_assessment = models.CharField(max_length=50)
     ## @var details_of_assessment
     # This is a class variable. Data type of this variable is "string". It is used to store details of assessment. Maximum length of string allowed to store in it is 1000.
     details_of_assessment = models.CharField(max_length=1000, blank=True, null=True)

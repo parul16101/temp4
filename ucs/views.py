@@ -3,7 +3,10 @@
 Django views for ucs project.
 This contains various function which process HTTP requests and render corrosponding html pages.
 """
-import os, sys, time, zipfile, urllib, shutil, base64, json, hashlib, csv, math, platform
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+import os, time, zipfile, urllib, shutil, base64, json, hashlib, csv, math, platform
 from time import strftime
 from django.shortcuts import render, redirect
 from django.template import RequestContext
@@ -16,7 +19,7 @@ from django.http import JsonResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from .models import User, Question, Group_member, Group, Category, Dataset, Assignment, Assigned_group, Assigned_question, Assessment, Assignment_log
-from .tools import time_norm
+from .tools import date_norm, date_by_slash, get_timestamp, rmv_timestamp
 from collections import defaultdict
 from datetime import datetime, timedelta
 
@@ -44,7 +47,8 @@ WarningQ = {0 : "The true value was updated for record in row ",
 1 : "Insufficient data for the question, missing Question text, Category, NoOfChoices",
 2 : "The units were updated for record in row ",
 3 : "The units reported in the import file is different than the one in the database for record in row ",
-4 : "A new category was created for record in row "}
+4 : "A new category was created for record in row ",
+5 : "Assignment name not found in the database "}
 
 if 'Windows' in platform.system():
     file_path = os.path.join(os.getcwd(), "data")
@@ -61,28 +65,29 @@ def refresh_database():
     print "Start refreshing..."
     qid_list = Question.objects.all().values_list('id', flat=True)
     for qid in qid_list:
-        close_date  = time_norm(Question.objects.get(id=qid).close_date)
+        close_date  = date_norm(Question.objects.get(id=qid).close_date)
         print close_date
-        upload_date = time_norm(Question.objects.get(id=qid).upload_date)
+        upload_date = date_norm(Question.objects.get(id=qid).upload_date)
         print upload_date
         Question.objects.filter(id=qid).update(close_date=close_date)
         Question.objects.filter(id=qid).update(upload_date=upload_date)
     aid_list = Assessment.objects.all().values_list('id', flat=True)
+    timestamp = get_timestamp()
     for aid in aid_list:
-        date_of_assessment = time_norm(Assessment.objects.get(id=aid).date_of_assessment)
+        date_of_assessment = date_norm(Assessment.objects.get(id=aid).date_of_assessment)
         print date_of_assessment
-        Assessment.objects.filter(id=aid).update(date_of_assessment=date_of_assessment)
+        Assessment.objects.filter(id=aid).update(date_of_assessment=date_of_assessment, time_of_assessment=timestamp)
     sid_list = Assignment.objects.all().values_list('id', flat=True)
     for sid in sid_list:
-        due_date = time_norm(Assignment.objects.get(id=sid).due_date)
+        due_date = date_norm(Assignment.objects.get(id=sid).due_date)
         print due_date
         Assignment.objects.filter(id=sid).update(due_date=due_date)
     lid_list = Assignment_log.objects.all().values_list('id', flat=True)
     for lid in lid_list:
-        due_date = time_norm(Assignment_log.objects.get(id=lid).due_date)
+        due_date = date_norm(Assignment_log.objects.get(id=lid).due_date)
         print due_date
         Assignment_log.objects.filter(id=lid).update(due_date=due_date)
-        finish_date = time_norm(Assignment_log.objects.get(id=lid).finish_date)
+        finish_date = date_norm(Assignment_log.objects.get(id=lid).finish_date)
         print finish_date
         if not finish_date:
             Assignment_log.objects.filter(id=lid).update(finish_date="0000-00-00")
@@ -90,17 +95,72 @@ def refresh_database():
             Assignment_log.objects.filter(id=lid).update(finish_date=finish_date)
     bid_list = Dataset.objects.all().values_list('id', flat=True)
     for bid in bid_list:
-        upload_date = time_norm(Dataset.objects.get(id=bid).upload_date)
+        upload_date = date_norm(Dataset.objects.get(id=bid).upload_date)
         print upload_date
         Dataset.objects.filter(id=bid).update(upload_date=upload_date)
     print "End refreshing..."
     ####################################################################
 
 
+def refresh_database_2():
+    #####################SCRIPT TO CLEAN DATE###########################
+    print "Start refreshing..."
+    aid_list = Assessment.objects.all().values_list('id', flat=True)
+    a_set    = Assignment.objects.get(assignment_name="Default")
+    for aid in aid_list:
+        Assessment.objects.filter(id=aid).update(assignment_id=a_set)
+    print "End refreshing..."
+    ####################################################################
+
+
+
+def init_config():
+    #Create an DEFAULT category
+    c_set = Category.objects.all()
+    if not c_set:
+        default_category = Category(category_text = "Default", num_of_question = 0)
+        default_category.save()
+
+    #Create DEFAULT assignment
+    #a_set = Assignment.objects.filter(assignment_name = "Default")
+    #print "#$#$#@$@#$@"
+    #print len(a_set), a_set
+    #if len(a_set) == 0:
+    #    default_assignment = Assignment(assignment_name = "Default", due_date = "")
+    #    default_assignment.save()
+
+    #Create ALL USERS group
+    g_set = Group.objects.all()
+    print "#$#$#@$@#$@"
+    print len(g_set), g_set
+    if not g_set:
+        all_users_group = Group(group_name = "All Users")
+        all_users_group.save()
+
+    #Create NO USERS group
+    g_set = Group.objects.filter(group_name = "No Users")
+    print "#$#$#@$@#$@"
+    print len(g_set), g_set    
+    if len(g_set) == 0:
+        no_users_group = Group(group_name = "No Users")
+        no_users_group.save()
+
+    #Create association between DEFAULT assignment and NO USERS group
+    #default_assignment = Assignment.objects.get(assignment_name = "Default")
+    #no_users_group = Group.objects.get(group_name = "No Users")
+    #default_no_users = Assigned_group(assignment_id = default_assignment, group_id = no_users_group)
+    #default_no_users.save()
+
+
+
 ## Function to render home-page.
 # Function for rendering home page. Home page is rendered when someone login successfully.
 def home_page(request):
-    #####refresh_database()
+    #refresh_database()
+    ####init_config()
+    ####refresh_database_2()
+    ###print [item.pk for item in Assignment.objects.all()]
+    ###print Assignment.objects.get(assignment_name="Default").id
     #DJ Home page to do report
     if "userId" in request.session.keys():
         user_name = request.session.get("userId")
@@ -243,10 +303,7 @@ def register(request):
         else:
             newUser = User(username=username, email=email, password=password)
             newUser.save()
-            group_set = Group.objects.all()
-            if not group_set:
-                new_group = Group(group_name = "All Users")
-                new_group.save()
+            init_config() #Initialize default assignments, groups, and categories
             all_users = Group.objects.get(group_name = "All Users")
             new_user = User.objects.get(username = username)
             newMember = Group_member(group_id = all_users, user_id = new_user)
@@ -313,11 +370,6 @@ def create_question(request):
     message = None
 
     tag_set = Category.objects.all()
-    #Create an "ALL" category as default
-    if not tag_set:
-        new_tag = Category(category_text = "Default", num_of_question = 0)
-        new_tag.save()
-    tag_set = Category.objects.all()
     category_list = []
     number_list = []
     for item in tag_set:
@@ -347,7 +399,7 @@ def create_question(request):
             T_or_F = request.POST.get("true_or_false")
             allow_assessment = request.POST.get("allow_assessment")
             unit = request.POST.get("unit", "NA")
-            upload_date = time_norm(request.POST.get("upload_date"))
+            upload_date = date_norm(request.POST.get("upload_date"))
             closing_date = request.POST.get("closing_date")
             print("question_type: "+question_type)
             print("forecast: "+forecast)
@@ -406,11 +458,12 @@ def edit_question(request):
     q_id = request.GET.get('question_id','')
     q_id = int(q_id)
     print q_id
-    question = Question.objects.get(id=q_id)
+    question   = Question.objects.get(id=q_id)
+    close_date = date_by_slash(question.close_date)
     owned = False
     if user_id != question.uploader_id:
         owned = True
-    return render(request, "ucs/edit_question.html", {"question":question, "userId": user_id, "uploaderId": question.uploader_id, "owned": owned, "username":request.session.get("username"), "cataList": json_cata})
+    return render(request, "ucs/edit_question.html", {"question":question, "userId": user_id, "uploaderId": question.uploader_id, "owned": owned, "username":request.session.get("username"), "cataList": json_cata, "close_date":close_date})
 
 
 def search_question(request):
@@ -471,7 +524,7 @@ def save_question(request):
         question.unit = unit
         question.true_value = true_value
         question.category_id = category_info.id
-        question.close_date = time_norm(date_true_value_known)
+        question.close_date = date_norm(date_true_value_known)
         question.question_text = question_text
         question.allow_assessment = allow_assessment
         question.save()
@@ -593,10 +646,6 @@ def create_assignment(request):
 
 def manage_category(request):
     tag_set = Category.objects.all()
-    if not tag_set:
-        new_tag = Category(category_text = "Default", num_of_question = 0)
-        new_tag.save()
-        tag_set = Category.objects.all()
     cidList = []
     category_list = []
     number_list = []
@@ -652,7 +701,7 @@ def search_assignment(request):
     for assignment in existAssignment:
         aidList.append(assignment.id)
         number = Assigned_question.objects.filter(assignment_id = assignment).count()
-        if number == 0:
+        if number == 0 and assignment.assignment_name != "Default":
             assignment.delete()
         else:
             assignmentlist.append(assignment.assignment_name)
@@ -752,13 +801,13 @@ def edit_assignment(request):
         a_id = int(a_id)
         #print 'Assignment id: ', a_id
         target_assignment = Assignment.objects.get(id = a_id)
-        close_date = Assignment.objects.filter(id = a_id)
-        due_date = ""
-        for cw in close_date:
-            due_date = cw.due_date
-            break
+        due_date = Assignment.objects.get(id = a_id).due_date
+        #due_date = ""
+        #for cw in Assignment.objects.filter(id = a_id):
+        #    due_date = cw.due_date
+        #    break
         a_name = target_assignment.assignment_name
-        #print 'Assignment name: ', a_name
+        print 'Assignment name: ', a_name
         #DJ - Make sure new users or delted users update the assignment_log table
         if request.POST['action'] == "delete":
             g_name = request.POST['gp_name']
@@ -779,10 +828,16 @@ def edit_assignment(request):
             #delete_users = Group_member.objects.filter(group_id = target_group)
         if request.POST['action'] == "add":
             add_group = request.POST.getlist('gp_name[]')
+            due_date  = date_norm(request.POST['closing_date'])
+
+            Assignment.objects.filter(id = a_id).update(due_date = due_date)
+            Assignment_log.objects.filter(assignment_id = target_assignment).update(due_date = due_date)
+
             curr_users_list = []
             user_list = Assignment_log.objects.filter(assignment_id = target_assignment)
             for curr_user in user_list:
                 curr_users_list.append(curr_user.user_id)
+
             for item in add_group:
                 item = item.encode("utf-8")
                 target_group = Group.objects.get(group_name = item)
@@ -794,7 +849,12 @@ def edit_assignment(request):
                         print newuser
                         insertIntoAssignmentLog = Assignment_log(assignment_id = target_assignment, user_id = newuser.user_id, due_date = due_date,
                         finish_date = "0000-00-00", group_id = target_group)
-                        insertIntoAssignmentLog.save()                
+                        insertIntoAssignmentLog.save()
+                    newgroup = Assignment_log.objects.filter(group_id = target_group).filter(user_id = newuser.user_id)
+                    if len(newgroup) == 0:
+                        insertIntoAssignmentLog = Assignment_log(assignment_id = target_assignment, user_id = newuser.user_id, due_date = due_date,
+                        finish_date = "0000-00-00", group_id = target_group)
+                        insertIntoAssignmentLog.save()
                     #all_users.append(ul.user_id)
                 newAssignedGroup = Assigned_group(assignment_id = target_assignment, group_id = target_group)
                 newAssignedGroup.save()
@@ -803,8 +863,9 @@ def edit_assignment(request):
         a_id = int(a_id)
         print 'Assignment id: ', a_id
         target_assignment = Assignment.objects.get(id = a_id)
-        a_name = target_assignment.assignment_name
+        a_name   = target_assignment.assignment_name
         print 'Assignment name: ', a_name
+        due_date = date_by_slash(target_assignment.due_date)
     #$$%$%$%$%$%$%$%$%$%$%
     question_in_assignment = Assigned_question.objects.filter(assignment_id = target_assignment)
     text_list = []
@@ -842,7 +903,7 @@ def edit_assignment(request):
 
     at_pair = [{"group_id":i, "group_name":g} for i, g in zip(gidList, exgrouplist)]
     group_info = json.dumps(at_pair)
-    return  render(request, "ucs/edit_assignment.html", {"assignment_id": a_id, "assignment_name": a_name, "group_not_in_assignment": json_group, "group_in_assignment": group_info, "question_in_assignment": json_question})
+    return render(request, "ucs/edit_assignment.html", {"assignment_id":a_id, "assignment_name":a_name, "group_not_in_assignment":json_group, "group_in_assignment":group_info, "question_in_assignment":json_question, "due_date":due_date})
 
 
 def do_assignment(request):
@@ -884,6 +945,7 @@ def do_assignment(request):
             if float(content[0]) > float(content[2]):
                 operator = 'GE'
             print "Operator: ",operator
+            timestamp = get_timestamp()
             while (i < len(content)):
                 asst = content[i]
                 option = str(float(asst))
@@ -894,7 +956,9 @@ def do_assignment(request):
                 #operator = content[i]
                 #i = i + 1
                 #print operator
-                new_assessment = Assessment(question_id = filtered_question, user_id = target_user, option_text = option, answer_text = answer, operator = operator, date_of_assessment = upload_date)
+                ###JASON 06-17###
+                new_assessment = Assessment(assignment_id = target_assignment, question_id = filtered_question, user_id = target_user, option_text = option, answer_text = answer, operator = operator, date_of_assessment = upload_date, time_of_assessment=timestamp)
+                #new_assessment = Assessment(question_id = filtered_question, user_id = target_user, option_text = option, answer_text = answer, operator = operator, date_of_assessment = upload_date, time_of_assessment=timestamp)
                 new_assessment.save()
         f_date = upload_date
         print 'f_date: ', f_date
@@ -1073,6 +1137,7 @@ def batch_import(request):
     if not user_id:
         return redirect(reverse("login"))
     message = ""
+    new_assignment_list = []  #A list for the new assignment appeared in the file
     #print 'The user id is ', user_id
     if request.method == "POST":
         shift = 1 #The input file format change
@@ -1108,6 +1173,9 @@ def batch_import(request):
             print header
             if "NUMBER OF PAIRS" in header and header.index("NUMBER OF PAIRS") == shift+15:
                 for row in reader:
+                    # If encounter an empty row, skip the rest of the lines
+                    if not row:
+                        break
                     ErrorQv = 0
                     WarningQv = 0
                     # ********************** QUESTION INFORMATION VALIDATION **********************
@@ -1121,27 +1189,29 @@ def batch_import(request):
                             # VARIABLE NAME IN PYTHON  VARIABLE NAME IN DJANGO
                             # ADD A VALIDATION FOR QUESTIONS THAT ARE FORECAST
                             # [TODO] NEED TO CHANGE FINALIZE THE HEADING FORMAT
-                            QuestionUse = str(row[shift+1])											## training *
+                            AssignmentName = str(row[shift+0])                                      ## assignment name *
+                            #print 'AssignmentName:', AssignmentName
+                            QuestionUse = str(row[shift+1])                                         ## training *
                             #print 'QuestionUse:', QuestionUse
-                            QForecast = str(row[shift+2]).title()										## forecast *
+                            QForecast = str(row[shift+2]).title()                                   ## forecast *
                             #print 'QForecast: ', QForecast
-                            QuestionType = str(row[shift+3]).title()									## question_type *
+                            QuestionType = str(row[shift+3]).title()                                ## question_type *
                             #print 'QuestionType: ', QuestionType
-                            NoOfChoices = int(row[shift+4])											## num_of_choices *
+                            NoOfChoices = int(row[shift+4])                                         ## num_of_choices *
                             #print 'NoOfChoices: ', NoOfChoices
-                            QCategory = unicode(str(row[shift+5]).strip(), errors='replace')			## category *
+                            QCategory = unicode(str(row[shift+5]).strip(), errors='replace')        ## category *
                             #print 'QCategory: ', QCategory
-                            QuestionText = unicode(str(row[shift+6]).strip(), errors='replace')		## question_text *
+                            QuestionText = unicode(str(row[shift+6]).strip(), errors='replace')     ## question_text *
                             #print 'QuestionText: ', QuestionText
-                            DateTrueValueKnown = time_norm(str(row[shift+7]))									## close_date *
+                            DateTrueValueKnown = date_norm(str(row[shift+7]))                       ## close_date *
                             #print "DateTrueValueKnown: ", DateTrueValueKnown;
-                            TrueValue = unicode(str(row[shift+8]).strip(), errors='replace')			## true_value *
+                            TrueValue = unicode(str(row[shift+8]).strip(), errors='replace')        ## true_value *
                             #print 'TrueValue: ', TrueValue
-                            Units = unicode(str(row[shift+9]).strip(), errors='replace')				## unit *
+                            Units = unicode(str(row[shift+9]).strip(), errors='replace')            ## unit *
                             #print 'Units: ', Units
-                            QuestionSource = unicode(str(row[shift+10]).strip(), errors='replace')	## question_source
+                            QuestionSource = unicode(str(row[shift+10]).strip(), errors='replace')  ## question_source *
                             #print 'QuestionSource: ', QuestionSource
-                            AllowAssessment = str(row[shift+11]).title()								## allow_assessment
+                            AllowAssessment = str(row[shift+11]).title()                            ## allow_assessment *
                             #print 'AllowAssessment: ', AllowAssessment
                         else:
                             ErrorQv+=1
@@ -1152,9 +1222,32 @@ def batch_import(request):
                         if len(Q) == 0:
                             WarningQv +=1
                             WarningLogQ.insert(reader.line_num, WarningQ[4] + str(reader.line_num))
-                            newCategory = Category(category_text = QCategory, num_of_question = 0)
+                            newCategory = Category(category_text=QCategory, num_of_question=0)
                             newCategory.save()
-                    CategoryObj = Category.objects.get(category_text = QCategory)
+                        CategoryObj = Category.objects.get(category_text=QCategory)
+                        
+                        #Check assignment exists in the database
+                        Q = Assignment.objects.filter(assignment_name=AssignmentName)
+                        if len(Q) == 0:
+                            if not AssignmentName:
+                                AssignmentName = str(os.path.splitext(file_name)[0])+'_'+str(upload_date)
+                            WarningQv +=1
+                            WarningLogQ.insert(reader.line_num, WarningQ[5] + str(reader.line_num))
+                            newAssignment  = Assignment(assignment_name=AssignmentName, due_date="")
+                            newAssignment.save()
+                            AssignmentObj  = Assignment.objects.get(assignment_name=AssignmentName)
+                            no_users_group = Group.objects.get(group_name="No Users")
+                            #insertIntoAssignmentLog = Assignment_log(assignment_id=AssignmentObj, user_id=upload_user, due_date=upload_date, 
+                            #    finish_date="0000-00-00", group_id=no_users_group)
+                            insertIntoAssignmentLog = Assignment_log(assignment_id=AssignmentObj, user_id=upload_user, due_date="", 
+                                finish_date=upload_date, group_id=no_users_group)
+                            insertIntoAssignmentLog.save()
+                            ##############################
+                            newAssignedGroup = Assigned_group(assignment_id=AssignmentObj, group_id=no_users_group)
+                            newAssignedGroup.save()
+                            ##############################
+                            new_assignment_list.append(AssignmentName)
+                        AssignmentID = Assignment.objects.get(assignment_name=AssignmentName)
                     if ErrorQv == 0:
                         # Check if question exists in database
                         QSet = Question.objects.filter(question_text = QuestionText)
@@ -1186,6 +1279,12 @@ def batch_import(request):
                                     WarningLogQ.insert(reader.line_num, WarningQ[3] + str(reader.line_num))
                         QuestionID = Question.objects.get(question_text=QuestionText)
                         print 'QuestionID: ', QuestionID
+                        # If the Assignment Name is first-time appeared in the file
+                        if AssignmentName in new_assignment_list:
+                            AQSet = Assigned_question.objects.filter(assignment_id=AssignmentID, question_id=QuestionID)
+                            if len(AQSet) == 0:
+                                newAssignedQuestion = Assigned_question(assignment_id=AssignmentID, question_id=QuestionID)
+                                newAssignedQuestion.save()
                     # Does not allow the import of an Assessment unless the question information is available
                     if ErrorQv == 0:
                         ErrorAv = 0
@@ -1203,14 +1302,14 @@ def batch_import(request):
                         if row[shift+i]:
                             ImportAssessment = True
                     if ImportAssessment == True:
-                        DateOfAssessment = time_norm(str(row[shift+12]))
+                        DateOfAssessment = date_norm(str(row[shift+12]))
                         Operator = str(row[shift+13])
                         DetailsOfAssessment = str(row[shift+14])
                         #VALIDATION OF ASSESSMENT INPUT/OPTIONS
-                        # Validate that NumOfPairs, Operator, or DateOfAssessment are not missing
+                        #Validate that NumOfPairs, Operator, or DateOfAssessment are not missing
                         if row[shift+15] == '' or Operator == '' or DateOfAssessment == '' or row[shift+4] == '':
                             ErrorAv += 1
-                            ErrorLogA.insert(reader.line_num, ErrorA[0] + str(reader.line_num))
+                            ErrorLogA.insert(reader.line_num, ErrorA[0]+str(reader.line_num))
                         else:
                             NumOfPairs=int(row[shift+15])
                             NumOfChoices=float(row[shift+4])
@@ -1218,92 +1317,100 @@ def batch_import(request):
                             # Validate that NumOfChoices can only be 0 or greater than 1
                             if NumOfChoices < 0 or NumOfChoices == 1:
                                 ErrorAv +=1
-                                ErrorLogA.insert(reader.line_num, ErrorA[1] + str(reader.line_num))
+                                ErrorLogA.insert(reader.line_num, ErrorA[1]+str(reader.line_num))
                             # Check for insufficient data when NumOfPairs is different than NumOfChoices for discrete
                             elif NumOfChoices == 0:
                                 # Check that for the continuous case NumOfPairs is greater than 1
                                 # Should a check for the case were continuous should be 0 for NumOfChoices
                                 if NumOfPairs <= 0:
                                     ErrorAv += 1
-                                    ErrorLogA.insert(reader.line_num, ErrorA[2] + str(reader.line_num))
+                                    ErrorLogA.insert(reader.line_num, ErrorA[2]+str(reader.line_num))
                             else:
                                 # Check that for discrete the NumOfChoices is equal to NumOfPairs
                                 if NumOfPairs != NumOfChoices:
                                     ErrorAv +=1
-                                    ErrorLogA.insert(reader.line_num, ErrorA[2] + str(reader.line_num))
+                                    ErrorLogA.insert(reader.line_num, ErrorA[2]+str(reader.line_num))
                         if ErrorAv == 0:
                             #VALIDATION OF SUFFICIENT DATA
                             prob = []
                             val = []
-                            for i in range (0,NumOfPairs):
+                            for i in range(0, NumOfPairs):
                                 if not row[shift+16+2*i] or not row[shift+17+2*i]:
-                                    ErrorAv +=1
-                                    ErrorLogA.insert(reader.line_num, ErrorA[3] + str(reader.line_num))
+                                    ErrorAv += 1
+                                    ErrorLogA.insert(reader.line_num, ErrorA[3]+str(reader.line_num))
                                 else:
-                                    prob.insert(reader.line_num,float(row[shift+16+2*i]))
-                                    val.insert(reader.line_num,float(row[shift+17+2*i]))
+                                    prob.insert(reader.line_num, float(row[shift+16+2*i]))
+                                    val.insert(reader.line_num, float(row[shift+17+2*i]))
                         #VALIDATION OF AVAILABLE ASSESSMENT DATA
                         # Sort both Probabilities and Values for further validation if there are more than
                         # 2 pairs of assessments
                         if ErrorAv == 0:
-                            if sum(prob) > 2:
+                            if len(prob) > 2:
                                 prob, val = (list(x) for x in zip(*sorted(zip(prob, val))))
                             if NumOfChoices > 1:
                                 # Check that the operator is not different than EQ or empty
                                 if Operator != "EQ":
                                     ErrorAv += 1
-                                    ErrorLogA.insert(reader.line_num, ErrorA[8] + str(reader.line_num))
+                                    ErrorLogA.insert(reader.line_num, ErrorA[8]+str(reader.line_num))
                                 # Warn user that the sum is not 1
-                                if sum(prob) !=1:
+                                if sum(prob) != 1:
                                     WarningAv += 1
-                                    WarningLogA.insert(reader.line_num, WarningA[0] + str(reader.line_num))
+                                    WarningLogA.insert(reader.line_num, WarningA[0]+str(reader.line_num))
                                 # Check that all probabilities are between 0 and 1
                                 if sum([i > 1 for i in prob]) > 0:
                                     ErrorAv +=1
-                                    ErrorLogA.insert(reader.line_num, ErrorA[9] + str(reader.line_num))
+                                    ErrorLogA.insert(reader.line_num, ErrorA[9]+str(reader.line_num))
                                 if sum([i < 0 for i in prob]) > 0:
                                     ErrorAv +=1
-                                    ErrorLogA.insert(reader.line_num, ErrorA[9] + str(reader.line_num))
+                                    ErrorLogA.insert(reader.line_num, ErrorA[9]+str(reader.line_num))
                                 # Check that all values are between 1 and the NumOfChoices
                                 if sum([i > NumOfChoices for i in val]) > 0:
                                     ErrorAv +=1
-                                    ErrorLogA.insert(reader.line_num, ErrorA[10] + str(reader.line_num))
+                                    ErrorLogA.insert(reader.line_num, ErrorA[10]+str(reader.line_num))
                                 # Check that for LE everything is ascending
                                 if Operator == "LE" and NumOfPairs > 2:
                                     if sum([x>y for x, y in zip(val, val[1:])]) > 0:
                                         ErrorAv +=1
-                                        ErrorLogA.insert(reader.line_num, ErrorA[5] + str(reader.line_num))
-                                    # Check that for GE everything is ascending
+                                        ErrorLogA.insert(reader.line_num, ErrorA[5]+str(reader.line_num))
+                                # Check that for GE everything is ascending
                                 elif Operator == "GE" and NumOfPairs > 2:
                                     if sum([x<y for x, y in zip(val, val[1:])]) > 0:
                                         ErrorAv +=1
-                                        ErrorLogA.insert(reader.line_num, ErrorA[6] + str(reader.line_num))
-                                # Check that the operator is not EQ or empt
+                                        ErrorLogA.insert(reader.line_num, ErrorA[6]+str(reader.line_num))
+                                # Check that the operator is EQ
+                                elif Operator == "EQ" and NumOfPairs >= 2:
+                                    pass
+                                # Check that the operator is not EQ or empty
                                 else:
                                     ErrorAv +=1
-                                    ErrorLogA.insert(reader.line_num, ErrorA[4] + str(reader.line_num))
+                                    ErrorLogA.insert(reader.line_num, ErrorA[4]+str(reader.line_num))
                                 # Check that all probabilities are between 0 and 1
                                 if sum([i > 1 for i in prob]) > 0:
                                     ErrorAv += 1
-                                    ErrorLogA.insert(reader.line_num, ErrorA[7] + str(reader.line_num))
+                                    ErrorLogA.insert(reader.line_num, ErrorA[7]+str(reader.line_num))
                                 if sum([i < 0 for i in prob]) > 0:
                                     ErrorAv += 1
-                                    ErrorLogA.insert(reader.line_num, ErrorA[7] + str(reader.line_num))
+                                    ErrorLogA.insert(reader.line_num, ErrorA[7]+str(reader.line_num))
                         if ErrorAv == 0:
-                            for i in range (0, NumOfPairs):
+                            for i in range(0, NumOfPairs):
                                 data.append([0, QuestionUse, QForecast, QuestionType, NoOfChoices, QCategory, QuestionText,
                                      DateTrueValueKnown, TrueValue, Units, QuestionSource, AllowAssessment,
-                                     DateOfAssessment,Operator,DetailsOfAssessment, NumOfPairs,prob[i], val[i]])
+                                     DateOfAssessment, Operator, DetailsOfAssessment, NumOfPairs, prob[i], val[i]])
                                 ## Check if Assessment exists in database
-                                A = Assessment.objects.filter(user_id = upload_user
-                                    ).filter(question_id = QuestionID).filter(answer_text = prob[i]
+                                timestamp = get_timestamp()
+                                A = Assessment.objects.filter(assignment_id = AssignmentID
+                                    ).filter(user_id = upload_user
+                                    ).filter(question_id = QuestionID
+                                    ).filter(answer_text = prob[i]
+                                    ).filter(option_text = val[i]
                                     ).filter(date_of_assessment = DateOfAssessment
                                     ).filter(details_of_assessment = DetailsOfAssessment)
                                 if len(A) == 0:
                                     #Assessment does not exist in the database add question
-                                    newAssessment = Assessment(question_id=QuestionID, user_id = upload_user, answer_text = prob[i],
-                                        option_text = val[i], operator = Operator, date_of_assessment = DateOfAssessment,
-                                        details_of_assessment = DetailsOfAssessment)
+                                    ###JASON 06-17###
+                                    newAssessment = Assessment(assignment_id=AssignmentID, question_id=QuestionID, user_id=upload_user, 
+                                        answer_text=prob[i], option_text=val[i], operator=Operator, date_of_assessment=DateOfAssessment,
+                                        time_of_assessment=timestamp, details_of_assessment=DetailsOfAssessment)
                                     newAssessment.save()
                                 else:
                                     A.update(option_text = val[i])
@@ -1428,11 +1535,11 @@ def result(request):
     current_user = User.objects.get(id= user_id)
     summary_results = {}
     plot = []
-    summary_results['confidence'] = "Not Calculated"
+    summary_results['confidence']  = "Not Calculated"
     summary_results['calibration'] = "Not Calculated"
-    summary_results['knowledge'] ="Not Calculated"
-    summary_results['resolution'] = "Not Calculated"
-    summary_results['brierscore'] = "Not Calculated"
+    summary_results['resolution']  = "Not Calculated"
+    summary_results['knowledge']   = "Not Calculated"
+    summary_results['brierscore']  = "Not Calculated"
 
     datapoints = []
     if request.method == "POST":
@@ -1455,7 +1562,7 @@ def result(request):
             csvfile.write("\n\n\n");
 
         ##################IT'S NO LONGER RAUL CODE######################
-        QSet, ASet = returnAssessments(answer,0,"", "")
+        QSet, ASet = returnAssessments(answer, 0, "", "")
         QA_map = {} #Mapping of questions to assessments
         temp = ASet.values()
         with open(log_path, 'a') as csvfile:
@@ -1471,7 +1578,7 @@ def result(request):
                     QA_map[value['question_id_id']] = {}
                 else:
                     pass
-                AKey = str(value['user_id_id'])+'_'+value['date_of_assessment']
+                AKey = str(value['user_id_id'])+'_'+value['date_of_assessment']+'_'+value['time_of_assessment']
                 if AKey not in QA_map[value['question_id_id']].keys():
                     QA_map[value['question_id_id']][AKey] = []
                 else:
@@ -1481,7 +1588,7 @@ def result(request):
 
 
         summary_results, values, plot, datapoints = computeResults(ASet)
-        summary_fieldnames = ['Confidence', 'Calibration','Resolution','Knowledge','Brierscore']
+        summary_fieldnames = ['Confidence', 'Calibration', 'Resolution', 'Knowledge', 'Brierscore']
         insert_data_to_debug_file_vertically(summary_fieldnames,values,'a')
 
         #Get WLS line, confidence bias, and directional bias
@@ -1495,7 +1602,7 @@ def result(request):
             max_assessment_size = max(A_len_list)
 
         with open(data_path, 'wb') as csvfile:
-            data_fieldnames = ['USER', 'QUESTIONID', 'TRAINING', 'FORECAST', 'DISCRETE', 'NO OF CHOICES', 'CATEGORY', 'QUESTION TEXT', 'DATE TRUE VALUE KNOWN', 'TRUE VALUE', 'UNITS', 'ANSWER SOURCE', 'ALLOW ASSESSMENT', 'DATE OF ASSESSMENT', 'OPERATOR', 'ASSESSMENT DETAILS', 'NUMBER OF PAIRS']
+            data_fieldnames = ['USER', 'ASSIGNMENT', 'TRAINING', 'FORECAST', 'DISCRETE', 'NO OF CHOICES', 'CATEGORY', 'QUESTION TEXT', 'DATE TRUE VALUE KNOWN', 'TRUE VALUE', 'UNITS', 'ANSWER SOURCE', 'ALLOW ASSESSMENT', 'DATE OF ASSESSMENT', 'OPERATOR', 'ASSESSMENT DETAILS', 'NUMBER OF PAIRS']
             for i in range(max_assessment_size):
                 data_fieldnames.append('PROB '+str(i+1))
                 data_fieldnames.append('VALUE '+str(i+1))
@@ -1509,13 +1616,14 @@ def result(request):
                     for AKey in QA_map[qn.id]:
                         #Data File
                         data = {}
-                        data['QUESTIONID'] = qn.id
+                        #data['QUESTIONID'] = qn.id
+                        data['QUESTION TEXT'] = qn.question_text.encode('utf-8')
+                        data['ASSIGNMENT'] = ""
                         data['TRAINING'] = str(qn.corporate_training)
                         data['FORECAST'] = str(qn.forecast)
                         data['DISCRETE'] = str(qn.question_type)
                         data['NO OF CHOICES'] = qn.num_of_choices
                         data['CATEGORY'] = str(qn.category).encode('utf-8')
-                        data['QUESTION TEXT'] = qn.question_text.encode('utf-8')
                         data['DATE TRUE VALUE KNOWN'] = str(qn.upload_date)
                         data['TRUE VALUE'] = qn.true_value
                         data['UNITS'] = str(qn.unit).encode('utf-8')
@@ -1534,6 +1642,9 @@ def result(request):
                             data['ASSESSMENT DETAILS'] = str(QA_map[qn.id][AKey][0]['details_of_assessment']).encode('utf-8')
                         data['NUMBER OF PAIRS'] = len(QA_map[qn.id][AKey])
                         for j in range(data['NUMBER OF PAIRS']):
+                            ###JASON 06-17###
+                            a_set = Assignment.objects.get(id = QA_map[qn.id][AKey][j]['assignment_id_id'])
+                            data['ASSIGNMENT'] = a_set.assignment_name
                             data['PROB '+str(j+1)]  = QA_map[qn.id][AKey][j]['answer_text']
                             data['VALUE '+str(j+1)] = QA_map[qn.id][AKey][j]['option_text']
                         writer.writerow(data)
@@ -1549,11 +1660,11 @@ def result_test(request):
     current_user = User.objects.get(id= user_id)
     summary_results = {}
     plot = []
-    summary_results['confidence'] = "Not Calculated"
+    summary_results['confidence']  = "Not Calculated"
     summary_results['calibration'] = "Not Calculated"
-    summary_results['knowledge'] ="Not Calculated"
-    summary_results['resolution'] = "Not Calculated"
-    summary_results['brierscore'] = "Not Calculated"
+    summary_results['resolution']  = "Not Calculated"
+    summary_results['knowledge']   = "Not Calculated"
+    summary_results['brierscore']  = "Not Calculated"
 
     datapoints = []
     if request.method == "POST":
@@ -1580,7 +1691,7 @@ def result_test(request):
                 writer.writerow({'Question Type': answer[0], 'Forecast': answer[1], 'Question Purpose': answer[2], 'Question Text': answer[3], '# of Choices': answer[4], 'Category': answer[5], 'User': answer[6], 'Group': answer[7], 'Assignment Name': answer[8], 'Date Submitted': answer[9]})
                 csvfile.write("\n\n\n");
             ##################IT'S NO LONGER RAUL CODE######################
-            QSet, ASet = returnAssessments(answer,0,"","")
+            QSet, ASet = returnAssessments(answer, 0, "", "")
             QA_map = {} #Mapping of questions to assessments
             temp = ASet.values()
             with open(log_path, 'a') as csvfile:
@@ -1596,7 +1707,7 @@ def result_test(request):
                         QA_map[value['question_id_id']] = []
                     else:
                         pass
-                    '''AKey = str(value['user_id_id'])+'_'+value['date_of_assessment']
+                    '''AKey = str(value['user_id_id'])+'_'+value['date_of_assessment']+'_'+value['time_of_assessment']
                     if AKey not in QA_map[value['question_id_id']].keys():
                         QA_map[value['question_id_id']][AKey] = []
                     else:
@@ -1605,36 +1716,37 @@ def result_test(request):
                 csvfile.write("\n\n\n");
             summary_results, values, plot, datapoints = computeResults(ASet)
                 
-            summary_fieldnames = ['Confidence', 'Calibration','Resolution','Knowledge','Brierscore']
+            summary_fieldnames = ['Confidence', 'Calibration', 'Resolution', 'Knowledge', 'Brierscore']
             insert_data_to_debug_file_vertically(summary_fieldnames,values,'a')
 
             #Get WLS line, confidence bias, and directional bias
             wls_datapoints, wls_c_d_table = wls_bias_calc(plot)
             ## Split into loop field sets
             if answer[11] is not None:
-                answer_copy = answer
+                answer_copy     = answer
                 get_assessments = ASet.values()
-                loop_set = {}
-                usr_id_set = []
-                usr_id_pos = 0
+                loop_set        = {}
                 for val in get_assessments:
-                    usr = User.objects.get(pk=val['user_id_id']).username 
+                    usr = User.objects.get(pk=val['user_id_id']).username
                     if usr not in loop_set:
                         loop_set[usr] = []
                     loop_set[usr].append(val)
-                    usr_id_set.append(val['user_id_id'])
                 for key in loop_set:
                     answer_copy[6] = key
-                    temp_QSet, temp_ASet = returnAssessments(answer_copy,1, usr_id_set[usr_id_pos], "user")
-                    srt, vt, pt, dpt = computeResults(temp_ASet)
-                    sumresult_list[key] = srt
+                    UserID = User.objects.get(username=key)
+                    temp_QSet, temp_ASet = returnAssessments(answer_copy, 1, UserID, "user")
+                    srt, vt, pt, dpt     = computeResults(temp_ASet)
+                    print "srt: ", len(srt)
+                    print "vt: ", len(vt)
+                    print "pt: ", len(pt)
+                    print "dpt: ", len(dpt)
+                    sumresult_list[key]  = srt
                     values_list.append(vt)
                     plot_list.append(pt)
                     datapoints_list[key] = dpt
                     wdt, wcdt = wls_bias_calc(pt)
                     wls_dp_list.append(wdt)
                     wls_c_d_list[key] = wcdt
-                    usr_id_pos = usr_id_pos + 1
                 wls_c_d_list = json.dumps(wls_c_d_list)
                 sumresult_list = json.dumps(sumresult_list)
                 datapoints_list = json.dumps(datapoints_list)
@@ -1644,17 +1756,16 @@ def result_test(request):
                 answer_copy = answer
                 get_assessments = ASet.values()
                 loop_set = {}
-                group_id_set = []
                 group_id_pos = 0
                 get_grps = Assigned_group.objects.all()
                 for val in get_grps:
                     if val.group_id not in loop_set:
                         loop_set[val.group_id.group_name] = []
-                    loop_set[val.group_id.group_name]
-                    group_id_set.append(val.group_id)
                 for key in loop_set:
                     answer_copy[7] = key
-                    temp_QSet, temp_ASet = returnAssessments(answer_copy,1, group_id_set[group_id_pos], "group")
+                    GroupID = Group.objects.get(group_name=key)
+                    temp_QSet, temp_ASet = returnAssessments(answer_copy, 1, GroupID, "group")
+                    print "JJ: ", len(temp_QSet), len(temp_ASet)
                     srt, vt, pt, dpt = computeResults(temp_ASet)
                     sumresult_list[key] = srt
                     values_list.append(vt)
@@ -1670,55 +1781,59 @@ def result_test(request):
                 option = json.dumps("Group");
                 return render(request, "ucs/result_test.html", {"loop_option": option, "wcd_table_org": wls_c_d_table, "summary_org": summary_results,"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list, "dp_list": datapoints_list})
             elif answer[13] is not None:
-            	start_time = datetime.strptime(time_norm(answer[17]), "%Y-%m-%d").date()
-            	end_time = datetime.strptime(time_norm(answer[16]), "%Y-%m-%d").date()
-                time_filter_list = []
-                time_factor = int(answer[18]) #Bin spaceing               
-                if answer[15] == "Day":
-                    time_cond = start_time
-                    while time_cond <= end_time :
-                        time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
-                        time_cond = time_cond + timedelta(days=time_factor)
-                elif answer[15] == "Week":
-                    time_cond = start_time
-                    time_factor = time_factor * 7
-                    while time_cond <= end_time :
-                        time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
-                        time_cond = time_cond + timedelta(days=time_factor)            
-                elif answer[15] == "Month":
-                    time_cond = start_time
-                    time_factor = time_factor * 30
-                    while time_cond <= end_time :
-                        time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
-                        time_cond = time_cond + timedelta(days=time_factor)       
-                elif answer[15] == "Year":
-                    time_cond = start_time
-                    time_factor = time_factor * 364
-                    while time_cond <= end_time :
-                        time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
-                        time_cond = time_cond + timedelta(days=time_factor)
-                for key in time_filter_list:
-                    time_list = []
-                    prev_time = datetime.strptime(key, "%Y-%m-%d").date()
-                    prev_time = prev_time - timedelta(days=time_factor)
-                    curr_time = datetime.strptime(key, "%Y-%m-%d").date()
-                    while prev_time <= curr_time :
-                        time_list.append(prev_time.strftime("%Y-%m-%d"))
-                        prev_time = prev_time + timedelta(days=1)
-                    temp_QSet, temp_ASet = returnAssessments(answer,1, time_list, "time")
-                    srt, vt, pt, dpt = computeResults(temp_ASet)
-                    sumresult_list[key] = srt
-                    values_list.append(vt)
-                    plot_list.append(pt)
-                    datapoints_list[key] = dpt
-                    wdt, wcdt = wls_bias_calc(pt)
-                    wls_dp_list.append(wdt)
-                    wls_c_d_list[key] = wcdt
-                wls_c_d_list = json.dumps(wls_c_d_list)
-                sumresult_list = json.dumps(sumresult_list)
-                datapoints_list = json.dumps(datapoints_list)
-                option = json.dumps("Time");
-                return render(request, "ucs/result_test.html", {"loop_option": option, "wcd_table_org": wls_c_d_table, "summary_org": summary_results,"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list, "dp_list": datapoints_list})
+                if not answer[16] or not answer[17] or not answer[18]:
+                    pass
+                else:
+                    start_time = datetime.strptime(date_norm(answer[17]), "%Y-%m-%d").date()
+                    end_time = datetime.strptime(date_norm(answer[16]), "%Y-%m-%d").date()
+                    time_filter_list = []
+                    time_factor = int(answer[18]) #Bin spaceing               
+                    if answer[15] == "Day":
+                        time_cond = start_time
+                        while time_cond <= end_time :
+                            time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
+                            time_cond = time_cond + timedelta(days=time_factor)
+                    elif answer[15] == "Week":
+                        time_cond = start_time
+                        time_factor = time_factor * 7
+                        while time_cond <= end_time :
+                            time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
+                            time_cond = time_cond + timedelta(days=time_factor)            
+                    elif answer[15] == "Month":
+                        time_cond = start_time
+                        time_factor = time_factor * 30
+                        while time_cond <= end_time :
+                            time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
+                            time_cond = time_cond + timedelta(days=time_factor)       
+                    elif answer[15] == "Year":
+                        time_cond = start_time
+                        time_factor = time_factor * 364
+                        while time_cond <= end_time :
+                            time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
+                            time_cond = time_cond + timedelta(days=time_factor)
+                    for key in time_filter_list:
+                        time_list = []
+                        prev_time = datetime.strptime(key, "%Y-%m-%d").date()
+                        prev_time = prev_time - timedelta(days=time_factor)
+                        curr_time = datetime.strptime(key, "%Y-%m-%d").date()
+                        while prev_time <= curr_time :
+                            time_list.append(prev_time.strftime("%Y-%m-%d"))
+                            prev_time = prev_time + timedelta(days=1)
+                        temp_QSet, temp_ASet = returnAssessments(answer, 1, time_list, "time")
+                        print "JJ: ", len(temp_QSet), len(temp_ASet)
+                        srt, vt, pt, dpt = computeResults(temp_ASet)
+                        sumresult_list[key] = srt
+                        values_list.append(vt)
+                        plot_list.append(pt)
+                        datapoints_list[key] = dpt
+                        wdt, wcdt = wls_bias_calc(pt)
+                        wls_dp_list.append(wdt)
+                        wls_c_d_list[key] = wcdt
+                    wls_c_d_list = json.dumps(wls_c_d_list)
+                    sumresult_list = json.dumps(sumresult_list)
+                    datapoints_list = json.dumps(datapoints_list)
+                    option = json.dumps("Time");
+                    return render(request, "ucs/result_test.html", {"loop_option": option, "wcd_table_org": wls_c_d_table, "summary_org": summary_results,"summary":sumresult_list,"datapoints":datapoints,"plot":plot, "wls_datapoints": wls_datapoints, "wcd_table": wls_c_d_list, "dp_list": datapoints_list})
             usr_key = User.objects.get(pk=user_id).username
             sumresult_list[usr_key] = summary_results
             wls_c_d_list[usr_key] = wls_c_d_table
@@ -1743,7 +1858,7 @@ def wls_bias_calc(plot):
         X_bar += row[2]*row[0]
         Y_bar += row[2]*row[1]
     if sum_w == 0:
-    	sum_w = 0.01
+        sum_w = 0.01
     X_bar = X_bar / sum_w
     Y_bar = Y_bar / sum_w
 
@@ -1751,11 +1866,11 @@ def wls_bias_calc(plot):
         BETA_1 += row[2]*(row[0]-X_bar)*(row[1]-Y_bar)
         denom += row[2]*(math.pow((row[0]-X_bar),2))
     if denom == 0:
-    	denom = 0.01
+        denom = 0.01
     BETA_1 = BETA_1 / denom
     BETA_0 = Y_bar - BETA_1*X_bar
     if BETA_1 == 0:
-    	BETA_1 = 0.01
+        BETA_1 = 0.01
     #BETA_1 is WLS slope
     #BETA_0 is WLS intercept
     wls_datapoints = []
@@ -1798,7 +1913,7 @@ def batch_export(request):
     if os.path.exists(data_path):
         with open(data_path, 'rb') as fh:
             response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
-            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(data_path)
             return response
     else:
         return HttpResponse("<h1>File not found.</h1>")
@@ -1889,6 +2004,7 @@ def processRequests(req,current_user):
         binscale = req.POST.get("binscale")
         
         loop_request = 1;           
+        print "LOOP CHECK"
         answer = [question_type, forecast, question_use, question_text, true_or_false, category, user_name, group_name, assignment_name, edate_submitted
         , sdate_submitted, user_loop, group_loop, timeloop, loop_request, bin_type, timeloop_edate, timeloop_sdate, binscale]
         return answer
@@ -1905,15 +2021,18 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         if answer[8]:
             Q_text = []
             A_id = Assignment.objects.get(assignment_name=answer[8])
-            AQ_objs = Assigned_question.objects.filter(assignment_id=A_id)
-            for obj in AQ_objs:
-                Q_text.append(obj.question_id)
-            #print 'QText: ', QText
-            QSet = Question.objects.filter(question_text__in=Q_text)
+            ASet = Assessment.objects.filter(assignment_id=A_id)
+            ##AQ_objs = Assigned_question.objects.filter(assignment_id=A_id)
+            ##for obj in AQ_objs:
+            ##    Q_text.append(obj.question_id)
+            ##print 'QText: ', QText
+            ##QSet = Question.objects.filter(question_text__in=Q_text)
             #print 'QSet: ', QSet
             #print answer[8]
         else:
+            ASet = Assessment.objects.filter(question_id__in=QSet)
             print 'The assignment name is not specified'
+            print "Number of Assessment: ", len(ASet)
         if answer[0] is not None:
             QSet = Question.objects.filter(id__in=QSet, question_type=answer[0])
             #print 'GOT VALUE'
@@ -1940,14 +2059,16 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         else:
             print 'The number of choices is not specified'
         if answer[5]:
-            tmp = Category.objects.get(category_text=answer[5])
+            tmp  = Category.objects.get(category_text=answer[5])
             QSet = Question.objects.filter(id__in=QSet, category=tmp)
             #print 'GOT VALUE'
             #print tmp
         else:
             print 'The category is not specified'
         #Query on question_set, user_name, and ...
-        ASet = Assessment.objects.filter(question_id__in=QSet)
+
+        ASet = Assessment.objects.filter(id__in=ASet, question_id__in=QSet)
+
         if answer[7]:
             G_user = []
             G_id = Group.objects.get(group_name=answer[7])
@@ -1965,12 +2086,27 @@ def returnAssessments(answer, check, loop_filter, loop_type):
             #print "username ",answer[6]
         else:
             print 'The user name is not specified'
-        if answer[9]:
-            ASet = Assessment.objects.filter(id__in=ASet, date_of_assessment=answer[9])
+        if answer[9] and answer[10]:
+      
+                start_time = datetime.strptime(date_norm(answer[10]), "%Y-%m-%d").date()
+                end_time = datetime.strptime(date_norm(answer[9]), "%Y-%m-%d").date()
+                time_filter_list = []
+                time_cond = start_time
+                print "START_TIME", start_time
+                print "END_TIME", end_time
+                while time_cond <= end_time :
+                    time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
+                    time_cond = time_cond + timedelta(days=1)
+                print "Aset 1", ASet       
+
+                ASet = Assessment.objects.filter(id__in=ASet, date_of_assessment__in=time_filter_list)
+
+                print "Aset 2, ", ASet
         else:
             print 'The date of assessment is not specified'
-    else:
-        
+
+    elif check == 2:
+        #DJ's code for the looping
         ''' 
         answer = [question_type, forecast, question_use, question_text, true_or_false, category, user_name, group_name, assignment_name, edate_submitted
         sdate_submitted, edate_f_assign, sdate_f_assign, edate_c_question, sdate_c_question, loop_request]
@@ -1979,6 +2115,7 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         answer[13-14] := question upload date
         answer[15] := loop_request
         '''
+        #"""
         target_assignments = []
         question_set = []
         if loop_type == "user":
@@ -1987,6 +2124,8 @@ def returnAssessments(answer, check, loop_filter, loop_type):
             get_assign_list = Assignment_log.objects.filter(finish_date__gt="0000-00-00", group_id=loop_filter)
         elif loop_type == "time":
             get_assign_list = Assignment_log.objects.filter(finish_date__in=loop_filter)
+
+        print "get_assign_list: ", get_assign_list
         for asn in get_assign_list:
             if answer[8]:
                 if asn.assignment_id.assignment_name == answer[8]:
@@ -2013,12 +2152,23 @@ def returnAssessments(answer, check, loop_filter, loop_type):
             question_set = [qs for qs in question_set if qs.category == cond_val]
         #print question_set
         a_set = []
-        if answer[9] != "" and answer[10] != "":
+        '''if answer[9] != "" and answer[10] != "":
             get_assessments = Assessment.objects.filter(question_id__in=question_set, date_of_assessment__range=[answer[10], answer[9]])
         elif answer[9] == "" and answer[10] != "":
             get_assessments = Assessment.objects.filter(question_id__in=question_set, date_of_assessment__range=[answer[10], "2100-01-01"])
         elif answer[10] ==  "" and answer[9] != "":
             get_assessments = Assessment.objects.filter(question_id__in=question_set, date_of_assessment__range=["0000-00-00", answer[9]])
+'''
+        if answer[9] and answer[10]:
+  
+            start_time = datetime.strptime(date_norm(answer[10]), "%Y-%m-%d").date()
+            end_time = datetime.strptime(date_norm(answer[9]), "%Y-%m-%d").date()
+            time_filter_list = []
+            time_cond = start_time
+            while time_cond <= end_time :
+                time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
+                time_cond = time_cond + timedelta(days=1)    
+            get_assessments = Assessment.objects.filter(id__in=ASet, date_of_assessment__in=time_filter_list)
         else:
             get_assessments = Assessment.objects.filter(question_id__in=question_set)
         #startDate = answer[10].split("/")
@@ -2044,6 +2194,128 @@ def returnAssessments(answer, check, loop_filter, loop_type):
         #print a_set
         QSet = Question.objects.filter(question_text__in=question_set)
         ASet = Assessment.objects.filter(question_id__in=a_set_qid)
+        print "#######################################################"
+        print QSet
+        print ASet
+        print "#######################################################"
+        #"""
+    else:
+        
+        ''' 
+        answer = [question_type, forecast, question_use, question_text, true_or_false, category, user_name, group_name, assignment_name, edate_submitted
+        sdate_submitted, edate_f_assign, sdate_f_assign, edate_c_question, sdate_c_question, loop_request]
+        answer[9-10] := assessment Date submitted
+        answer[11-12] := assignment finish date
+        answer[13-14] := question upload date
+        answer[15] := loop_request
+        '''
+        target_assignments = []
+        if loop_type == "user":
+            get_assign_list = Assignment_log.objects.filter(finish_date__gt="0000-00-00", user_id=loop_filter)
+            #get_assign_list = Assessment.objects.filter(user_id=loop_filter)
+        elif loop_type == "group":
+            get_assign_list = Assignment_log.objects.filter(finish_date__gt="0000-00-00", group_id=loop_filter)
+        elif loop_type == "time":
+            get_assign_list = Assignment_log.objects.filter(finish_date__in=loop_filter)
+        
+        print "get_assign_list: ", get_assign_list
+        for asn in get_assign_list:
+            if answer[8]:
+                if asn.assignment_id.assignment_name == answer[8]:
+                    target_assignments.append(asn.assignment_id)
+            else:
+                target_assignments.append(asn.assignment_id)
+        ################################################################################
+        print "target_assignments: ", len(target_assignments)
+        ASet = Assessment.objects.filter(assignment_id__in=target_assignments)
+
+        
+        """
+        qs_list = Assigned_question.objects.filter(assignment_id__in=target_assignments)
+        for ql in qs_list:
+            ql = Question.objects.filter(question_text=ql.question_id.question_text)
+            for q in ql:
+                question_set.append(q)
+        """
+        print "ASet: >>>> ", ASet
+
+        ################################################################################
+        QSet = Question.objects.all()
+        if answer[0] is not None:
+            QSet = [qs for qs in QSet if qs.question_type == answer[0]]
+        if answer[1] is not None:
+            QSet = [qs for qs in QSet if qs.forecast == answer[1]]
+        if answer[2] is not None:
+            QSet = [qs for qs in QSet if qs.corporate_training == answer[2]]
+        if answer[3]:  
+            QSet = [qs for qs in QSet if qs.question_text == answer[3]]
+        if answer[4]:
+            QSet = [qs for qs in QSet if qs.num_of_choices == answer[4]]
+        if answer[5]:
+            cond_val = Category.objects.get(category_text=answer[5])
+            QSet = [qs for qs in QSet if qs.category == cond_val]
+        print "QSet ASet: ", len(QSet), len(ASet)
+        #print question_set
+        ###a_set = []
+        #print "A9: ", answer[9]
+        #print "A10: ", answer[10]
+#        if answer[9] != "" and answer[10] != "":
+#            ASet = Assessment.objects.filter(id__in=ASet, question_id__in=QSet, date_of_assessment__range=[answer[10], answer[9]])
+#        elif answer[9] == "" and answer[10] != "":
+#            ASet = Assessment.objects.filter(id__in=ASet, question_id__in=QSet, date_of_assessment__range=[answer[10], "2100-01-01"])
+#        elif answer[10] ==  "" and answer[9] != "":
+#            ASet = Assessment.objects.filter(id__in=ASet, question_id__in=QSet, date_of_assessment__range=["0000-00-00", answer[9]])
+        if answer[10] and answer[9]:
+            start_time = datetime.strptime(date_norm(answer[10]), "%Y-%m-%d").date()
+            end_time = datetime.strptime(date_norm(answer[9]), "%Y-%m-%d").date()
+            time_filter_list = []
+            time_cond = start_time
+            while time_cond <= end_time :
+                time_filter_list.append(time_cond.strftime("%Y-%m-%d"))
+                time_cond = time_cond + timedelta(days=1)    
+            ASet = Assessment.objects.filter(id__in=ASet, date_of_assessment__in=time_filter_list)
+
+        else:
+            ASet = Assessment.objects.filter(id__in=ASet, question_id__in=QSet)
+            #print "HERERE", ASet
+        #startDate = answer[10].split("/")
+        #endDate   = answer[9].split("/")
+        
+        #get_assessments = Assessment.objects.filter(question_id__in=question_set)
+        ##for ga in get_assessments:
+        ##    a_set.append(ga)
+        ##    #print ga.date_of_assessment
+        
+        print "QSet ASet: ", len(QSet), len(ASet)
+        if answer[6]:
+            print "A6...", loop_filter
+            upload_user = User.objects.get(username = answer[6])
+            ASet = [a for a in ASet if a.user_id == upload_user]
+        if answer[7]:
+            print "A7...", loop_filter
+            #print "A7...LEN", len(loop_filter)
+            if loop_filter.group_name == "No Users":
+                G_user = User.objects.all()
+                print "G_user: ", G_user
+                ASet = [a for a in ASet if a.user_id in G_user]               
+            else:
+                G_user = []
+                G_id = Group.objects.get(group_name=answer[7])
+                GM_objs = Group_member.objects.filter(group_id=G_id)
+                print "GM...", GM_objs
+                for obj in GM_objs:
+                    G_user.append(obj.user_id)
+                ASet = [a for a in ASet if a.user_id in G_user]
+        
+        #a_set_qid = []
+        #for a in a_set:
+        #    a_set_qid.append(a.question_id)
+        #print a_set
+        ###QSet = Question.objects.filter(question_text__in=question_set)
+        ###ASet = Assessment.objects.filter(question_id__in=a_set_qid)
+        print "QSet ASet: ", len(QSet), len(ASet)
+        print "QSet: ", QSet
+        print "ASet: ***", ASet
     return (QSet, ASet)
 
 
@@ -2254,7 +2526,7 @@ def processAssessments(ASet):
         operator = assessment.operator
         #Only one dot allow in the float value
         dot_num = len(trueValue)-len(trueValue.replace('.',''))
-        if dot_num <= 1 and trueValue.replace('.','').isdigit():
+        if dot_num <= 1 and trueValue.replace('.','').replace('-','').isdigit():
             trueValue = float(trueValue)
             pAssigned = float(pAssigned)
             vAssigned = float(vAssigned)

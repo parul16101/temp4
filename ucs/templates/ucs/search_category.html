@@ -33,7 +33,7 @@
 						<col width="5%" />
 						<thead>
 							<tr>
-								<th>#</th>
+								<th style="display:none;">#</th>
 								<th>Category Name</th>
 								<th>Number of Questions</th>
 								<th>Delete</th>
@@ -99,6 +99,7 @@
 		var newCell_0 = newRow.insertCell(0);
 		var newText0 = document.createTextNode(name.category_id);
 		newCell_0.appendChild(newText0);
+		newCell_0.style.display = 'none';
 		
 		var newCell_1 = newRow.insertCell(1);
 		var newText1 = document.createTextNode(name.category);

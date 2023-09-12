@@ -30,43 +30,43 @@
                     <h2><strong> Loop Options </strong></h2>
                     <h5> This will split the results in individual rows based on option. Only one can be selected</h5>
                     <div class="col-sm-4" id="date1">
-                        <label class="control-label" for="userloop">User Name</label>
+                        <!-- <label class="control-label" for="userloop">By User Name</label> -->
                         <fieldset>
                             <label class="">
-                                <input type="checkbox" value="1" name="userloop" id="rad1" > Yes
+                                <input type="checkbox" value="1" name="userloop" id="rad1" autocomplete="off"> By User Name
                             </label>
                         </fieldset>
                     </div>
                     <div class="col-sm-4" id="date1">
-                        <label class="control-label" for="grouploop"> Group</label>
+                        <!-- <label class="control-label" for="grouploop">By Group</label> -->
                         <fieldset>
                             <label class="">
-                                <input type="checkbox" value="1" name="grouploop" id="rad2" > Yes
+                                <input type="checkbox" value="1" name="grouploop" id="rad2" autocomplete="off"> By Group
                             </label>
                         </fieldset>
                     </div>
                     <div class="col-sm-4 timediv" id="date1">
-                        <label class="control-label" for="timeloop"> Time</label>
+                        <!-- <label class="control-label" for="timeloop">By Time</label> -->
                         <fieldset>
                             <label class="">
-                                <input type="checkbox" value="1" name="timeloop" id="rad3" > Yes
+                                <input type="checkbox" value="1" name="timeloop" id="rad3" autocomplete="off"> By Time
                             </label>
                         </fieldset>
                     </div>
-                    <div class="col-sm-4" id="tdate1">
+                    <div class="col-sm-4" id="tdate1" style="display:none;">
                         <label><h3>Loop Initial</h3></label>
                         <div class="input-group date" style = "margin-bottom:1%;">
                             <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input style="width:55%;" type="text" id="timeloop_sdate" name="timeloop_sdate" placeholder="Loop Time Start Date" class="form-control" >
                         </div>
                     </div>
-                    <div class="col-sm-8" id="tdate2">
+                    <div class="col-sm-8" id="tdate2" style="display:none;">
                         <label><h3>Loop Final</h3></label>
                         <div class="input-group date" style = "margin-bottom:1%;">
                             <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input style="width:22%;" type="text" id="timeloop_edate" name="timeloop_edate" placeholder="Loop Time End Date " class="form-control" >
                         </div>
                     </div>
                     <br><br>
-                    <div class="col-sm-8" id="tlb">
+                    <div class="col-sm-8" id="tlb" style="display:none;">
                         <label class="control-label" for="timebin">Time interval
                         <fieldset>
                             <label class="">
@@ -205,10 +205,10 @@
 <script src="{% static 'ucs/js/plugins/iCheck/icheck.min.js' %}"></script>
 <script>
 	$(document).ready(function () {
-        $('#tdate1').hide();
-        $('#tdate2').hide();
+        //$('#tdate1').hide();
+        //$('#tdate2').hide();
         //$('.timediv').hide();
-        $('#tlb').hide();
+        //$('#tlb').hide();
 		$('.i-checks').iCheck({
 			checkboxClass: 'icheckbox_square-green',
 			radioClass: 'iradio_square-green',

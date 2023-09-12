@@ -8,7 +8,7 @@ https://docs.djangoproject.com/en/1.10/howto/deployment/wsgi/
 import os
 import sys
 
-print "Hello"
+#print "Hello"
 
 from django.core.wsgi import get_wsgi_application
 
